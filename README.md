@@ -1,4 +1,4 @@
-"# ICS4-Final-Project" 
- Caroline, Ida, Ferdinand
+# ICS4-Final-Project
+##Hosptial Management System
 
-Hosptial Management System
+Caroline, Ida, Ferdinand
