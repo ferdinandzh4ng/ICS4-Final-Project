@@ -1,20 +1,45 @@
 # Hospital Management System
 
-ICS4U Final Project — Stage 2 Design Implementation
-
-A Java-based hospital management system organized into three independent subsystems that share data through file I/O and cross-subsystem references. Each subsystem uses inheritance and polymorphism to model its domain.
-
-**Team:** Ferdinand · Caroline · Ida
+A Java application for managing hospital operations across staff, patients, and appointments. The system supports role-based staff workflows, patient medical records, and scheduling with conflict detection and persistent file storage.
 
 ---
 
-## Subsystems
+## Features
 
-| Subsystem | Package | Owner | Description |
-|-----------|---------|-------|-------------|
-| **A — Medical Staff Management** | `staff` | Ferdinand | Doctors, nurses, and surgeons; scheduling, payroll, and staff assignment |
-| **B — Patient & Medical Records** | `patient` | Caroline | In-patients, out-patients, and emergency patients; diagnoses, medications, and billing |
-| **C — Appointments & Scheduling** | `appointment` | Ida | Routine checkups, surgeries, and emergency visits; booking and conflict detection |
+### Staff Management
+- Manage doctors, nurses, and surgeons with role-specific attributes and behaviour
+- Assign patients by capacity, ward, or surgical referral
+- Track schedules and prevent double-booking via time-conflict checks
+- Run payroll with role-specific compensation (salary, hourly + overtime, per-procedure fees)
+- Search, sort, and persist staff records to file
+
+### Patient & Medical Records
+- Register and manage in-patients, out-patients, and emergency patients
+- Maintain diagnoses, allergies, medications, and medical/family history
+- Check patients in and out with type-specific billing
+- Track appointment history (past and upcoming) per patient
+- Validate OHIP numbers and detect medication–allergy conflicts
+
+### Appointments & Scheduling
+- Book routine checkups, surgeries, and emergency visits
+- Assign staff teams based on availability, ward, and urgency
+- Detect room and staff scheduling conflicts
+- Reschedule, cancel, and mark appointments complete
+- Generate daily schedules and cost summaries by date
+
+---
+
+## Architecture
+
+The application is divided into three modules that communicate through shared object references and file I/O:
+
+| Module | Package | Responsibility |
+|--------|---------|----------------|
+| Staff | `staff` | Staff records, scheduling, payroll, and team assignment |
+| Patient | `patient` | Patient records, medical data, check-in/out, and billing |
+| Appointment | `appointment` | Booking, conflict detection, and appointment lifecycle |
+
+Shared utilities live in the `shared` package (e.g. `Date` for date parsing and comparison across all modules).
 
 ---
 
@@ -22,15 +47,15 @@ A Java-based hospital management system organized into three independent subsyst
 
 ```
 ICS4-Final-Project/
-├── data/                          # Input / output text files
+├── data/
 │   ├── staff.txt
 │   ├── patients.txt
 │   ├── patient_appointments.txt
 │   └── appointments.txt
 └── src/
-    ├── HospitalRunner.java        # Program entry point
+    ├── HospitalRunner.java
     ├── shared/
-    │   └── Date.java              # Shared date helper (used by all subsystems)
+    │   └── Date.java
     ├── staff/
     │   ├── Staff.java
     │   ├── Doctor.java
@@ -54,74 +79,89 @@ ICS4-Final-Project/
 
 ---
 
-## Compile & Run
+## Getting Started
+
+**Requirements:** Java JDK 8 or later
 
 From the project root:
 
 ```bash
-# Compile all source files
 javac src/HospitalRunner.java src/shared/*.java src/staff/*.java src/patient/*.java src/appointment/*.java
-
-# Run the program
 java -cp src HospitalRunner
 ```
 
 ---
 
-## Data Files
+## Data Storage
 
-All persistent data is stored in plain-text files under `data/`:
+All records are persisted as plain-text files in `data/`:
 
-| File | Subsystem | Purpose |
-|------|-----------|---------|
-| `staff.txt` | A | Staff records (Doctor, Nurse, Surgeon) |
-| `patients.txt` | B | Patient records (InPatient, OutPatient, EmergencyPatient) |
-| `patient_appointments.txt` | B | Past and upcoming appointments per patient |
-| `appointments.txt` | C | All appointment records (Checkup, Surgery, Emergency) |
+| File | Contents |
+|------|----------|
+| `staff.txt` | Staff records tagged by role (Doctor, Nurse, Surgeon) |
+| `patients.txt` | Patient records tagged by type (InPatient, OutPatient, EmergencyPatient) |
+| `patient_appointments.txt` | Past and upcoming appointment IDs linked to each patient |
+| `appointments.txt` | Appointment records (Checkup, Surgery, Emergency) |
+
+Each manager class handles loading from and saving to its corresponding file(s).
 
 ---
 
 ## Class Hierarchy
 
-### Subsystem A — Staff
+### Staff
 
 ```
 Staff (abstract)
-├── Doctor
-├── Nurse
-└── Surgeon
+├── Doctor      — diagnoses, prescriptions, referrals
+├── Nurse       — ward care, vitals, medication administration
+└── Surgeon     — surgical procedures, OR scheduling
 
-StaffManager
+StaffManager    — CRUD, search, sort, payroll, availability queries
 ```
 
-### Subsystem B — Patient
+### Patient
 
 ```
 Patient (abstract)
-├── InPatient
-├── OutPatient
-└── EmergencyPatient
+├── InPatient           — admitted patients with bed assignment and vitals log
+├── OutPatient          — clinic visits with recurring appointment intervals
+└── EmergencyPatient    — ER arrivals with triage status and urgency tracking
 
-Medication
-PatientManager
+Medication      — prescribed medication entry
+PatientManager  — CRUD, search, sort, check-in/out, file I/O
 ```
 
-### Subsystem C — Appointment
+### Appointment
 
 ```
 Appointment (abstract)
-├── RoutineCheckup
-├── Surgery
-└── EmergencyVisit
+├── RoutineCheckup  — clinic visits with assigned doctor and room
+├── Surgery         — OR procedures with surgical team and anaesthesia
+└── EmergencyVisit  — ER visits with urgency-based staffing
 
-ApptManager
+ApptManager       — booking, cancellation, rescheduling, reporting
 ```
 
 ---
 
-## Cross-Subsystem Interactions
+## Module Interactions
 
-- **Staff → Patient:** Doctors diagnose and prescribe; nurses administer medication and record vitals; surgeons perform procedures and update medical history.
-- **Staff → Appointment:** Staff members hold personal schedules; `StaffManager` provides available nurses and doctors for appointment booking.
-- **Appointment → Patient:** Booking, cancelling, rescheduling, and completing appointments update each patient's appointment history.
-- **Appointment → Staff:** Appointments reference assigned staff and use conflict checking to prevent double-booking.
+```
+┌─────────────┐     assign staff      ┌──────────────┐
+│  Appointment │ ◄──────────────────► │    Staff     │
+│   Manager    │     check conflicts   │   Manager    │
+└──────┬──────┘                       └──────┬───────┘
+       │                                     │
+       │  book / cancel / complete           │  diagnose / prescribe /
+       ▼                                     ▼  administer / operate
+┌─────────────┐
+│   Patient   │
+│   Manager   │
+└─────────────┘
+```
+
+- **Staff → Patient:** Doctors update diagnoses and prescriptions; nurses record vitals and administer medication; surgeons log procedures to medical history.
+- **Staff → Appointment:** Each staff member maintains a personal schedule; the staff manager resolves available nurses and doctors when booking teams.
+- **Appointment → Patient:** Creating, updating, or completing an appointment syncs the patient's appointment history.
+- **Appointment → Staff:** New bookings validate staff availability and room occupancy before confirmation.
