@@ -79,6 +79,12 @@ ICS4-Final-Project/
 
 ---
 
+## Documentation
+
+- [API Reference](docs/API.md) — full class, method, and data file specification
+
+---
+
 ## Getting Started
 
 **Requirements:** Java JDK 8 or later
