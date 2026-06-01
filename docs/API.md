@@ -8,11 +8,12 @@
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Data File Formats](#data-file-formats)
-3. [Shared Module](#shared-module)
-4. [Staff Module](#staff-module)
-5. [Patient Module](#patient-module)
-6. [Appointment Module](#appointment-module)
+2. [Sample Console Output](#sample-console-output)
+3. [Data File Formats](#data-file-formats)
+4. [Shared Module](#shared-module)
+5. [Staff Module](#staff-module)
+6. [Patient Module](#patient-module)
+7. [Appointment Module](#appointment-module)
 
 ---
 
@@ -27,6 +28,151 @@ The system is organized into three modules connected by object references and fi
 | Appointment | `appointment` | `ApptManager` | `data/appointments.txt` |
 
 All domain classes use **private fields** with getters/setters. Abstract base classes define shared behaviour; subclasses override type-specific methods.
+
+The program is driven by a **text-based menu** with numbered choices. Console output for key operations must match the formats in [Sample Console Output](#sample-console-output) (from the Stage 1 proposal).
+
+---
+
+## Sample Console Output
+
+Reference output for `HospitalRunner` and manager display methods. User prompts use `>` for input. Dates shown to the user use `YYYY-MM-DD`; times use `hh.mm` (24-hour) or `HH:MM` in schedule views.
+
+### Book a routine checkup
+
+Triggered when booking via `ApptManager.addAppt()` after selecting **Routine Checkup**.
+
+```
+--- Book Appointment ---
+[1] Routine Checkup  [2] Surgery  [3] Emergency Visit
+> 1
+Patient ID: 1042
+Date (YYYY-MM-DD): 2026-06-15
+Time (e.g. 10.30): 10.30
+Appointment booked successfully.
+Appointment ID   : 5081
+Patient          : Jane Smith (ID: 1042)
+Staff            : Dr. Chen (Doctor)
+Date / Time      : 2026-06-15 at 10:30
+Clinic Room      : 3
+Est. Duration    : 30 min
+Cost             : $150.00
+```
+
+| Line | Source |
+|------|--------|
+| Appointment ID | `appt.getApptID()` |
+| Patient | `patient.getFirstName()` + `getLastName()`, `getPatientID()` |
+| Staff | Assigned doctor name and role |
+| Date / Time | Appointment date; time formatted as `HH:MM` |
+| Clinic Room | `RoutineCheckup.getClinicRoomNum()` (or equivalent) |
+| Est. Duration | `RoutineCheckup.estimateDuration()` converted to minutes |
+| Cost | `calculateCost()` formatted as currency |
+
+---
+
+### Search staff by specialty and minimum experience
+
+Triggered by `StaffManager.findStaff(String specialty, int exp)`.
+
+```
+--- Search Staff by Specialty and Experience ---
+Specialty: Cardiology
+Minimum years of experience: 5
+Results (2 found):
+[1] Dr. Alan Chen  -- Cardiology, 12 years, License: ON-4821
+[2] Dr. Sara Mehta -- Cardiology, 7 years, License: ON-3307
+```
+
+Each result line: staff name, specialization, experience, and doctor `licenseNumber` where applicable.
+
+---
+
+### Sort patients by ward
+
+Triggered by `PatientManager.sortByWard()` then listing patients.
+
+```
+--- Patients Sorted by Ward ---
+Ward         Name           ID    Type        Admitted
+Cardiology   Smith, Jane    1042  InPatient   2026-06-10
+ICU          Brown, Tom     0987  Emergency   2026-06-09
+Pediatrics   Doe, Emily     1105  InPatient   2026-06-11
+```
+
+| Column | Source |
+|--------|--------|
+| Ward | `patient.getWard()` |
+| Name | `lastName, firstName` |
+| ID | `getPatientID()` (zero-padded if desired) |
+| Type | Subclass name (`InPatient`, `OutPatient`, `EmergencyPatient`) |
+| Admitted | `dayIn` or `dateRegistered` depending on patient type |
+
+---
+
+### Patient check-out and bill (InPatient)
+
+Triggered by `PatientManager.checkOutPatient()` on an `InPatient`.
+
+```
+--- Check Out: Jane Smith (ID: 1042) ---
+Ward: Cardiology
+Days admitted: 3
+Room fee (3 days x $250.00)     = $750.00
+Routine Checkup fee             = $150.00
+Medications administered        = $45.00
+----------------------------------------
+Total Bill                      = $945.00
+Checked out successfully.
+Day out        : 2026-06-13
+Next appointment: 2026-07-15
+```
+
+| Line | Source |
+|------|--------|
+| Days admitted | Difference between `dayIn` and checkout date |
+| Room fee | Daily room rate × days (InPatient only) |
+| Appointment fees | Sum of `calculateCost()` on past appointments |
+| Medications | Medication/administration charges from patient record |
+| Total Bill | `InPatient.calculateBill()` |
+| Day out | `dayOut` after checkout |
+| Next appointment | Date from `scheduleNextAppointment()` |
+
+---
+
+### View daily schedule
+
+Triggered by `ApptManager.viewDailySchedule(String date)`.
+
+```
+--- Daily Schedule: 2026-06-15 ---
+08:00  #5079  Surgery          John Lee (1042)   OR 2   Dr. Park
+10:30  #5081  Routine Checkup  Jane Smith (1042) Rm 3   Dr. Chen
+13:00  #5082  Emergency Visit  Tom Brown (0987)  ER 1   Dr. Yuen
+```
+
+Each row (sorted by time): time (`HH:MM`), appointment ID, type label, patient name and ID, room/OR/ER identifier, primary staff name.
+
+| Column | Source |
+|--------|--------|
+| Time | `time` field formatted as `HH:MM` |
+| `#` + ID | `getApptID()` |
+| Type | Subclass label (`Routine Checkup`, `Surgery`, `Emergency Visit`) |
+| Patient | Name and ID from linked `Patient` |
+| Location | `Rm n` / `OR n` / `ER n` from subclass room field |
+| Staff | Primary assigned staff member name |
+
+---
+
+### Success criteria (UI behaviour)
+
+From the Stage 1 proposal — output and menus should satisfy:
+
+- All required operations (add, delete, modify, search, sort) are available through the menu-driven interface
+- The system prevents staff and patients from being double-booked
+- Searches return accurate results for the given criteria
+- Sorting produces correct order for each sort method
+- The interface clearly communicates action options
+- Invalid inputs are handled without crashes (print an error message and re-prompt or return)
 
 ---
 

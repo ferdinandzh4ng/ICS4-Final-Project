@@ -1,9 +1,13 @@
 package appointment;
 
+import patient.Patient;
+import shared.Date;
+import staff.Staff;
+
 public class Appointment {
     private int apptID;
     private Patient patient;
-    private Staff staff;
+    private Staff staffList;
     private Date date;
     private double time;
     private double duration;
