@@ -16,31 +16,31 @@ public class Date {
         String[] parts = dateStr.split(" ");
         switch(parts[0]) {
             case "January":
-                this.month = 01;
+                this.month = 1;
                 break;
             case "February":
-                this.month = 02;
+                this.month = 2;
                 break;
             case "March":
-                this.month = 03;
+                this.month = 3;
                 break;
             case "April":
-                this.month = 04;
+                this.month = 4;
                 break;
             case "May":
-                this.month = 05;
+                this.month = 5;
                 break;
             case "June":
-                this.month = 06;
+                this.month = 6;
                 break;
             case "July":
-                this.month = 07;
+                this.month = 7;
                 break;
             case "August":
-                this.month = 08;
+                this.month = 8;
                 break;
             case "September":
-                this.month = 09;
+                this.month = 9;
                 break;
             case "October":
                 this.month = 10;
@@ -56,35 +56,35 @@ public class Date {
         this.day = Integer.parseInt(parts[1]);
     }
 
-@override
+    //@override
     public String toString() {
         String monthStr = "";
         switch(this.month) {
-            case 01:
+            case 1:
                 monthStr = "January";
                 break;
-            case 02:
+            case 2:
                 monthStr = "February";
                 break;
-            case 03:
+            case 3:
                 monthStr = "March";
                 break;
-            case 04:
+            case 4:
                 monthStr = "April";
                 break;
-            case 05:
+            case 5:
                 monthStr = "May";
                 break;
-            case 06:
+            case 6:
                 monthStr = "June";
                 break;
-            case 07:
+            case 7:
                 monthStr = "July";
                 break;
-            case 08:
+            case 8:
                 monthStr = "August";
                 break;
-            case 09:
+            case 9:
                 monthStr = "September";
                 break;
             case 10:
