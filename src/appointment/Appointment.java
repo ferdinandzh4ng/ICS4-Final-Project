@@ -1,6 +1,6 @@
 package appointment;
 
-public class Appointment {
+public abstract class Appointment {
     private int apptID;
     private Patient patient;
     private Staff staff;
@@ -39,12 +39,12 @@ public class Appointment {
         this.patient = patient;
     }
 
-    public Staff getStaffList() {
-        return staffList;
+    public Staff getStaff() {
+        return staff;
     }
 
-    public void setStaffList(Staff staffList) {
-        this.staffList = staffList;
+    public void setStaff(Staff staff) {
+        this.staff = staff;
     }
 
     public Date getDate() {
@@ -86,6 +86,70 @@ public class Appointment {
     public void setStatus(String status) {
         this.status = status;
     }
+
+
+    public void cancel() {
+        status = "Cancelled";
+    }
+
+    public boolean reschedule(Date newDate, double newTime) {
+        //store current date and time in case rescheduling fails
+        Date curdate = this.date;
+        double curtime = this.time;
+
+        date = newDate;
+        time = newTime;
+
+        if (validateBooking()) {
+            return true;
+        } else {
+            //revert to original date and time if rescheduling fails
+            date = curdate;
+            time = curtime;
+            return false;
+
+        }
+    }
+
+    public boolean equals(Appointment other) {
+        if (this.date.equals(other.date) && this.time == other.time && this.roomNum == other.getRoomNum()) {
+            for (int j = 0; j < this.staff.length; j++) {
+                    if (this.staff[j].equals(other.staff[k])) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } else {
+            return false;
+        }
+    }
+
+    public void markDone() {
+        status = "Done";
+        patient.addToHistory(this);
+    }
+
+    public String toString() {
+        String staffStr = "";
+        for (int i = 0; i < staff.length; i++) {
+            staffStr += staff[i].getID() + " ";
+        }
+        return "Appointment ID: " + apptID + "\nPatient: " + patient.getName() 
+        + "\nStaff: " + staffStr + "\nDate: " + date.toString() + "\nTime: " + time + "\nDuration: " + duration + "\nCost: " + cost + "\nStatus: " + status;
+    }
+
+    abstract public double calculateCost();
+
+    abstract public boolean validateBooking();
+
+    public void assignStaff(Staff[] staffTeam) {
+        for (int i = 0; i < staffTeam.length; i++) {
+            this.staff[i] = staffTeam[i];
+        }
+    }
+
+
 
 
 
