@@ -487,11 +487,11 @@ public abstract class Patient {
      * @return boolean if the appointment is found in the upcomingAppointments array and moved to the pastAppointments array
      */
     public boolean addToHistory (Appointment appt) {
-        int index = getIndexOfApptByIDPast(appt.getApptID());
+        int index = getIndexOfApptByIDUpcoming(appt.getApptID());
 
         if (index != -1) {
             deleteAppointment(appt);
-            upcomingAppointments[upcomingAppointments.length] = appt;
+            pastAppointments[pastAppointments.length] = appt;
             return true;
         }
         
