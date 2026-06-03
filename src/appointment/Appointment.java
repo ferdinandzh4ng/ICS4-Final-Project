@@ -1,24 +1,32 @@
 package appointment;
 
+import java.util.Arrays;
 import patient.Patient;
 import shared.Date;
 import staff.Staff;
 
-public class Appointment {
+public abstract class Appointment {
     private int apptID;
     private Patient patient;
-    private Staff staffList;
+    private Staff[] staffList;
     private Date date;
     private double time;
     private double duration;
     private double cost;
     private String status;
 
+    //constants
+    public static final String STATUS_SCHEDULED = "Scheduled";
+    public static final String STATUS_CANCELLED = "Cancelled";
+    public static final String STATUS_DONE = "Done";
+    public static final String STATUS_NO_SHOW = "No Show";
+    public final int noShowFee = 50;
+
     //constructor
-    public Appointment(int apptID, Patient patient, Staff staffList, Date date, double time, double duration, double cost, String status) {
+    public Appointment(int apptID, Patient patient, Staff[] staffList, Date date, double time, double duration, double cost, String status) {
         this.apptID = apptID;
         this.patient = patient;
-        this.staffList = staffList;
+        this.staffList = staffList == null ? null : Arrays.copyOf(staffList, staffList.length);
         this.date = date;
         this.time = time;
         this.duration = duration;
@@ -44,11 +52,11 @@ public class Appointment {
     }
 
     public Staff[] getStaffList() {
-        return staffList;
+        return staffList == null ? null : Arrays.copyOf(staffList, staffList.length);
     }
 
     public void setStaffList(Staff[] staffList) {
-        this.staffList = staffList;
+        assignStaff(staffList);
     }
 
     public Date getDate() {
@@ -105,7 +113,6 @@ public class Appointment {
      * @return true if rescheduling is successful, false otherwise
      */
     public boolean reschedule(Date newDate, double newTime) {
-        //store current date and time in case rescheduling fails
         Date curdate = this.date;
         double curtime = this.time;
 
@@ -115,16 +122,14 @@ public class Appointment {
         if (validateBooking()) {
             return true;
         } else {
-            //revert to original date and time if rescheduling fails
             date = curdate;
             time = curtime;
             return false;
-
         }
     }
 
     /**
-     * Checks if this appointment overlaps with another object 
+     * Checks if this appointment overlaps with another object
      * (overlap is defined as having at least one staff member in common and overlapping time ranges on the same date)
      * @param obj the object to compare with
      * @return true if the objects overlap, false otherwise
@@ -135,32 +140,26 @@ public class Appointment {
         }
 
         Appointment other = (Appointment) obj;
-        if (this == other || this.apptID == other.apptID) {  
-+            return false;  
-+        }  
+        if (this == other || this.apptID == other.apptID) {
+            return false;
+        }
 
-        // Different dates cannot overlap
         if (!this.date.equals(other.date)) {
             return false;
         }
 
-        // Missing staff information
         if (this.staffList == null || other.staffList == null) {
             return false;
         }
 
-        // Check whether the appointment time ranges overlap
-        int thisStart = toMinutes(this.time);  
-        int otherStart = toMinutes(other.time);  
-        int thisEnd = thisStart + (int) Math.round(this.duration * 60);  
-        int otherEnd = otherStart + (int) Math.round(other.duration * 60);  
-        boolean timesOverlap = thisStart < otherEnd && otherStart < thisEnd;  
-
-        if (!timesOverlap) {
+        int thisStart = toMinutes(this.time);
+        int otherStart = toMinutes(other.time);
+        int thisEnd = thisStart + (int) Math.round(this.duration * 60);
+        int otherEnd = otherStart + (int) Math.round(other.duration * 60);
+        if (thisStart >= otherEnd || otherStart >= thisEnd) {
             return false;
         }
 
-        // Check for shared staff members
         for (int j = 0; j < this.staffList.length; j++) {
             for (int k = 0; k < other.staffList.length; k++) {
                 if (this.staffList[j].equals(other.staffList[k])) {
@@ -185,25 +184,34 @@ public class Appointment {
         return this.apptID == other.apptID;
     }
 
-    private static int toMinutes(double hhmm) {  
-    int hours = (int) hhmm;  
-    int minutes = (int) Math.round((hhmm - hours) * 100);  
-    return hours * 60 + minutes;  
-}  git fetch origin
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(apptID);
+    }
+
+    /**
+     * Converts a time in hh.mm format to minutes
+     * @param hhmm the time in hh.mm format
+     * @return the time in minutes
+     */
+    private static int toMinutes(double hhmm) {
+        int hours = (int) hhmm;
+        int minutes = (int) Math.round((hhmm - hours) * 100);
+        return hours * 60 + minutes;
+    }
+
     /**
      * Marks the appointment as done and adds it to the patient's history
      */
     public void markDone() {
-        status = STATUS_DONE;        
+        status = STATUS_DONE;
         patient.addToHistory(this);
-        
     }
 
     /**
      * Returns a string representation of the appointment
      * @return a string representation of the appointment
      */
-    
     @Override
     public String toString() {
         String staffStr = "";
@@ -214,9 +222,9 @@ public class Appointment {
         } else {
             staffStr = "None";
         }
-        
-        return "Appointment ID: " + apptID + "\nPatient: " + patient.getName() 
-        + "\nStaff: " + staffStr + "\nDate: " + date.toString() + "\nTime: " + time + "\nDuration: " + duration + "\nCost: " + cost + "\nStatus: " + status;
+
+        return "Appointment ID: " + apptID + "\nPatient: " + patient.getName()
+            + "\nStaff: " + staffStr + "\nDate: " + date.toString() + "\nTime: " + time + "\nDuration: " + duration + "\nCost: " + cost + "\nStatus: " + status;
     }
 
     //abstract methods
@@ -226,13 +234,6 @@ public class Appointment {
 
     //method to assign staff members to the appointment (will be overridden in subclasses if needed)
     public void assignStaff(Staff[] staffTeam) {
-        this.staffList = staffTeam;
+        this.staffList = staffTeam == null ? null : Arrays.copyOf(staffTeam, staffTeam.length);
     }
-
-
-
-
-
-    
-
 }
