@@ -1,6 +1,7 @@
 package patient;
 
 import appointment.Appointment;
+
 import shared.Date;
 import staff.Staff;
 

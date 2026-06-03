@@ -56,6 +56,13 @@ public abstract class Patient {
         this.gender = gender;
         this.emergencyContactPhoneNumber = emergencyContactPhoneNumber;
         this.assignedStaff = assignedStaff;
+        diagnosis = new String[100]; // Assuming a maximum of 100 entries for diagnosis
+        medications = new Medication[100]; // Assuming a maximum of 100 entries for medications
+        allergies = new String[100]; // Assuming a maximum of 100 entries for allergies
+        medicalHistory = new String[100]; // Assuming a maximum of 100 entries for medical
+        familyHistory = new String[100]; // Assuming a maximum of 100 entries for family history
+        pastAppointments = new Appointment[100]; // Assuming a maximum of 100 entries for past
+        upcomingAppointments = new Appointment[100]; // Assuming a maximum of 100 entries for upcoming appointments
     }
 
     /**
