@@ -1,36 +1,17 @@
 package appointment;
 
-import patient.Patient;
-import staff.Staff;
-import shared.Date;
+public class Appointment {
+    private int apptID;
+    private Patient patient;
+    private Staff staff;
+    private Date date;
+    private double time;
+    private double duration;
+    private double cost;
+    private String status;
 
-public abstract class Appointment {
-    private int apptID; //unique identifier for each appointment
-    private Patient patient; //the patient associated with the appointment
-    private Staff[] staffList; //the staff members associated with the appointment (can be multiple)
-    private Date date; //date of the appointment
-    private double time; //time of the appointment (in 24-hour format, e.g. 14.30 for 2:30 PM)
-    private double duration; //duration of the appointment
-    private double cost; //cost of the appointment
-    private String status; //status of the appointment (e.g. "Scheduled", "Done", "Cancelled")
-
-    //constants
-    public static final String STATUS_DONE = "Done";
-    public static final String STATUS_CANCELLED = "Cancelled";
-    public static final String STATUS_SCHEDULED = "Scheduled";
-
-    /**
-     * Constructor for Appointment class
-     * @param apptID unique identifier for the appointment
-     * @param patient the patient associated with the appointment
-     * @param staffList the staff members associated with the appointment 
-     * @param date date of the appointment
-     * @param time time of the appointment (in 24-hour format, e.g. 14.30 for 2:30 PM)
-     * @param duration duration of the appointment
-     * @param cost cost of the appointment
-     * @param status status of the appointment
-     */
-    public Appointment(int apptID, Patient patient, Staff[] staffList, Date date, double time, double duration, double cost, String status) {
+    //constructor
+    public Appointment(int apptID, Patient patient, Staff staffList, Date date, double time, double duration, double cost, String status) {
         this.apptID = apptID;
         this.patient = patient;
         this.staffList = staffList;
@@ -150,6 +131,9 @@ public abstract class Appointment {
         }
 
         Appointment other = (Appointment) obj;
+        if (this == other || this.apptID == other.apptID) {  
++            return false;  
++        }  
 
         // Different dates cannot overlap
         if (!this.date.equals(other.date)) {
@@ -162,9 +146,11 @@ public abstract class Appointment {
         }
 
         // Check whether the appointment time ranges overlap
-        double thisEnd = this.time + this.duration;
-        double otherEnd = other.time + other.duration;
-        boolean timesOverlap = this.time < otherEnd && other.time < thisEnd;
+        int thisStart = toMinutes(this.time);  
+        int otherStart = toMinutes(other.time);  
+        int thisEnd = thisStart + (int) Math.round(this.duration * 60);  
+        int otherEnd = otherStart + (int) Math.round(other.duration * 60);  
+        boolean timesOverlap = thisStart < otherEnd && otherStart < thisEnd;  
 
         if (!timesOverlap) {
             return false;
@@ -195,6 +181,11 @@ public abstract class Appointment {
         return this.apptID == other.apptID;
     }
 
+    private static int toMinutes(double hhmm) {  
+    int hours = (int) hhmm;  
+    int minutes = (int) Math.round((hhmm - hours) * 100);  
+    return hours * 60 + minutes;  
+}  git fetch origin
     /**
      * Marks the appointment as done and adds it to the patient's history
      */
