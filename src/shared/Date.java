@@ -110,6 +110,4 @@ public class Date {
             return this.day - other.day;
         }
     }
-
-
 }
