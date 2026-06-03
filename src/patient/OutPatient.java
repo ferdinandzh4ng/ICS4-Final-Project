@@ -23,8 +23,16 @@ public class OutPatient extends Patient {
      * @param assignedStaff to be assigned to the patient
      * @param appointmentTimingMonths the number of months until the patient's next appointment
      */
-    public OutPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum, int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff, int appointmentTimingMonths) {
+    public OutPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum, int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff) {
         super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
+        appointmentTimingMonths = 6;
+    }
+
+    /**
+     * Sets the number of months until the patient's next appointment
+     * @param appointmentTimingMonths the number of months until the patient's next appointment
+     */
+    public void setAppointmentTimingMonths(int appointmentTimingMonths) {
         this.appointmentTimingMonths = appointmentTimingMonths;
     }
 
@@ -32,7 +40,10 @@ public class OutPatient extends Patient {
      * Returns a string representation of the OutPatient object, including the patient's information and appointment details
      * @return a string representation of the OutPatient object
      */
+    @Override
     public String toString () {
         return super.toString() + "\nAppointment Timing (months): " + appointmentTimingMonths;
     }
+
+
 }

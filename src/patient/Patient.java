@@ -82,6 +82,14 @@ public abstract class Patient {
     }
 
     /**
+     * Returns the ID of the patient
+     * @return the patient ID
+     */
+    public int getPatientID() {
+        return patientID;
+    }
+
+    /**
      * Determines the index of the specified medication name in the medications array
      * @param medName the name of the medication
      * @return the index in the medications array
@@ -287,9 +295,9 @@ public abstract class Patient {
      * @param apptID the ID of the appointment
      * @return the index in the pastAppointments array
      */
-    public int getIndexOfApptByIDPast (String apptID) {
+    public int getIndexOfApptByIDPast (int apptID) {
         for (int i = 0; i < pastAppointments.length; i++) {
-            if (pastAppointments[i] != null && apptID.equals(pastAppointments[i].getApptID())) {
+            if (pastAppointments[i] != null && apptID == pastAppointments[i].getApptID()) {
                 return i;
             }
         }
@@ -302,9 +310,9 @@ public abstract class Patient {
      * @param apptID the ID of the appointment
      * @return the index in the upcomingAppointments array
      */
-    public int getIndexOfApptByIDUpcoming (String apptID) {
+    public int getIndexOfApptByIDUpcoming (int apptID) {
         for (int i = 0; i < upcomingAppointments.length; i++) {
-            if (upcomingAppointments[i] != null && apptID.equals(upcomingAppointments[i].getApptID())) {
+            if (upcomingAppointments[i] != null && apptID == upcomingAppointments[i].getApptID()) {
                 return i;
             }
         }
@@ -436,10 +444,10 @@ public abstract class Patient {
      * @param numOHIP the OHIP number to be validated
      * @return boolean if the OHIP number is valid
      */
-    public boolean isValidOHIP (int numOHIP) {
+    public static boolean isValidOHIP (int numOHIP) {
         String numOHIPStr = Integer.toString(numOHIP);
         
-        return numOHIPStr.length() != 10;
+        return numOHIPStr.length() == 10;
     }
 
     /**
@@ -459,13 +467,13 @@ public abstract class Patient {
      */
     public boolean wasSeenByStaff (Staff staff) {
         for (int i = 0; i < pastAppointments.length; i++) {
-            if (pastAppointments[i] != null && pastAppointments[i].getStaff().equals(staff)) {
+            if (pastAppointments[i] != null && pastAppointments[i].getStaffList().equals(staff)) {
                 return true;
             }
         }
 
         for (int i = 0; i < upcomingAppointments.length; i++) {
-            if (upcomingAppointments[i] != null && upcomingAppointments[i].getStaff().equals(staff)) {
+            if (upcomingAppointments[i] != null && upcomingAppointments[i].getStaffList().equals(staff)) {
                 return true;
             }
         }
@@ -482,7 +490,7 @@ public abstract class Patient {
         int index = getIndexOfApptByIDPast(appt.getApptID());
 
         if (index != -1) {
-            deleteAppointment(appt.getApptID());
+            deleteAppointment(appt);
             upcomingAppointments[upcomingAppointments.length] = appt;
             return true;
         }
@@ -494,6 +502,7 @@ public abstract class Patient {
      * Returns a string representation of the patient
      * @return String the string representation of the patient
      */
+    @Override
     public String toString () {
         return "Patient ID: " + patientID + "\nName: " + firstName + " " + lastName + "\nDate of Birth: " + dateOfBirth.toString() +
                 "\nWard: " + ward + "\nAddress: " + address + "\nPhone Number: " + phoneNum + "\nOHIP Number: " + numOHIP +
