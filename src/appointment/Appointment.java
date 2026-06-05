@@ -214,13 +214,13 @@ public abstract class Appointment {
         String staffStr = "";
         if (staffList != null) {
             for (int i = 0; i < staffList.length; i++) {
-                staffStr += staffList[i].getID() + " ";
+                staffStr += staffList[i].getStaffID() + " ";
             }
         } else {
             staffStr = "None";
         }
         
-        return "Appointment ID: " + apptID + "\nPatient: " + patient.getName() 
+        return "Appointment ID: " + apptID + "\nPatient: " + patient.getFirstName() + " " + patient.getLastName()
         + "\nStaff: " + staffStr + "\nDate: " + date.toString() + "\nTime: " + time + "\nDuration: " + duration + "\nCost: " + cost + "\nStatus: " + status;
     }
 
