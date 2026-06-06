@@ -1,3 +1,11 @@
+/** 
+ * File: Appointment.java
+ * Name: Ida Luo
+ * Date: June 6, 2026
+ * Class: ICS4U1
+ * Description: This class represents an appointment in the hospital management system. It is an abstract class that provides a base structure for different types of appointments, including fields and methods that are common to all appointment types.
+*/
+
 package appointment;
 
 import java.util.Arrays;
@@ -190,22 +198,16 @@ public abstract class Appointment {
     }
 
     /**
-     * Converts a time in hh.mm format to minutes
-     * @param hhmm the time in hh.mm format
-     * @return the time in minutes
-     */
-    private static int toMinutes(double hhmm) {
-        int hours = (int) hhmm;
-        int minutes = (int) Math.round((hhmm - hours) * 100);
-        return hours * 60 + minutes;
-    }
-
-    /**
      * Marks the appointment as done and adds it to the patient's history
      */
     public void markDone() {
         status = STATUS_DONE;
         patient.addToHistory(this);
+    }
+
+    //method to assign staff members to the appointment (will be overridden in subclasses if needed)
+    public void assignStaff(Staff[] staffTeam) {
+        this.staffList = staffTeam == null ? null : Arrays.copyOf(staffTeam, staffTeam.length);
     }
 
     /**
@@ -232,8 +234,40 @@ public abstract class Appointment {
 
     abstract public boolean validateBooking();
 
-    //method to assign staff members to the appointment (will be overridden in subclasses if needed)
-    public void assignStaff(Staff[] staffTeam) {
-        this.staffList = staffTeam == null ? null : Arrays.copyOf(staffTeam, staffTeam.length);
+    abstract public int getRoomNum();
+
+    //helper methods
+    /**
+     * Helper method that converts a time in hh.mm format to minutes
+     * @param hhmm the time in hh.mm format
+     * @return the time in minutes
+     */
+    public static int toMinutes(double hhmm) {
+        int hours = (int) hhmm;
+        int minutes = (int) Math.round((hhmm - hours) * 100);
+        return hours * 60 + minutes;
     }
+
+    /**
+     * Checks if the appointment is active (not cancelled, done, or no show)
+     * @return true if the appointment is active, false otherwise
+     */
+    public boolean isActive() {
+        return !this.status.equals(STATUS_CANCELLED) && !this.status.equals(STATUS_DONE) && !this.status.equals(STATUS_NO_SHOW);
+    }
+
+    /**
+     * Helper to verify if a specific staff member is working on this appointment
+     */
+    public boolean hasStaffMember(Staff s) {
+        if (staffList == null || s == null) return false;
+        for (int i = 0; i < staffList.length; i++) {
+            if (staffList[i] != null && staffList[i].equals(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    
 }
