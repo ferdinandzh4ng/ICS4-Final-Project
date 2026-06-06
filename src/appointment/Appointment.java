@@ -2,18 +2,18 @@ package appointment;
 
 import java.util.Arrays;
 import patient.Patient;
-import shared.Date;
 import staff.Staff;
+import shared.Date;
 
 public abstract class Appointment {
-    private int apptID;
-    private Patient patient;
-    private Staff[] staffList;
-    private Date date;
-    private double time;
-    private double duration;
-    private double cost;
-    private String status;
+    private int apptID; //unique identifier for each appointment
+    private Patient patient; //the patient associated with the appointment
+    private Staff[] staffList; //the staff members associated with the appointment (can be multiple)
+    private Date date; //date of the appointment
+    private double time; //time of the appointment (in 24-hour format, e.g. 14.30 for 2:30 PM)
+    private double duration; //duration of the appointment
+    private double cost; //cost of the appointment
+    private String status; //status of the appointment (e.g. "Scheduled", "Done", "Cancelled")
 
     //constants
     public static final String STATUS_SCHEDULED = "Scheduled";
