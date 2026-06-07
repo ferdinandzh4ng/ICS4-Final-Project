@@ -1,7 +1,7 @@
 /** 
  * File: Appointment.java
  * Name: Ida Luo
- * Date: June 6, 2026
+ * Date: June 7, 2026
  * Class: ICS4U1
  * Description: This class represents an appointment in the hospital management system. It is an abstract class that provides a base structure for different types of appointments, including fields and methods that are common to all appointment types.
 */
@@ -30,7 +30,17 @@ public abstract class Appointment {
     public static final String STATUS_NO_SHOW = "No Show";
     public final int noShowFee = 50;
 
-    //constructor
+    /**
+     * Constructor for the Appointment class
+     * @param apptID unique identifier for the appointment
+     * @param patient the patient associated with the appointment
+     * @param staffList the staff members associated with the appointment
+     * @param date the date of the appointment
+     * @param time the time of the appointment
+     * @param duration the duration of the appointment
+     * @param cost the cost of the appointment
+     * @param status the status of the appointment
+     */
     public Appointment(int apptID, Patient patient, Staff[] staffList, Date date, double time, double duration, double cost, String status) {
         this.apptID = apptID;
         this.patient = patient;
@@ -42,67 +52,130 @@ public abstract class Appointment {
         this.status = status;
     }
 
-    //accessors and mutators
+    /**
+     * Returns the unique identifier for the appointment.
+     * @return the appointment ID
+     */
     public int getApptID() {
         return apptID;
     }
 
+    /**
+     * Sets the unique identifier for the appointment.
+     * @param apptID the appointment ID to set
+     */
     public void setApptID(int apptID) {
         this.apptID = apptID;
     }
 
+    /**
+     * Returns the patient associated with the appointment.
+     * @return the patient
+     */
     public Patient getPatient() {
         return patient;
     }
 
+    /**
+     * Sets the patient associated with the appointment.
+     * @param patient the patient to set
+     */
     public void setPatient(Patient patient) {
         this.patient = patient;
     }
 
+    /**
+     * Returns a copy of the staff list associated with the appointment.
+     * @return a copy of the staff list
+     */
     public Staff[] getStaffList() {
         return staffList == null ? null : Arrays.copyOf(staffList, staffList.length);
     }
 
+    /**
+     * Sets the staff list associated with the appointment.
+     * @param staffList the staff list to set
+     */
     public void setStaffList(Staff[] staffList) {
         assignStaff(staffList);
     }
 
+    /**
+     * Returns the date of the appointment.
+     * @return the date
+     */
     public Date getDate() {
         return date;
     }
 
+    /**
+     * Sets the date of the appointment.
+     * @param date the date to set
+     */
     public void setDate(Date date) {
         this.date = date;
     }
 
+    /**
+     * Returns the time of the appointment.
+     * @return the time
+     */
     public double getTime() {
         return time;
     }
 
+    /**
+     * Sets the time of the appointment.
+     * @param time the time to set
+     */
     public void setTime(double time) {
         this.time = time;
     }
 
+    /**
+     * Returns the duration of the appointment.
+     * @return the duration
+     */
     public double getDuration() {
         return duration;
     }
 
+    /**
+     * Sets the duration of the appointment.
+     * @param duration the duration to set
+     */
     public void setDuration(double duration) {
         this.duration = duration;
     }
 
+    /**
+     * Returns the cost of the appointment.
+     * @return the cost
+     */
     public double getCost() {
         return cost;
     }
 
+    /**
+     * Sets the cost of the appointment.
+     * @param cost the cost to set
+     */
     public void setCost(double cost) {
         this.cost = cost;
     }
 
+    /**
+     * Returns the status of the appointment.
+     * @return the status
+     */
     public String getStatus() {
         return status;
     }
 
+    /**
+     * Sets the status of the appointment.
+     * @param status the status to set
+     */
     public void setStatus(String status) {
         this.status = status;
     }
@@ -178,12 +251,12 @@ public abstract class Appointment {
         return false;
     }
 
+    @Override
     /**
      * Checks if this appointment is equal to another object
      * @param obj the object to compare with
      * @return true if the objects are equal, false otherwise
      */
-    @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Appointment)) {
             return false;
