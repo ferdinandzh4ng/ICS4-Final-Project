@@ -28,4 +28,12 @@ public class Medication {
     public String getMedName() {
         return medName;
     }
+
+    /**
+     * Accessor method for dosage
+     * @return String the medication dosage
+     */
+    public String getDosage() {
+        return dosage;
+    }
 }
