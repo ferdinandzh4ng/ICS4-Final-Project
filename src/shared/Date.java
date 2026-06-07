@@ -111,5 +111,13 @@ public class Date {
         }
     }
 
+    /**
+     * Returns the date in YYYY-MM-DD format for file I/O and OR booking records.
+     *
+     * @return ISO-style date string
+     */
+    public String toISODateString() {
+        return String.format("%04d-%02d-%02d", year, month, day);
+    }
 
 }

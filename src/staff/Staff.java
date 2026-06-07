@@ -249,4 +249,40 @@ public abstract class Staff {
     protected String[] getOffDaySlots() {
         return offDays;
     }
+
+    /**
+     * Formats a stored appointment time (hh.mm as double) for display as HH:MM.
+     *
+     * @param time appointment time in 24-hour double form
+     * @return formatted time string
+     */
+    protected String formatTime(double time) {
+        int hours = (int) time;
+        int minutes = (int) Math.round((time - hours) * 100);
+        return String.format("%02d:%02d", hours, minutes);
+    }
+
+    /**
+     * Formats off-days for staff.txt output (comma-separated YYYY-MM-DD or NONE).
+     *
+     * @return off-days line for file persistence
+     */
+    protected String formatOffDaysForFile() {
+        String[] slots = getOffDaySlots();
+        StringBuilder offDayLine = new StringBuilder();
+        boolean any = false;
+        for (int i = 0; i < slots.length; i++) {
+            if (slots[i] != null) {
+                if (any) {
+                    offDayLine.append(",");
+                }
+                offDayLine.append(slots[i]);
+                any = true;
+            }
+        }
+        if (!any) {
+            return "NONE";
+        }
+        return offDayLine.toString();
+    }
 }

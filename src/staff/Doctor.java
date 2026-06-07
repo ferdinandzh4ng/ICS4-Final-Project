@@ -62,6 +62,9 @@ public class Doctor extends Staff {
         }
 
         for (int i = 0; i < patients.length; i++) {
+            if (patients[i] == null) {
+                continue;
+            }
             if (count >= maxPatients) {
                 System.out.println("Error: doctor at capacity.");
                 return;
@@ -203,6 +206,11 @@ public class Doctor extends Staff {
             return;
         }
 
+        if (!s.addReferral(p.getPatientID())) {
+            System.out.println("Error: could not add referral to surgeon.");
+            return;
+        }
+
         s.assignPatients(new Patient[] { p });
         removePatientFromAssigned(p);
         p.updateAssignedStaff(s);
@@ -284,28 +292,4 @@ public class Doctor extends Staff {
         }
     }
 
-    private String formatOffDaysForFile() {
-        String[] slots = getOffDaySlots();
-        StringBuilder offDayLine = new StringBuilder();
-        boolean any = false;
-        for (int i = 0; i < slots.length; i++) {
-            if (slots[i] != null) {
-                if (any) {
-                    offDayLine.append(",");
-                }
-                offDayLine.append(slots[i]);
-                any = true;
-            }
-        }
-        if (!any) {
-            return "NONE";
-        }
-        return offDayLine.toString();
-    }
-
-    private String formatTime(double time) {
-        int hours = (int) time;
-        int minutes = (int) Math.round((time - hours) * 100);
-        return String.format("%02d:%02d", hours, minutes);
-    }
 }

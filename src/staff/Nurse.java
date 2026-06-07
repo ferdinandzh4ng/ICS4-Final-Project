@@ -325,28 +325,4 @@ public class Nurse extends Staff {
         return isDayHours;
     }
 
-    private String formatOffDaysForFile() {
-        String[] slots = getOffDaySlots();
-        StringBuilder offDayLine = new StringBuilder();
-        boolean any = false;
-        for (int i = 0; i < slots.length; i++) {
-            if (slots[i] != null) {
-                if (any) {
-                    offDayLine.append(",");
-                }
-                offDayLine.append(slots[i]);
-                any = true;
-            }
-        }
-        if (!any) {
-            return "NONE";
-        }
-        return offDayLine.toString();
-    }
-
-    private String formatTime(double time) {
-        int hours = (int) time;
-        int minutes = (int) Math.round((time - hours) * 100);
-        return String.format("%02d:%02d", hours, minutes);
-    }
 }

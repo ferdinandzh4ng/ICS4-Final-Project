@@ -84,28 +84,16 @@ public class Surgeon extends Staff {
 
             int patientID = patients[i].getPatientID();
             int index = binarySearchReferral(patientID, 0, referralCount - 1);
-            if (index == -1) {
-                addReferral(patientID);
-                index = binarySearchReferral(patientID, 0, referralCount - 1);
-            }
             if (index > -1) {
                 addPatientToAssigned(patients[i]);
             }
         }
     }
 
-    // Recursive OR conflict check — reserve OR slot when clear, then insert appointment
+    // Conflict check, then recursive OR booking — reserve OR slot only when schedule is clear
     @Override
     public void addAppointment(Appointment appt) {
         if (appt == null) {
-            return;
-        }
-
-        String date = appt.getDate().toString();
-        orScheduleFailed = false;
-        scheduleOR(operatingRoom, date, formatTime(appt.getTime()), 0);
-
-        if (orScheduleFailed) {
             return;
         }
 
@@ -115,13 +103,27 @@ public class Surgeon extends Staff {
         }
 
         Appointment[] schedule = getScheduleSlots();
+        int slotIndex = -1;
         for (int i = 0; i < schedule.length; i++) {
             if (schedule[i] == null) {
-                schedule[i] = appt;
-                return;
+                slotIndex = i;
+                break;
             }
         }
-        System.out.println("Error: schedule at capacity.");
+        if (slotIndex == -1) {
+            System.out.println("Error: schedule at capacity.");
+            return;
+        }
+
+        String date = appt.getDate().toISODateString();
+        orScheduleFailed = false;
+        scheduleOR(operatingRoom, date, formatTime(appt.getTime()), 0);
+
+        if (orScheduleFailed) {
+            return;
+        }
+
+        schedule[slotIndex] = appt;
     }
 
     // Arithmetic — per-procedure fees plus base salary for the pay period
@@ -196,15 +198,59 @@ public class Surgeon extends Staff {
      * @param procedureName  name of the surgical procedure
      */
     public void performSurgery(Patient p, String procedureName) {
+        performSurgery(p, procedureName, true);
+    }
+
+    /**
+     * Performs a surgical procedure, records the outcome, and updates history.
+     *
+     * @param p              patient receiving surgery
+     * @param procedureName  name of the surgical procedure
+     * @param successful     whether the procedure completed successfully
+     */
+    public void performSurgery(Patient p, String procedureName, boolean successful) {
         if (p == null) {
             return;
         }
         p.addMedicalHistory(procedureName);
         surgeriesCompleted++;
         if (outcomeCount < surgeryOutcomes.length) {
-            surgeryOutcomes[outcomeCount] = true;
+            surgeryOutcomes[outcomeCount] = successful;
             outcomeCount++;
         }
+    }
+
+    /**
+     * Adds a patient ID to the sorted referral list (called by {@link Doctor#referPatient}).
+     *
+     * @param patientID referred patient identifier
+     * @return true if the referral was added or already present; false if the list is full
+     */
+    public boolean addReferral(int patientID) {
+        int index = binarySearchReferral(patientID, 0, referralCount - 1);
+        if (index > -1) {
+            return true;
+        }
+
+        if (referralCount >= referralList.length) {
+            System.out.println("Error: referral list at capacity.");
+            return false;
+        }
+
+        int insertIndex = referralCount;
+        for (int i = 0; i < referralCount; i++) {
+            if (patientID < referralList[i]) {
+                insertIndex = i;
+                break;
+            }
+        }
+
+        for (int i = referralCount; i > insertIndex; i--) {
+            referralList[i] = referralList[i - 1];
+        }
+        referralList[insertIndex] = patientID;
+        referralCount++;
+        return true;
     }
 
     /**
@@ -336,40 +382,20 @@ public class Surgeon extends Staff {
         return binarySearchReferral(patientID, mid + 1, high);
     }
 
-    private void addReferral(int patientID) {
-        if (referralCount >= referralList.length) {
-            System.out.println("Error: referral list at capacity.");
-            return;
-        }
-
-        int insertIndex = referralCount;
-        for (int i = 0; i < referralCount; i++) {
-            if (patientID < referralList[i]) {
-                insertIndex = i;
-                break;
-            }
-        }
-
-        for (int i = referralCount; i > insertIndex; i--) {
-            referralList[i] = referralList[i - 1];
-        }
-        referralList[insertIndex] = patientID;
-        referralCount++;
-    }
-
-    private void addPatientToAssigned(Patient p) {
+    private boolean addPatientToAssigned(Patient p) {
         for (int i = 0; i < patientsAssigned.length; i++) {
             if (patientsAssigned[i] == p) {
-                return;
+                return true;
             }
         }
         for (int i = 0; i < patientsAssigned.length; i++) {
             if (patientsAssigned[i] == null) {
                 patientsAssigned[i] = p;
-                return;
+                return true;
             }
         }
         System.out.println("Error: surgeon patient list at capacity.");
+        return false;
     }
 
     private String getProcedureLabel(Appointment appt) {
@@ -386,28 +412,4 @@ public class Surgeon extends Staff {
         return hours + (minutes / 100.0);
     }
 
-    private String formatOffDaysForFile() {
-        String[] slots = getOffDaySlots();
-        StringBuilder offDayLine = new StringBuilder();
-        boolean any = false;
-        for (int i = 0; i < slots.length; i++) {
-            if (slots[i] != null) {
-                if (any) {
-                    offDayLine.append(",");
-                }
-                offDayLine.append(slots[i]);
-                any = true;
-            }
-        }
-        if (!any) {
-            return "NONE";
-        }
-        return offDayLine.toString();
-    }
-
-    private String formatTime(double time) {
-        int hours = (int) time;
-        int minutes = (int) Math.round((time - hours) * 100);
-        return String.format("%02d:%02d", hours, minutes);
-    }
 }
