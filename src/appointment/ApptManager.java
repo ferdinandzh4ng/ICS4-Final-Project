@@ -1,6 +1,7 @@
 package appointment;
 
 import java.io.*;
+import shared.Date;
 
 public class ApptManager {
     private Appointment[] appointments; //array to store all appointments

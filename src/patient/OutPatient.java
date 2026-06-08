@@ -7,6 +7,14 @@ import shared.Date;
 import staff.Doctor;
 import staff.Staff;
 
+/**
+ * File: OutPatient.java
+ * Name: Caroline Chan
+ * Class: ICS4U1
+ * Date: June 4, 2026
+ * Description: This class represents an out patient in a hospital.
+ */
+
 public class OutPatient extends Patient {
     private int appointmentTimingMonths; // The number of months until the patient's next appointment
 

@@ -11,7 +11,7 @@ import staff.Staff;
  * File: InPatient.java
  * Name: Caroline Chan
  * Class: ICS4U1
- * Date: June 6, 2026
+ * Date: June 4, 2026
  * Description: This class represents an in patient in a hospital.
  */
 

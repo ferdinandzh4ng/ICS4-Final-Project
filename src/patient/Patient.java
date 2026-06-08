@@ -4,6 +4,14 @@ import appointment.Appointment;
 import shared.Date;
 import staff.Staff;
 
+/**
+ * File: Patient.java
+ * Name: Caroline Chan
+ * Class: ICS4U1
+ * Date: June 2, 2026
+ * Description: This class represents a patient in a hospital.
+ */
+
 public abstract class Patient {
     private int patientID; // unique ID of the patient
     private String firstName; // first name of the patient
@@ -572,9 +580,19 @@ public abstract class Patient {
      */
     public void addAppointment (Appointment appt) {
         if (appt.getStatus().equals("future")) {
-            upcomingAppointments[upcomingAppointments.length] = appt;
+            for (int i = 0; i < upcomingAppointments.length; i++) {
+                if (upcomingAppointments[i] == null) {
+                    upcomingAppointments[i] = appt;
+                    return;
+                }
+            }
         } else if (appt.getStatus().equals("past")) {
-            pastAppointments[pastAppointments.length] = appt;
+            for (int i = 0; i < pastAppointments.length; i++) {
+                if (pastAppointments[i] == null) {
+                    pastAppointments[i] = appt;
+                    return;
+                }
+            }
         }
     }
 
@@ -737,8 +755,12 @@ public abstract class Patient {
 
         if (index != -1) {
             deleteAppointment(appt);
-            pastAppointments[pastAppointments.length] = appt;
-            return true;
+            for (int i = 0; i < pastAppointments.length; i++) {
+                if (pastAppointments[i] == null) {
+                    pastAppointments[i] = appt;
+                    return true;
+                }
+            }
         }
         
         return false;

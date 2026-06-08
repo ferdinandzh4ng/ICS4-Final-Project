@@ -7,6 +7,14 @@ import shared.Date;
 import staff.Doctor;
 import staff.Staff;
 
+/**
+ * File: EmergencyPatient.java
+ * Name: Caroline Chan
+ * Class: ICS4U1
+ * Date: June 4, 2026
+ * Description: This class represents an emergency patient in a hospital.
+ */
+
 public class EmergencyPatient extends Patient {
     private int arrivalTime; // time of arrival at the hospital
     private Date dayIn; // Date of admission to the hospital
