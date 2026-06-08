@@ -581,7 +581,7 @@ public abstract class Patient {
      * @param completed the completed appointment used to find a doctor
      * @return the doctor for the follow-up appointment
      */
-    protected Doctor getFollowUpDoctor(Appointment completed) {
+    public Doctor getFollowUpDoctor(Appointment completed) {
         if (completed != null) {
             Staff[] staffList = completed.getStaffList();
             if (staffList != null) {

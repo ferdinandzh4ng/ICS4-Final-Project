@@ -37,4 +37,20 @@ public class Medication {
     public String getDosage() {
         return dosage;
     }
+
+    /**
+     * Mutator method for medName
+     * @param medName the new medication name
+     */
+    public void setMedName(String medName) {
+        this.medName = medName;
+    }
+
+    /**
+     * Mutator method for dosage
+     * @param dosage the new dosage
+     */
+    public void setDosage(String dosage) {
+        this.dosage = dosage;
+    }
 }

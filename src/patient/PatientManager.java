@@ -458,7 +458,7 @@ public class PatientManager {
      */
     public int searchPatientIDByName(String firstName, String lastName) {
         for (int i = 0; i < numPatients; i++) {
-            if (patients[i].getFirstName().equals(firstName) && patients[i].getLastName().equals(lastName)) {
+            if (patients[i].equalsName(firstName, lastName)) {
                 return patients[i].getPatientID();
             }
         }
@@ -690,7 +690,7 @@ public class PatientManager {
      * @param newAppt the new appointment
      * @return boolean if the appointment is successfully deleted
      */
-    public boolean deleteAppointment (int patientID, Appointment orgAppt, Appointment newAppt) {
+    public boolean updateAppointment (int patientID, Appointment orgAppt, Appointment newAppt) {
         Patient patient = searchPatientByID(patientID);
         if (patient == null) {
             return false;
@@ -786,7 +786,7 @@ public class PatientManager {
      * @param newAllergy the updated allergy
      * @return boolean if the allergy is successfully updated
      */
-    public boolean deleteAllergy (int patientID, String orgAllergy, String newAllergy) {
+    public boolean updateAllergy (int patientID, String orgAllergy, String newAllergy) {
         Patient patient = searchPatientByID(patientID);
         if (patient == null) {
             return false;
