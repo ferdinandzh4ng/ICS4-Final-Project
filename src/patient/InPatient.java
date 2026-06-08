@@ -144,9 +144,13 @@ public class InPatient extends Patient {
      */
     @Override
     public boolean checkIn() {
-        hospitalBed = true;
-        dayIn = PatientManager.CUR_DATE;
-        return true;
+        Appointment set = getApptByDateUpcoming(PatientManager.CUR_DATE);
+        if (set != null) {
+            hospitalBed = true;
+            dayIn = PatientManager.CUR_DATE;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -204,14 +208,14 @@ public class InPatient extends Patient {
             1,
             mainDoctorPlaceholder);
         boolean validated = false;
-        int dayCounter = 1;
+        int dayCounter = 2;
 
         while (!validated) {
             if (newAppt.validateBooking()) {
                 validated = true;
             } else {
-                dayCounter++;
                 newAppt.setDate(PatientManager.CUR_DATE.addDays(dayCounter));
+                dayCounter++;
             }
         }
 
@@ -225,29 +229,29 @@ public class InPatient extends Patient {
     public void scheduleNextSurgery () {
         Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
         Appointment newAppt = new Surgery(
-        completed.getApptID() + 1,
-        completed.getPatient(),
-        completed.getStaffList(),
-        PatientManager.CUR_DATE.addDays(1),
-        completed.getTime(),
-        completed.getDuration(),
-        completed.getCost(),
-        "future", 
-        0.0,
-        "none",
-        "general",
-        1,
-        null
+            completed.getApptID() + 1,
+            completed.getPatient(),
+            completed.getStaffList(),
+            PatientManager.CUR_DATE.addDays(1),
+            completed.getTime(),
+            completed.getDuration(),
+            completed.getCost(),
+            "future",
+            1,
+            "none",
+            0.0,
+            "general",
+            null
         );
         boolean validated = false;
-        int dayCounter = 1;
+        int dayCounter = 2;
 
         while (!validated) {
             if (newAppt.validateBooking()) {
                 validated = true;
             } else {
-                dayCounter++;
                 newAppt.setDate(PatientManager.CUR_DATE.addDays(dayCounter));
+                dayCounter++;
             }
         }
 

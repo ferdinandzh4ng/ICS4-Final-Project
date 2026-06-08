@@ -1,7 +1,10 @@
 package patient;
 
 import appointment.Appointment;
+import appointment.RoutineCheckup;
+import appointment.Surgery;
 import shared.Date;
+import staff.Doctor;
 import staff.Staff;
 
 public class OutPatient extends Patient {
@@ -37,6 +40,14 @@ public class OutPatient extends Patient {
     }
 
     /**
+     * Returns the number of months until the patient's next appointment
+     * @return the number of months until the next appointment
+     */
+    public int getAppointmentTimingMonths() {
+        return appointmentTimingMonths;
+    }
+
+    /**
      * Returns a string representation of the OutPatient object, including the patient's information and appointment details
      * @return a string representation of the OutPatient object
      */
@@ -45,5 +56,103 @@ public class OutPatient extends Patient {
         return super.toString() + "\nAppointment Timing (months): " + appointmentTimingMonths;
     }
 
+    /**
+     * Checks in the patient
+     * @return true if the patient is checked in successfully, false otherwise
+     */
+    @Override
+    public boolean checkIn() {
+        Appointment set = getApptByDateUpcoming(PatientManager.CUR_DATE);
+        if (set != null) {
+            return true;
+        }
+        return false;
+    }
 
+    /**
+     * Checks out the patient from the hospital
+     * @param followUp the type of follow-up care the patient will receive
+     * @return true if the patient is successfully checked out, false otherwise
+     */
+    @Override
+    public boolean checkOut(String followUp) {
+        if (followUp.equals("checkup")) {
+            scheduleNextRoutineCheckup();
+            return true;
+        } else if (followUp.equals("surgery")) {
+            scheduleNextSurgery();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Schedules a routine checkup
+     */
+    @Override
+    public void scheduleNextRoutineCheckup() {
+        Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
+        Doctor mainDoctorPlaceholder = new Doctor();
+        Appointment newAppt = new RoutineCheckup(
+            completed.getApptID() + 1,
+            completed.getPatient(),
+            completed.getStaffList(),
+            PatientManager.CUR_DATE.addDays(appointmentTimingMonths * 30),
+            completed.getTime(),
+            completed.getDuration(),
+            completed.getCost(),
+            "future",
+            1,
+            mainDoctorPlaceholder);
+        boolean validated = false;
+        int dayCounter = appointmentTimingMonths * 30 + 1;
+
+        while (!validated) {
+            if (newAppt.validateBooking()) {
+                validated = true;
+            } else {
+                newAppt.setDate(PatientManager.CUR_DATE.addDays(dayCounter));
+                dayCounter++;
+            }
+        }
+
+        addUpcomingAppointment(newAppt);
+    }
+
+    /**
+     * Shedules a surgery appointment
+     */
+    @Override
+    public void scheduleNextSurgery () {
+        Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
+        Appointment newAppt = new Surgery(
+            completed.getApptID() + 1,
+            completed.getPatient(),
+            completed.getStaffList(),
+            PatientManager.CUR_DATE.addDays(appointmentTimingMonths * 30),
+            completed.getTime(),
+            completed.getDuration(),
+            completed.getCost(),
+            "future",
+            1,
+            "none",
+            0.0,
+            "general",
+            null
+        );
+        boolean validated = false;
+        int dayCounter = appointmentTimingMonths * 30 + 1;
+
+        while (!validated) {
+            if (newAppt.validateBooking()) {
+                validated = true;
+            } else {
+                newAppt.setDate(PatientManager.CUR_DATE.addDays(dayCounter));
+                dayCounter++;
+            }
+        }
+
+        addUpcomingAppointment(newAppt);
+    }
 }

@@ -552,6 +552,21 @@ public abstract class Patient {
     }
 
     /**
+     * Determines the Appointment of the specified Date in the upcomingAppointments array
+     * @param dateToFind the Date to find the appointment
+     * @return the Appointment on the date
+     */
+    public Appointment getApptByDateUpcoming (Date dateToFind) {
+        for (int i = 0; i < upcomingAppointments.length; i++) {
+            if (upcomingAppointments[i] != null && dateToFind.equals(upcomingAppointments[i].getDate())) {
+                return upcomingAppointments[i];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Adds the specified appointment to the pastAppointments or upcomingAppointments array depending on the status of the appointment
      * @param appt the appointment to be added
      */

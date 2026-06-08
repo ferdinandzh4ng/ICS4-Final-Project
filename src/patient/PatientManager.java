@@ -8,6 +8,7 @@ public class PatientManager {
     private int numPatients; // Number of patients currently stored
     private int maxPatients; // Maximum capacity of the patients array
     public final static Date CUR_DATE = new Date (2026, 06, 04);
+    public final static int CUR_TIME = 1200;
 
     /**
      * Constructor for the PatientManager class
@@ -207,4 +208,6 @@ public class PatientManager {
 
         return -1;
     }
+
+    // write a method to update the status of a emergency patietn
 }
