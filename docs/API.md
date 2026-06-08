@@ -290,7 +290,8 @@ Calendar date helper used across all modules.
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
 | `toString()` | `String` | Switch-case | Convert month `int` to month name; combine with day and year |
-| `compareTo(Date other)` | `int` | Sequential comparison | Compare month, then day; return difference or `0` if equal |
+| `toISODateString()` | `String` | String formatting | Return `YYYY-MM-DD` for file I/O, off-days, and OR booking records |
+| `compareTo(Date other)` | `int` | Sequential comparison | Compare year, then month, then day; return difference or `0` if equal |
 
 ---
 
@@ -328,6 +329,8 @@ Base class for all hospital staff.
 | `takeOffDay(String date)` | `void` | Format validation + linear search | Validate `YYYY-MM-DD`; check duplicate in `offDays`; add to next available slot |
 | `equals(Staff other)` | `boolean` | Direct comparison | Return `false` if `other` is null; compare `staffID` strings |
 | `hasTimeConflict(Date date, double time)` | `boolean` | Linear search | Loop through `schedule`; return `true` if same date and time found |
+| `formatTime(double time)` | `String` | String formatting | *(protected)* Format stored `hh.mm` time as `HH:MM` for schedule display |
+| `formatOffDaysForFile()` | `String` | Loop + string build | *(protected)* Comma-separate `offDays` as `YYYY-MM-DD`, or `NONE` if empty |
 | *getters/setters* | — | Accessor / mutator | Standard accessors for all fields; `getOffDays()` returns defensive copy |
 
 ---
@@ -359,7 +362,7 @@ Base class for all hospital staff.
 |--------|---------|-----------|-------------|
 | `diagnosePatient(Patient p, String diagnosis)` | `void` | Delegation | Call `p.addDiagnosis(diagnosis)` |
 | `prescribeMedication(Patient p, String med, String dosage)` | `void` | Delegation + guard | Call `p.checkAllergyConflict(med)`; if conflict print warning and return; else `p.addMedication(med, dosage)` |
-| `referPatient(Patient p, Surgeon s)` | `void` | Validation + delegation | Verify patient assigned to this doctor; call `s.assignPatients()`; remove from `patientsAssigned`; call `p.updateAssignedStaff(s)` |
+| `referPatient(Patient p, Surgeon s)` | `void` | Validation + delegation | Verify patient assigned to this doctor; call `s.addReferral(patientID)`; call `s.assignPatients()`; remove from `patientsAssigned`; call `p.updateAssignedStaff(s)` |
 
 ---
 
@@ -373,6 +376,7 @@ Base class for all hospital staff.
 | `shiftType` | `String` | `"Day"`, `"Night"`, or `"Rotating"` |
 | `hourlyRate` | `double` | Pay per hour |
 | `hoursWorkedThisWeek` | `int` | Hours worked this week |
+| `patientsAssigned` | `Patient[]` | Ward-matched patients tracked for schedule display |
 
 #### Overridden Methods
 
@@ -409,8 +413,8 @@ Base class for all hospital staff.
 
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
-| `assignPatients(Patient[])` | `void` | Binary search | For each patient, binary search sorted referral list; if found (index > −1), add to assigned list |
-| `addAppointment(Appointment)` | `void` | Recursive OR conflict check | Call `scheduleOR()` to verify no conflict; if clear, add to appointment list |
+| `assignPatients(Patient[])` | `void` | Binary search | For each patient, binary search sorted referral list; if found (index > −1), add to assigned list; skip patients not yet referred |
+| `addAppointment(Appointment)` | `void` | Conflict check + recursive OR booking | Call `hasTimeConflict()`; verify schedule capacity; call `scheduleOR()` with `date.toISODateString()`; if clear, add to appointment list |
 | `calculatePay()` | `double` | Arithmetic | Return `surgeriesCompleted × surgeryFeePerProcedure + base salary` |
 | `getSchedule()` | `String` | Loop + string build | Surgical calendar: OR number, procedure, patient per slot |
 | `toString()` | `String` | String formatting | Formatted surgeon info |
@@ -419,8 +423,10 @@ Base class for all hospital staff.
 
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
-| `performSurgery(Patient p, String procedureName)` | `void` | Delegation + increment | Call `p.addMedicalHistory(procedureName)`; increment `surgeriesCompleted` |
-| `scheduleOR(int room, String date, String time, int index)` | `void` | **Recursive** | Base case: index equals total booked slots — reserve and return; if conflict at index print error; else recurse with `index + 1` |
+| `performSurgery(Patient p, String procedureName)` | `void` | Delegation + increment | Call `performSurgery(p, procedureName, true)` |
+| `performSurgery(Patient p, String procedureName, boolean successful)` | `void` | Delegation + increment | Call `p.addMedicalHistory(procedureName)`; increment `surgeriesCompleted`; record outcome for `getSuccessRate()` |
+| `addReferral(int patientID)` | `boolean` | Insertion (sorted) | Binary search for duplicate; insert patient ID into sorted `referralList`; return `false` if at capacity |
+| `scheduleOR(int room, String date, String time, int index)` | `void` | **Recursive** | Base case: index equals total booked slots — reserve and return; if conflict at index print error; else recurse with `index + 1`. `date` must be `YYYY-MM-DD` |
 | `getSuccessRate()` | `double` | Loop + count | Count total and successful outcomes; if total is 0 return `0.0`; else return `(successful / total) × 100` |
 
 ---
