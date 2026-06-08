@@ -2,6 +2,7 @@ package patient;
 
 import appointment.Appointment;
 import shared.Date;
+import staff.Doctor;
 import staff.Staff;
 
 /**
@@ -572,6 +573,36 @@ public abstract class Patient {
         }
 
         return null;
+    }
+
+    /**
+     * Returns the first doctor from the completed appointment staff list.
+     * If no doctor exists in the staff list, returns a placeholder doctor.
+     * @param completed the completed appointment used to find a doctor
+     * @return the doctor for the follow-up appointment
+     */
+    protected Doctor getFollowUpDoctor(Appointment completed) {
+        if (completed != null) {
+            Staff[] staffList = completed.getStaffList();
+            if (staffList != null) {
+                for (Staff staff : staffList) {
+                    if (staff instanceof Doctor) {
+                        return (Doctor) staff;
+                    }
+                }
+            }
+        }
+
+        return new Doctor(
+            "0000",
+            "Placeholder Doctor",
+            0,
+            "General",
+            new String[0],
+            new Appointment[0],
+            "N/A",
+            0.0,
+            0);
     }
 
     /**

@@ -210,7 +210,7 @@ public class EmergencyPatient extends Patient {
     @Override
     public void scheduleNextRoutineCheckup() {
         Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
-        Doctor mainDoctorPlaceholder = new Doctor();
+        Doctor mainDoctorPlaceholder = getFollowUpDoctor(completed);
         Appointment newAppt = new RoutineCheckup(
             completed.getApptID() + 1,
             completed.getPatient(),
