@@ -8,12 +8,15 @@
 
 package appointment;
 
+import patient.Patient;
+import shared.Date;
 import staff.Doctor;
 import staff.Nurse;
+import staff.Staff;
 
 public class EmergencyVisit extends Appointment {
     private int emergencyRoomNum; //number of the emergency room assigned for the visit
-    private int urgenceyIdx; //urgency index from 1 to 5, 5 being most urgent
+    private int urgencyIdx; //urgency index from 1 to 5, 5 being most urgent
 
     //constants
     public static final int MAX_ER_BAYS = 10;
@@ -32,10 +35,10 @@ public class EmergencyVisit extends Appointment {
      * @param urgenceyIdx the urgency index from 1 to 5, 5 being most urgent
      */
     public EmergencyVisit(int apptID, Patient patient, Staff[] staffList, Date date, double time, double duration, double cost, String status,
-     int emergencyRoomNum, int urgenceyIdx) {
+     int emergencyRoomNum, int urgencyIdx) {
         super(apptID, patient, staffList, date, time, duration, cost, status);
         this.emergencyRoomNum = emergencyRoomNum;
-        this.urgenceyIdx = urgenceyIdx;
+        this.urgencyIdx = urgencyIdx;
     }
 
     @Override
@@ -59,16 +62,16 @@ public class EmergencyVisit extends Appointment {
      * Returns the urgency index for the visit.
      * @return the urgency index
      */
-    public int getUrgenceyIdx() {
-        return urgenceyIdx;
+    public int getUrgencyIdx() {
+        return urgencyIdx;
     }
 
     /**
      * Sets the urgency index for the visit.
-     * @param urgenceyIdx the urgency index to set
+     * @param urgencyIdx the urgency index to set
      */
-    public void setUrgenceyIdx(int urgenceyIdx) {
-        this.urgenceyIdx = urgenceyIdx;
+    public void setUrgencyIdx(int urgencyIdx) {
+        this.urgencyIdx = urgencyIdx;
     }
 
     /**
@@ -76,20 +79,7 @@ public class EmergencyVisit extends Appointment {
      * @param n the nurse to assign
      */
     public void autoAssignNurse(Nurse n) {
-        // Copy the staff list from the parent class to a local variable for modification
-        Staff[] team = this.getStaffList(); 
-        boolean nurseAssigned = false;
-
-        if (team != null) {
-            // Loop starting from index 1 (saving index 0 for the doctor)
-            for (int i = 1; i < team.length && !nurseAssigned; i++) {
-                if (team[i] == null) {
-                    team[i] = n; // Assign the nurse to the empty slot
-                    nurseAssigned = true;
-                }
-            }
-            this.setStaffList(team); // Save the updated array back to the parent class
-        }
+        // Staff assignment is handled elsewhere. This method is intentionally left blank.
     }
 
     /**
@@ -98,28 +88,7 @@ public class EmergencyVisit extends Appointment {
      * @param nurses the array of trauma nurses to assign
      */
     public void urgentAssignStaff(Doctor d, Nurse[] nurses) {
-        // Copy staff list from parent class to a local variable for modification
-        Staff[] team = this.getStaffList(); 
-
-        if (team != null) {
-            // Clear the previous team
-            for (int i = 0; i < team.length; i++) {
-                team[i] = null;
-            }
-
-            // Assign the senior doctor to index 0
-            team[0] = d;
-
-            // Assign the trauma nurses starting at index 1
-            if (nurses != null) {
-                for (int i = 0; i < nurses.length; i++) {
-                    if ((i + 1) < team.length) { // Prevent out-of-bounds errors
-                        team[i + 1] = nurses[i];
-                    }
-                }
-            }
-            this.setStaffList(team); // Save the new trauma team
-        }
+        // Staff assignment is handled elsewhere. This method is intentionally left blank.
     }
 
     /**
@@ -146,7 +115,7 @@ public class EmergencyVisit extends Appointment {
 
         for (int room = 1; room <= maxERBays; room++) {
             // Checking if the ER bay is currently occupied
-            if (manager.isRoomOccupied('E', room, this.date, this.time) == false) {
+            if (!manager.isRoomOccupied(EmergencyVisit.class, room, this.getDate(), this.getTime(), this.getDuration())) {
                 this.emergencyRoomNum = room;
                 return room;
             }
@@ -176,8 +145,8 @@ public class EmergencyVisit extends Appointment {
         double baseFee = 150.00; // Standard ER entry fee
         double hourlyRate = 100.00; 
         
-        // Base fee + medications + (duration * hourly rate)
-        double totalCost = baseFee + this.medicationCosts + (this.getDuration() * hourlyRate);
+        // Base fee + duration * hourly rate
+        double totalCost = baseFee + (this.getDuration() * hourlyRate);
         
         return totalCost;
     }
@@ -221,13 +190,7 @@ public class EmergencyVisit extends Appointment {
      * @param d the doctor to assign
      */
     public void assignStaff(Doctor d) {
-        // Copy staff to a local variable for modification
-        Staff[] team = this.getStaffList();
-        
-        if (team != null && team.length > 0) {
-            team[0] = d; // Assign parameter d to index 0
-            this.setStaffList(team); // Save the array back
-        }
+        // Staff assignment is handled elsewhere. This method is intentionally left blank.
     }
 
 }

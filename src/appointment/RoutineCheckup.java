@@ -1,4 +1,4 @@
-/** 
+/**
  * File: RoutineCheckup.java
  * Name: Ida Luo
  * Date: June 7, 2026
@@ -8,7 +8,10 @@
 
 package appointment;
 
+import patient.Patient;
+import shared.Date;
 import staff.Doctor;
+import staff.Staff;
 
 public class RoutineCheckup extends Appointment {
     //fields
@@ -31,8 +34,8 @@ public class RoutineCheckup extends Appointment {
      * @param clinicRoomNum the room number assigned for the checkup
      * @param mainDoctor the primary doctor responsible for the checkup
      */
-    public RoutineCheckup(int apptID, Patient patient, Staff[] staffList, Date date, 
-    double time, double duration, double cost, String status, int clinicRoomNum, Doctor mainDoctor) {
+    public RoutineCheckup(int apptID, Patient patient, Staff[] staffList, Date date,
+            double time, double duration, double cost, String status, int clinicRoomNum, Doctor mainDoctor) {
         super(apptID, patient, staffList, date, time, duration, cost, status);
         this.clinicRoomNum = clinicRoomNum;
         this.mainDoctor = mainDoctor;
@@ -73,15 +76,14 @@ public class RoutineCheckup extends Appointment {
 
     /**
     * Assigns a clinic room for the routine checkup by checking the appointment manager for availability.
-    * It will assign the first available clinic room it finds. If no rooms are available, it will print an error message.
+    * It will assign the first available clinic room it finds. If no rooms are available, it will return -1.
     * @param manager the appointment manager to check for room availability
     * @return the assigned clinic room number, or -1 if no rooms are available
     */
     public int assignClinicRoom(ApptManager manager) {
-    int maxClinicRooms = MAX_CLINIC_ROOMS;
+        int maxClinicRooms = MAX_CLINIC_ROOMS;
 
         for (int room = 1; room <= maxClinicRooms; room++) {
-            // Test each room number
             if (!manager.isRoomOccupied(this.getClass(), room, this.getDate(), this.getTime(), this.getDuration())) {
                 this.clinicRoomNum = room;
                 return room; // Return the assigned room number
@@ -94,8 +96,8 @@ public class RoutineCheckup extends Appointment {
      * Marks the routine checkup as a no-show
      */
     public void markNoShow() {
-        status = STATUS_NO_SHOW;
-        cost = NO_SHOW_FEE;
+        setStatus(STATUS_NO_SHOW);
+        setCost(NO_SHOW_FEE);
     }
 
     @Override
@@ -104,16 +106,17 @@ public class RoutineCheckup extends Appointment {
      * @return a string describing the appointment details
      */
     public String toString() {
-        return "Routine Checkup Appointment: " + super.toString() + ", 
-        Clinic Room Number: " + clinicRoomNum + ", Main Doctor: " + mainDoctor.getName();
+        return "Routine Checkup Appointment: " + super.toString()
+            + ", Clinic Room Number: " + clinicRoomNum + ", Main Doctor: " + mainDoctor.getName();
     }
 
     @Override
     /**
      * Calculates the cost of the routine checkup based on the base fee.
      */
-     public void calculateCost() {
-        cost = 100; //base cost for routine checkup
+    public double calculateCost() {
+        setCost(100); //base cost for routine checkup
+        return getCost();
     }
 
     @Override
@@ -122,43 +125,48 @@ public class RoutineCheckup extends Appointment {
      * @return true if the booking is valid, false otherwise
      */
     public boolean validateBooking() {
-        // Check if a valid clinic room has been assigned
         if (this.clinicRoomNum <= 0) {
             return false;
         }
-        // Check if a main doctor has been assigned        
         if (this.mainDoctor == null) {
             return false;
         }
-        // Both valid, return true
-        return true; 
+        return true;
     }
 
     /**
      * Overloaded method that estimates the duration of the routine checkup based on the reason for visit
      * @param reasonForVisit the reason for the visit
      * @return the estimated duration
-     */ 
+     */
     public double estimateDuration(String reasonForVisit) {
         duration = 15; //default duration
         switch(reasonForVisit) {
             case "Annual Physical":
                 duration += 15;
+                break;
             case "Flu Symptoms":
                 duration += 10;
+                break;
             case "Vaccination":
                 duration += 15;
+                break;
         }
         return duration;
     }
-    
+
     /**
      * Overloaded method that assigns staff to the routine checkup
      * @param mainDr the main doctor for the checkup
      */
-   public void assignStaff(Doctor mainDr) {
+    public void assignStaff(Doctor mainDr) {
         this.mainDoctor = mainDr;
-        staffList[0] = mainDr; //assuming the main doctor is always the first staff member in the list
-   }
-
+        Staff[] list = getStaffList();
+        if (list == null || list.length == 0) {
+            super.assignStaff(new Staff[] { mainDr });
+        } else {
+            list[0] = mainDr;
+            super.assignStaff(list);
+        }
+    }
 }
