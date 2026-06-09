@@ -40,6 +40,27 @@ public class OutPatient extends Patient {
     }
 
     /**
+     * Overloaded constructor for the OutPatient class with all fields
+     * @param patientID to be assigned to the patient
+     * @param firstName to be assigned to the patient
+     * @param lastName to be assigned to the patient
+     * @param dateOfBirth to be assigned to the patient
+     * @param ward to be assigned to the patient
+     * @param address to be assigned to the patient
+     * @param phoneNum to be assigned to the patient
+     * @param numOHIP to be assigned to the patient
+     * @param dateRegistered to be assigned to the patient
+     * @param gender to be assigned to the patient
+     * @param emergencyContactPhoneNumber to be assigned to the patient
+     * @param assignedStaff to be assigned to the patient
+     * @param appointmentTimingMonths the number of months until the patient's next appointment
+     */
+    public OutPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum, int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff, int appointmentTimingMonths) {
+        super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
+        this.appointmentTimingMonths = appointmentTimingMonths;
+    }
+
+    /**
      * Sets the number of months until the patient's next appointment
      * @param appointmentTimingMonths the number of months until the patient's next appointment
      */

@@ -49,6 +49,37 @@ public class EmergencyPatient extends Patient {
     }
 
     /**
+     * Overloaded constructor for creating an EmergencyPatient object with all fields.
+     * @param patientID The unique identifier for the patient.
+     * @param firstName The first name of the patient.
+     * @param lastName The last name of the patient.
+     * @param dateOfBirth The date of birth of the patient.
+     * @param ward The ward to which the patient is assigned.
+     * @param address The address of the patient.
+     * @param phoneNum The phone number of the patient.
+     * @param numOHIP The OHIP number of the patient.
+     * @param dateRegistered The date when the patient was registered.
+     * @param gender The gender of the patient.
+     * @param emergencyContactPhoneNumber The phone number of the emergency contact.
+     * @param assignedStaff The staff member assigned to the patient.
+     * @param arrivalTime The arrival time at the hospital.
+     * @param dayIn The admission date.
+     * @param dayOut The discharge date.
+     * @param presentingComplaint The main reason for the visit.
+     * @param arrivalType The mode of arrival.
+     * @param status The current status of the patient.
+     */
+    public EmergencyPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum, int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff, int arrivalTime, Date dayIn, Date dayOut, String presentingComplaint, String arrivalType, String status) {
+        super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
+        this.arrivalTime = arrivalTime;
+        this.dayIn = dayIn;
+        this.dayOut = dayOut;
+        this.presentingComplaint = presentingComplaint;
+        this.arrivalType = arrivalType;
+        this.status = status;
+    }
+
+    /**
      * Returns the arrival time of the emergency patient.
      * @return the arrival time
      */

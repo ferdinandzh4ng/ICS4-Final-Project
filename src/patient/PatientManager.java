@@ -168,7 +168,7 @@ public class PatientManager {
 
     /**
      * Loads patient records from the specified file.
-     * Each record has 12 lines: type, patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber
+     * Each record has 12 base lines, plus type-specific lines.
      * @param fileName the patient file path
      * @return true if load succeeds, false otherwise
      */
@@ -192,7 +192,68 @@ public class PatientManager {
                     }
                     patientLines[i] = nextLine.trim();
                 }
-                Patient patient = parsePatientLines(patientLines);
+                
+                String type = patientLines[0];
+                Patient patient = null;
+                
+                if (type.equals("InPatient")) {
+                    String dayInStr = reader.readLine();
+                    if (dayInStr == null) {
+                        return false;
+                    }
+                    String dayOutStr = reader.readLine();
+                    if (dayOutStr == null) {
+                        return false;
+                    }
+                    String hospitalBedStr = reader.readLine();
+                    if (hospitalBedStr == null) {
+                        return false;
+                    }
+                    Date dayIn = parseDate(dayInStr.trim());
+                    Date dayOut = parseDate(dayOutStr.trim());
+                    boolean hospitalBed = Boolean.parseBoolean(hospitalBedStr.trim());
+                    Object[] typeData = {dayIn, dayOut, hospitalBed};
+                    patient = parsePatientLines(patientLines, type, typeData);
+                } else if (type.equals("OutPatient")) {
+                    String appointmentTimingStr = reader.readLine();
+                    if (appointmentTimingStr == null) {
+                        return false;
+                    }
+                    int appointmentTiming = Integer.parseInt(appointmentTimingStr.trim());
+                    Object[] typeData = {appointmentTiming};
+                    patient = parsePatientLines(patientLines, type, typeData);
+                } else if (type.equals("EmergencyPatient")) {
+                    String arrivalTimeStr = reader.readLine();
+                    if (arrivalTimeStr == null) {
+                        return false;
+                    }
+                    String dayInStr = reader.readLine();
+                    if (dayInStr == null) {
+                        return false;
+                    }
+                    String dayOutStr = reader.readLine();
+                    if (dayOutStr == null) {
+                        return false;
+                    }
+                    String presentingComplaintStr = reader.readLine();
+                    if (presentingComplaintStr == null) {
+                        return false;
+                    }
+                    String arrivalTypeStr = reader.readLine();
+                    if (arrivalTypeStr == null) {
+                        return false;
+                    }
+                    String statusStr = reader.readLine();
+                    if (statusStr == null) {
+                        return false;
+                    }
+                    int arrivalTime = Integer.parseInt(arrivalTimeStr.trim());
+                    Date dayIn = parseDate(dayInStr.trim());
+                    Date dayOut = parseDate(dayOutStr.trim());
+                    Object[] typeData = {arrivalTime, dayIn, dayOut, presentingComplaintStr.trim(), arrivalTypeStr.trim(), statusStr.trim()};
+                    patient = parsePatientLines(patientLines, type, typeData);
+                }
+                
                 if (patient != null && numPatients < maxPatients) {
                     patients[numPatients++] = patient;
                 }
@@ -205,7 +266,7 @@ public class PatientManager {
 
     /**
      * Saves patient records to the specified file.
-     * Each record has 12 lines: type, patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber
+     * Each record has 12 base lines, plus type-specific lines.
      * @param fileName the patient file path
      * @return true if save succeeds, false otherwise
      */
@@ -252,6 +313,44 @@ public class PatientManager {
                 String emergencyPhone = Integer.toString(patient.getEmergencyContactPhoneNumber());
                 writer.write(emergencyPhone);
                 writer.newLine();
+
+                if (patient instanceof InPatient) {
+                    InPatient inPatient = (InPatient) patient;
+                    String dayInStr = formatDate(inPatient.getDayIn());
+                    writer.write(dayInStr);
+                    writer.newLine();
+                    String dayOutStr = formatDate(inPatient.getDayOut());
+                    writer.write(dayOutStr);
+                    writer.newLine();
+                    String hospitalBedStr = Boolean.toString(inPatient.getHospitalBed());
+                    writer.write(hospitalBedStr);
+                    writer.newLine();
+                } else if (patient instanceof OutPatient) {
+                    OutPatient outPatient = (OutPatient) patient;
+                    String appointmentTimingStr = Integer.toString(outPatient.getAppointmentTimingMonths());
+                    writer.write(appointmentTimingStr);
+                    writer.newLine();
+                } else if (patient instanceof EmergencyPatient) {
+                    EmergencyPatient emergencyPatient = (EmergencyPatient) patient;
+                    String arrivalTimeStr = Integer.toString(emergencyPatient.getArrivalTime());
+                    writer.write(arrivalTimeStr);
+                    writer.newLine();
+                    String dayInStr = formatDate(emergencyPatient.getDayIn());
+                    writer.write(dayInStr);
+                    writer.newLine();
+                    String dayOutStr = formatDate(emergencyPatient.getDayOut());
+                    writer.write(dayOutStr);
+                    writer.newLine();
+                    String presentingComplaintStr = emergencyPatient.getPresentingComplaint();
+                    writer.write(presentingComplaintStr);
+                    writer.newLine();
+                    String arrivalTypeStr = emergencyPatient.getArrivalType();
+                    writer.write(arrivalTypeStr);
+                    writer.newLine();
+                    String statusStr = emergencyPatient.getStatus();
+                    writer.write(statusStr);
+                    writer.newLine();
+                }
             }
             return true;
         } catch (IOException e) {
@@ -334,16 +433,17 @@ public class PatientManager {
     }
 
     /**
-     * Parses patient record lines from the patient file.
+     * Parses patient record lines from the patient file and creates patient with type-specific fields.
      * @param patientLines array of 12 lines representing a patient record
+     * @param type the type of patient
+     * @param typeSpecificData additional data for type-specific fields (varies by type)
      * @return a Patient instance if parsing succeeds, null otherwise
      */
-    private Patient parsePatientLines(String[] patientLines) {
+    private Patient parsePatientLines(String[] patientLines, String type, Object[] typeSpecificData) {
         if (patientLines.length < 12) {
             return null;
         }
 
-        String type = patientLines[0];
         int patientID = Integer.parseInt(patientLines[1]);
         String firstName = patientLines[2];
         String lastName = patientLines[3];
@@ -363,11 +463,21 @@ public class PatientManager {
 
         switch (type) {
             case "InPatient":
-                return new InPatient(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, null);
+                Date dayIn = (Date) typeSpecificData[0];
+                Date dayOut = (Date) typeSpecificData[1];
+                boolean hospitalBed = (boolean) typeSpecificData[2];
+                return new InPatient(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, null, dayIn, dayOut, hospitalBed);
             case "OutPatient":
-                return new OutPatient(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, null);
+                int appointmentTimingMonths = (int) typeSpecificData[0];
+                return new OutPatient(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, null, appointmentTimingMonths);
             case "EmergencyPatient":
-                return new EmergencyPatient(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, null);
+                int arrivalTime = (int) typeSpecificData[0];
+                Date emergDayIn = (Date) typeSpecificData[1];
+                Date emergDayOut = (Date) typeSpecificData[2];
+                String presentingComplaint = (String) typeSpecificData[3];
+                String arrivalType = (String) typeSpecificData[4];
+                String status = (String) typeSpecificData[5];
+                return new EmergencyPatient(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, null, arrivalTime, emergDayIn, emergDayOut, presentingComplaint, arrivalType, status);
             default:
                 return null;
         }
