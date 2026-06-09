@@ -1,4 +1,4 @@
-/** 
+/**
  * File: Appointment.java
  * Name: Ida Luo
  * Date: June 7, 2026
@@ -27,7 +27,8 @@ public abstract class Appointment {
     public static final String STATUS_SCHEDULED = "Scheduled";
     public static final String STATUS_CANCELLED = "Cancelled";
     public static final String STATUS_DONE = "Done";
-    public static final String STATUS_NO_SHOW = "No Show";    public static final int NO_SHOW_FEE = 50;
+    public static final String STATUS_NO_SHOW = "No Show";
+    public static final int NO_SHOW_FEE = 50;
 
     /**
      * Constructor for the Appointment class
@@ -294,13 +295,13 @@ public abstract class Appointment {
         String staffStr = "";
         if (staffList != null) {
             for (int i = 0; i < staffList.length; i++) {
-                staffStr += staffList[i].getID() + " ";
+                staffStr += staffList[i].getStaffID() + " ";
             }
         } else {
             staffStr = "None";
         }
 
-        return "Appointment ID: " + apptID + "\nPatient: " + patient.getName()
+        return "Appointment ID: " + apptID + "\nPatient: " + patient.getFirstName() + " " + patient.getLastName()
             + "\nStaff: " + staffStr + "\nDate: " + date.toString() + "\nTime: " + time + "\nDuration: " + duration + "\nCost: " + cost + "\nStatus: " + status;
     }
 

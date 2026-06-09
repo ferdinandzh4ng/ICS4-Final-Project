@@ -1,4 +1,4 @@
-/** 
+/**
  * File: Surgery.java
  * Name: Ida Luo
  * Date: June 7, 2026
@@ -10,7 +10,11 @@
 
 package appointment;
 
+import shared.Date;
+import patient.Patient;
+import staff.Doctor;
 import staff.Nurse;
+import staff.Staff;
 import staff.Surgeon;
 
 public class Surgery extends Appointment {
@@ -40,8 +44,8 @@ public class Surgery extends Appointment {
      * @param type the type of surgery
      * @param preOpInstructions the pre-operative instructions for the patient
      */
-    public Surgery(int apptID, Patient patient, Staff[] staffList, Date date, double time, String status,
-     int operatingRoomNum, String anaesthesiaType, double anaesthesiaDose, String type, String preOpInstructions) {
+    public Surgery(int apptID, Patient patient, Staff[] staffList, Date date, double time, double duration, double cost, String status,
+            int operatingRoomNum, String anaesthesiaType, double anaesthesiaDose, String type, String preOpInstructions) {
         super(apptID, patient, staffList, date, time, duration, cost, status);
         this.operatingRoomNum = operatingRoomNum;
         this.anaesthesiaType = anaesthesiaType;
@@ -53,7 +57,7 @@ public class Surgery extends Appointment {
     //accessors and mutators
     @Override
     /**
-     * Returns the operating room number for the surgery. 
+     * Returns the operating room number for the surgery.
      * In the context of a surgery appointment, the "room number" refers to the operating room assigned for the procedure.
      * @return the operating room number
      */
@@ -62,9 +66,9 @@ public class Surgery extends Appointment {
     }
 
     /**
-    * Sets the operating room number for the surgery.
-    * @param operatingRoomNum the room number to set
-    */
+     * Sets the operating room number for the surgery.
+     * @param operatingRoomNum the room number to set
+     */
     public void setOperatingRoomNum(int operatingRoomNum) {
         this.operatingRoomNum = operatingRoomNum;
     }
@@ -126,13 +130,11 @@ public class Surgery extends Appointment {
     public int assignOperatingRoom(ApptManager manager, int preferredOR) {
         int maxORs = MAX_OR_ROOMS;
 
-        //Try to assign the preferred OR first
         if (!manager.isRoomOccupied(this.getClass(), preferredOR, this.getDate(), this.getTime(), this.getDuration())) {
             this.operatingRoomNum = preferredOR;
             return preferredOR;
         }
 
-        //If the preferred OR is busy, loop through the rest to find any backup
         for (int room = 1; room <= maxORs; room++) {
             if (!manager.isRoomOccupied(this.getClass(), room, this.getDate(), this.getTime(), this.getDuration())) {
                 this.operatingRoomNum = room;
@@ -143,7 +145,7 @@ public class Surgery extends Appointment {
     }
 
     /**
-     * Gives pre-operative instructions to the patient based on the type of anaesthesia used for the surgery. The method sets the preOpInstructions field with specific instructions depending on whether general, local, or regional anaesthesia is used. 
+     * Gives pre-operative instructions to the patient based on the type of anaesthesia used for the surgery. The method sets the preOpInstructions field with specific instructions depending on whether general, local, or regional anaesthesia is used.
      * Additional instructions can be added based on the specific type of surgery being performed.
      */
     public void givePreOpInstructions() {
@@ -166,16 +168,18 @@ public class Surgery extends Appointment {
      * Returns a string representation of the surgery appointment.
      * @return a string representing the surgery appointment
      */
+    @Override
     public String toString() {
-        return "Surgery Appointment: " + super.toString() + ", Operating Room Number: " + operatingRoomNum + 
-        ", Anaesthesia Type: " + anaesthesiaType + ", Anaesthesia Dose: " + anaesthesiaDose + 
-        ", Surgery Type: " + type + ", Pre-Op Instructions: " + preOpInstructions;
+        return "Surgery Appointment: " + super.toString() + ", Operating Room Number: " + operatingRoomNum
+            + ", Anaesthesia Type: " + anaesthesiaType + ", Anaesthesia Dose: " + anaesthesiaDose
+            + ", Surgery Type: " + type + ", Pre-Op Instructions: " + preOpInstructions;
     }
 
     /**
      * Calculates the cost of the surgery based on its type and the anaesthesia used.
      * @return the calculated cost of the surgery
      */
+    @Override
     public double calculateCost() {
         cost = SURGERY_COST_BASE; 
         //COME UP WITH GENERAL TYPES OF SURGERIES AND ADD COSTS
@@ -188,12 +192,10 @@ public class Surgery extends Appointment {
      * @return true if the booking is valid (room available and surgeon qualified), false otherwise
      */
     public boolean validateBooking() {
-        //validate operating room
         if (this.operatingRoomNum <= 0) {
             return false;
         }
 
-        //validate surgeon specialty matches surgery type
         Staff[] team = this.getStaffList();
         if (team == null || team.length == 0 || team[0] == null) {
             return false; // No surgeon assigned at all
@@ -214,10 +216,18 @@ public class Surgery extends Appointment {
      * @param nurses the nurses to assign
      */
     public void assignStaff(Surgeon surgeon, Nurse[] nurses) {
-        staffList[0] = surgeon;
-        for(int j = 0; j < nurses.length; j++) {
-            staffList[j + 1] = nurses[j];
+        int requiredSize = 1 + (nurses == null ? 0 : nurses.length);
+        Staff[] list = getStaffList();
+        if (list == null || list.length < requiredSize) {
+            list = new Staff[requiredSize];
         }
+        list[0] = surgeon;
+        if (nurses != null) {
+            for (int j = 0; j < nurses.length; j++) {
+                list[j + 1] = nurses[j];
+            }
+        }
+        super.assignStaff(list);
     }
 
     /**
@@ -226,6 +236,6 @@ public class Surgery extends Appointment {
      */
     public double estimateDuration() {
         //COME UP WITH GENERAL TYPES OF SURGERIES AND ADD DURATIONS
-        return duration;
+        return getDuration();
     }
 }

@@ -290,7 +290,8 @@ Calendar date helper used across all modules.
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
 | `toString()` | `String` | Switch-case | Convert month `int` to month name; combine with day and year |
-| `compareTo(Date other)` | `int` | Sequential comparison | Compare month, then day; return difference or `0` if equal |
+| `toISODateString()` | `String` | String formatting | Return `YYYY-MM-DD` for file I/O, off-days, and OR booking records |
+| `compareTo(Date other)` | `int` | Sequential comparison | Compare year, then month, then day; return difference or `0` if equal |
 
 ---
 
@@ -328,6 +329,8 @@ Base class for all hospital staff.
 | `takeOffDay(String date)` | `void` | Format validation + linear search | Validate `YYYY-MM-DD`; check duplicate in `offDays`; add to next available slot |
 | `equals(Staff other)` | `boolean` | Direct comparison | Return `false` if `other` is null; compare `staffID` strings |
 | `hasTimeConflict(Date date, double time)` | `boolean` | Linear search | Loop through `schedule`; return `true` if same date and time found |
+| `formatTime(double time)` | `String` | String formatting | *(protected)* Format stored `hh.mm` time as `HH:MM` for schedule display |
+| `formatOffDaysForFile()` | `String` | Loop + string build | *(protected)* Comma-separate `offDays` as `YYYY-MM-DD`, or `NONE` if empty |
 | *getters/setters* | — | Accessor / mutator | Standard accessors for all fields; `getOffDays()` returns defensive copy |
 
 ---
@@ -357,9 +360,9 @@ Base class for all hospital staff.
 
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
-| `diagnosePatient(Patient p, String diagnosis)` | `void` | Delegation | Call `p.addDiagnosis(diagnosis)` |
+| `diagnosePatient(Patient p, String diagnosis)` | `void` | Delegation | Call `p.addDiagnoses(diagnosis)` |
 | `prescribeMedication(Patient p, String med, String dosage)` | `void` | Delegation + guard | Call `p.checkAllergyConflict(med)`; if conflict print warning and return; else `p.addMedication(med, dosage)` |
-| `referPatient(Patient p, Surgeon s)` | `void` | Validation + delegation | Verify patient assigned to this doctor; call `s.assignPatients()`; remove from `patientsAssigned`; call `p.updateAssignedStaff(s)` |
+| `referPatient(Patient p, Surgeon s)` | `void` | Validation + delegation | Verify patient assigned to this doctor; call `s.addReferral(patientID)`; call `s.assignPatients()`; remove from `patientsAssigned`; call `p.setAssignedStaff(s)` |
 
 ---
 
@@ -373,6 +376,7 @@ Base class for all hospital staff.
 | `shiftType` | `String` | `"Day"`, `"Night"`, or `"Rotating"` |
 | `hourlyRate` | `double` | Pay per hour |
 | `hoursWorkedThisWeek` | `int` | Hours worked this week |
+| `patientsAssigned` | `Patient[]` | Ward-matched patients tracked for schedule display |
 
 #### Overridden Methods
 
@@ -388,8 +392,8 @@ Base class for all hospital staff.
 
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
-| `administerMedication(Patient p, String med)` | `void` | Delegation + guard | Call `p.hasMedication(med)`; if not prescribed print warning and return; else `p.logMedicationAdministered(med)` |
-| `monitorVitals(Patient p, double heartRate, double bp)` | `void` | Delegation | Call `p.recordVitals(heartRate, bp)` |
+| `administerMedication(Patient p, String med)` | `void` | Linear search + delegation | Search `p.getMedications()` for `med`; if not found print warning and return; else if `InPatient`, call `logMedicationsAdministered(Medication)` |
+| `monitorVitals(Patient p, double heartRate, double bp)` | `void` | Delegation | If `InPatient`, call `recordVitals(heartRate, bloodPressure)` |
 | `switchShift(String newShift)` | `void` | Validation + loop | Validate shift is `"Day"`, `"Night"`, or `"Rotating"`; set shift; clear conflicting appointments; recalculate availability |
 
 ---
@@ -409,8 +413,8 @@ Base class for all hospital staff.
 
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
-| `assignPatients(Patient[])` | `void` | Binary search | For each patient, binary search sorted referral list; if found (index > −1), add to assigned list |
-| `addAppointment(Appointment)` | `void` | Recursive OR conflict check | Call `scheduleOR()` to verify no conflict; if clear, add to appointment list |
+| `assignPatients(Patient[])` | `void` | Binary search | For each patient, binary search sorted referral list; if found (index > −1), add to assigned list; skip patients not yet referred |
+| `addAppointment(Appointment)` | `void` | Conflict check + recursive OR booking | Call `hasTimeConflict()`; verify schedule capacity; call `scheduleOR()` with `date.toISODateString()`; if clear, add to appointment list |
 | `calculatePay()` | `double` | Arithmetic | Return `surgeriesCompleted × surgeryFeePerProcedure + base salary` |
 | `getSchedule()` | `String` | Loop + string build | Surgical calendar: OR number, procedure, patient per slot |
 | `toString()` | `String` | String formatting | Formatted surgeon info |
@@ -419,8 +423,10 @@ Base class for all hospital staff.
 
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
-| `performSurgery(Patient p, String procedureName)` | `void` | Delegation + increment | Call `p.addMedicalHistory(procedureName)`; increment `surgeriesCompleted` |
-| `scheduleOR(int room, String date, String time, int index)` | `void` | **Recursive** | Base case: index equals total booked slots — reserve and return; if conflict at index print error; else recurse with `index + 1` |
+| `performSurgery(Patient p, String procedureName)` | `void` | Delegation + increment | Call `performSurgery(p, procedureName, true)` |
+| `performSurgery(Patient p, String procedureName, boolean successful)` | `void` | Delegation + increment | Call `p.addMedicalHistory(procedureName)`; increment `surgeriesCompleted`; record outcome for `getSuccessRate()` |
+| `addReferral(int patientID)` | `boolean` | Insertion (sorted) | Binary search for duplicate; insert patient ID into sorted `referralList`; return `false` if at capacity |
+| `scheduleOR(int room, String date, String time, int index)` | `void` | **Recursive** | Base case: index equals total booked slots — reserve and return; if conflict at index print error; else recurse with `index + 1`. `date` must be `YYYY-MM-DD` |
 | `getSuccessRate()` | `double` | Loop + count | Count total and successful outcomes; if total is 0 return `0.0`; else return `(successful / total) × 100` |
 
 ---
@@ -481,7 +487,7 @@ Base class for all patients.
 | `gender` | `char` | `'M'` or `'F'` |
 | `emergencyContactPhoneNumber` | `int` | Emergency contact |
 | `assignedStaff` | `Staff` | Responsible staff member |
-| `diagnoses` | `String[]` | Diagnosis list |
+| `diagnosis` | `String[]` | Diagnosis list |
 | `medications` | `Medication[]` | Prescribed medications |
 | `allergies` | `String[]` | Known allergies |
 | `medicalHistory` | `String[]` | Medical history entries |
@@ -522,20 +528,17 @@ Base class for all patients.
 | `addAppointment(Appointment a)` | `void` | Insert at end | Add to end of `upcomingAppointments` |
 | `updateAppointment(Appointment org, Appointment newA)` | `boolean` | Index-find-then-modify | Find in upcoming by ID; if −1 return `false`; replace at index |
 | `deleteAppointment(Appointment a)` | `boolean` | Index-find-then-modify | Find in upcoming by ID; remove and left-shift |
-| `addDiagnosis(String diagnosis)` | `void` | Insert at end | Add to end of `diagnoses` |
-| `deleteDiagnosis(String diagnosis)` | `boolean` | Linear search + left shift | Search and remove/replace |
-| `updateDiagnosis(String org, String newD)` | `boolean` | Linear search + replace | Search and replace diagnosis |
-| `updateAssignedStaff(Staff assigned)` | `void` | Direct assignment | Set `assignedStaff` to `assigned` |
+| `addDiagnoses(String diagnosis)` | `void` | Insert at end | Add to end of `diagnosis` array |
+| `deleteDiagnoses(String diagnosis)` | `boolean` | Linear search + left shift | Search and remove diagnosis entry |
+| `updateDiagnoses(String org, String newD)` | `boolean` | Linear search + replace | Search and replace diagnosis entry |
+| `setAssignedStaff(Staff assigned)` | `void` | Direct assignment | Set `assignedStaff` to `assigned` |
 | `isValidOHIP(int numOHIP)` | `boolean` | String length check | Convert to `String`; return `true` if length equals 10 |
 | `equalsName(String firstName, String lastName)` | `boolean` | Case-insensitive compare | Compare both names case-insensitively |
 | `wasSeenByStaff(Staff assigned)` | `boolean` | Direct comparison | Compare `assignedStaff` reference |
 | `equalsDateRegistered(String date)` | `boolean` | String comparison | Compare `dateRegistered` to given date |
 | `compareToDateRegistered(Patient other)` | `int` | Sequential comparison | Split dates into year/month/day; compare year, then month, then day |
 | `hasSameHospitalBed(Patient other)` | `boolean` | Type check + compare | If either not `InPatient` return `false`; cast and compare `hospitalBedNum` |
-| `logMedicationAdministered(String med)` | `void` | Insert at end | Combine med with current date/time; add to end of log |
-| `addToHistory(Appointment a)` | `void` | Index-find-then-modify | Find in upcoming; remove with left-shift; add to end of past |
-| `scheduleNextAppointment(String date)` | `void` | Direct scheduling | Create appointment with given date; call `addAppointment()` |
-| `recordVitals(double heartRate, double bp)` | `void` | Insert at end | Combine vitals with timestamp; append to log |
+| `addToHistory(Appointment a)` | `boolean` | Index-find-then-modify | Find in upcoming; remove with left-shift; add to end of past |
 | *getters/setters* | — | Accessor / mutator | Standard accessors for all fields |
 
 ---
@@ -570,7 +573,8 @@ Base class for all patients.
 | `assignHospitalBed(int bedNum)` | `boolean` | Direct assignment | Set `hospitalBedNum` to `bedNum`; return `true` |
 | `transferWard(String newWard)` | `boolean` | Direct assignment | Update `ward` field |
 | `availableBed(int bedNum)` | `boolean` | **Linear search** | Loop all patients; for each `InPatient`, if bed number matches return `false`; return `true` after loop |
-| `recordVitals(double heartRate, double bp)` | `void` | Insert at end | Combine vitals with date/time; add to end of `vitalsLog` |
+| `recordVitals(double heartRate, double bloodPressure)` | `void` | Insert at end | Combine vitals with date/time; add to end of `vitalsLog` |
+| `logMedicationsAdministered(Medication med)` | `void` | Insert at end | Combine medication name, dosage, and date; add to end of `medicationsAdministered` |
 
 ---
 
@@ -666,9 +670,9 @@ Central controller for all patient records.
 | `registerPatient(...)` | `void` | Bounds check + insert | If at capacity return; determine subclass; create object; insert at `patients[numPatients]`; increment count |
 | `deletePatient(int patientID)` | `boolean` | Recursive binary search + left shift | Call `searchPatientByPatientID()`; if null return `false`; remove, shift left, decrement count |
 | `updatePatient(int patientID, ...)` | `boolean` | Search + update | Find patient by ID; call setters; return result |
-| `addDiagnosis(Patient, String)` | `boolean` | Delegation | Call `toUpdate.addDiagnosis()` |
-| `deleteDiagnosis(Patient, String)` | `boolean` | Delegation | Call `toUpdate.deleteDiagnosis()` |
-| `updateDiagnosis(Patient, String org, String newD)` | `boolean` | Delegation | Call `toUpdate.updateDiagnosis()` |
+| `addDiagnosis(int patientID, String)` | `boolean` | Delegation | Call `patient.addDiagnoses()` |
+| `deleteDiagnosis(int patientID, String)` | `boolean` | Delegation | Call `patient.deleteDiagnoses()` |
+| `updateDiagnosis(int patientID, String org, String newD)` | `boolean` | Delegation | Call `patient.updateDiagnoses()` |
 | `addAppointment(Appointment a)` | `boolean` | Delegation | Call patient's `addAppointment()` |
 | `deleteAppointment(Appointment a)` | `boolean` | Delegation | Call patient's `deleteAppointment()` |
 | `updateAppointment(Appointment org, Appointment newA)` | `boolean` | Delegation | Call patient's `updateAppointment()` |
@@ -682,7 +686,7 @@ Central controller for all patient records.
 | `deleteMedicalHistory(Patient, String entry)` | `boolean` | Delegation | Call `deleteMedicalHistory()` on patient |
 | `addFamilyHistory(Patient, String entry)` | `boolean` | Delegation | Call `addFamilyHistory()` on patient |
 | `deleteFamilyHistory(Patient, String entry)` | `boolean` | Delegation | Call `deleteFamilyHistory()` on patient |
-| `updateAssignedStaffForPatient(Patient, Staff)` | `boolean` | Delegation | Call `updateAssignedStaff()` on patient |
+| `updateAssignedStaffForPatient(int patientID, Staff)` | `boolean` | Delegation | Call `patient.setAssignedStaff()` |
 | `loadPatientInfo(String fileName)` | `void` | **File I/O** | Parse type tag and fields; create subclass; call `registerPatient()` or equivalent |
 | `savePatientInfo(String fileName)` | `void` | **File I/O** | Write each patient via `toString()` |
 | `loadPatientAppts(String fileName)` | `void` | **File I/O** | For each record, find patient by ID; call `addAppointment()` or `addToHistory()` by tag |
@@ -693,7 +697,8 @@ Central controller for all patient records.
 | `scheduleNextAppointmentForPatient(Patient, Appointment)` | `void` | Delegation | Schedule follow-up on patient |
 | `listAllPatients()` | `void` | Loop + print | Loop and print all patients |
 | `viewAppointments(Patient)` | `void` | Loop + print | Print patient's appointments |
-| `logMedicationAdministered(Patient, String med)` | `boolean` | Delegation | Call `logMedicationAdministered()` on patient |
+| `logMedicationAdministeredForPatient(int patientID, Medication med)` | `boolean` | Delegation | If `InPatient`, call `logMedicationsAdministered(med)` |
+| `recordVitalsForPatient(int patientID, double heartRate, double bloodPressure)` | `boolean` | Delegation | If `InPatient`, call `recordVitals(heartRate, bloodPressure)` |
 | `addToHistory(Patient, Appointment a)` | `void` | Delegation | Call `addToHistory()` on patient |
 | `updateStatus(EmergencyPatient, String status)` | `void` | Delegation | Call `updateStatus()` on emergency patient |
 | `searchPatientByName(String firstName, String lastName)` | `Patient` | **Sequential search** | Loop patients; call `equalsName()`; return match or `null` |

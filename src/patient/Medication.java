@@ -7,6 +7,7 @@ package patient;
  * Class: ICS4U1
  * Description: Represents a Medication prescribed to a patient, with its name and dosage.
 */
+
 public class Medication {
     private String medName; // name of the medication
     private String dosage; // dosage of the medication
@@ -27,5 +28,29 @@ public class Medication {
      */
     public String getMedName() {
         return medName;
+    }
+
+    /**
+     * Accessor method for dosage
+     * @return String the medication dosage
+     */
+    public String getDosage() {
+        return dosage;
+    }
+
+    /**
+     * Mutator method for medName
+     * @param medName the new medication name
+     */
+    public void setMedName(String medName) {
+        this.medName = medName;
+    }
+
+    /**
+     * Mutator method for dosage
+     * @param dosage the new dosage
+     */
+    public void setDosage(String dosage) {
+        this.dosage = dosage;
     }
 }

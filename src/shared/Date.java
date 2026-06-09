@@ -56,6 +56,30 @@ public class Date {
         this.day = Integer.parseInt(parts[1]);
     }
 
+    /**
+     * Returns the day of the date
+     * @return the day of the date
+     */
+    public int getDay() {
+        return day;
+    }
+
+    /**
+     * Returns the month of the date
+     * @return the month of the date
+     */
+    public int getMonth() {
+        return month;
+    }
+
+    /**
+     * Returns the year of the date
+     * @return the year of the date
+     */
+    public int getYear() {
+        return year;
+    }
+
     //@override
     public String toString() {
         String monthStr = "";
@@ -101,6 +125,11 @@ public class Date {
 
     }
 
+    /**
+     * Compares this date with another date
+     * @param other the other date
+     * @return a negative integer, zero, or a positive integer as this date is before, at the same time, or after the specified date
+     */
     public int compareTo(Date other) {
         if(this.year != other.year) {
             return this.year - other.year;
@@ -110,4 +139,93 @@ public class Date {
             return this.day - other.day;
         }
     }
+    
+    /**
+     * Calculates the difference in years between this date and another date
+     * @param other the other date
+     * @return the difference in years
+     */
+    public int yearDiff (Date other) {
+        int thisDays = this.day + this.month * 30 + this.year * 365;
+        int otherDays = other.day + other.month * 30 + other.year * 365;
+        return Math.abs((thisDays - otherDays) / 365);
+    }
+
+    @Override
+    public boolean equals (Object other) {
+        return other instanceof Date && this.year == ((Date)other).getYear() && this.month == ((Date)other).getMonth() && this.day == ((Date)other).getDay();
+    }
+
+    /**
+     * Checks if the date is valid
+     * @return true if the date is valid, false otherwise
+     */
+    public boolean isValid() {
+        if (year < 0 || month < 1 || month > 12 || day < 1) {
+            return false;
+        }
+
+        int[] daysInMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        return day <= daysInMonth[month - 1];
+    }
+
+    public Date addDays (int daysToAdd) {
+        int y = this.year;
+        int m = this.month;
+        int d = this.day;
+
+        if (daysToAdd >= 0) {
+            while (daysToAdd > 0) {
+                int daysInMonth = getDaysInMonth(y, m);
+                d++;
+                if (d > daysInMonth) {
+                    d = 1;
+                    m++;
+                    if (m > 12) {
+                        m = 1;
+                        y++;
+                    }
+                }
+                daysToAdd--;
+            }
+        } else {
+            while (daysToAdd < 0) {
+                d--;
+                if (d < 1) {
+                    m--;
+                    if (m < 1) {
+                        m = 12;
+                        y--;
+                    }
+                    d = getDaysInMonth(y, m);
+                }
+                daysToAdd++;
+            }
+        }
+
+        return new Date(y, m, d);
+    }
+
+    private int getDaysInMonth(int year, int month) {
+        switch (month) {
+            case 1: case 3: case 5: case 7: case 8: case 10: case 12:
+                return 31;
+            case 4: case 6: case 9: case 11:
+                return 30;
+            case 2:
+                return 28;
+            default:
+                return 31;
+        }
+    }
+
+    /**
+     * Returns the date in YYYY-MM-DD format for file I/O and OR booking records.
+     *
+     * @return ISO-style date string
+     */
+    public String toISODateString() {
+        return String.format("%04d-%02d-%02d", year, month, day);
+    }
+
 }
