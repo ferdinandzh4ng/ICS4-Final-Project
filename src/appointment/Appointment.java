@@ -28,7 +28,7 @@ public abstract class Appointment {
     public static final String STATUS_CANCELLED = "Cancelled";
     public static final String STATUS_DONE = "Done";
     public static final String STATUS_NO_SHOW = "No Show";
-    public final int noShowFee = 50;
+    public static final int NO_SHOW_FEE = 50;
 
     /**
      * Constructor for the Appointment class
@@ -278,7 +278,10 @@ public abstract class Appointment {
         patient.addToHistory(this);
     }
 
-    //method to assign staff members to the appointment (will be overridden in subclasses if needed)
+    /**
+     * Assign staff to an appointment (will be overridden in child classes)
+     * @param staffTeam staff array to assign
+     */
     public void assignStaff(Staff[] staffTeam) {
         this.staffList = staffTeam == null ? null : Arrays.copyOf(staffTeam, staffTeam.length);
     }
@@ -331,11 +334,13 @@ public abstract class Appointment {
 
     /**
      * Helper to verify if a specific staff member is working on this appointment
+     * @param toCheck Staff member to check
+     * @return true if staff member is part of that staff list, otherwise false
      */
-    public boolean hasStaffMember(Staff s) {
+    public boolean hasStaffMember(Staff toCheck) {
         if (staffList == null || s == null) return false;
         for (int i = 0; i < staffList.length; i++) {
-            if (staffList[i] != null && staffList[i].equals(s)) {
+            if (staffList[i] != null && staffList[i].equals(toCheck)) {
                 return true;
             }
         }
