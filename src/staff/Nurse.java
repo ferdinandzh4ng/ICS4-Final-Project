@@ -12,6 +12,8 @@
 package staff;
 
 import appointment.Appointment;
+import patient.InPatient;
+import patient.Medication;
 import patient.Patient;
 
 public class Nurse extends Staff {
@@ -179,6 +181,8 @@ public class Nurse extends Staff {
 
     /**
      * Administers medication after verifying it was prescribed for the patient.
+     * Linear search through the patient's medications array; delegates to
+     * logMedicationsAdministered on InPatient when found.
      *
      * @param p   patient receiving the medication
      * @param med medication name
@@ -187,15 +191,18 @@ public class Nurse extends Staff {
         if (p == null) {
             return;
         }
-        if (!p.hasMedication(med)) {
+        Medication prescribed = findPrescribedMedication(p, med);
+        if (prescribed == null) {
             System.out.println("Warning: medication " + med + " is not prescribed for this patient.");
             return;
         }
-        p.logMedicationAdministered(med);
+        if (p instanceof InPatient) {
+            ((InPatient) p).logMedicationsAdministered(prescribed);
+        }
     }
 
     /**
-     * Records a patient's vitals through delegation to the patient record.
+     * Records a patient's vitals through delegation to recordVitals on InPatient.
      *
      * @param p         patient being monitored
      * @param heartRate heart rate reading
@@ -205,7 +212,9 @@ public class Nurse extends Staff {
         if (p == null) {
             return;
         }
-        p.recordVitals(heartRate, bp);
+        if (p instanceof InPatient) {
+            ((InPatient) p).recordVitals(heartRate, bp);
+        }
     }
 
     /**
@@ -297,6 +306,23 @@ public class Nurse extends Staff {
             copy[i] = patientsAssigned[i];
         }
         return copy;
+    }
+
+    /**
+     * Linear search through a patient's medications array for a matching name.
+     *
+     * @param p       patient whose prescriptions to search
+     * @param medName medication name to find
+     * @return matching Medication object, or null if not prescribed
+     */
+    private Medication findPrescribedMedication(Patient p, String medName) {
+        Medication[] meds = p.getMedications();
+        for (int i = 0; i < meds.length; i++) {
+            if (meds[i] != null && meds[i].getMedName().equals(medName)) {
+                return meds[i];
+            }
+        }
+        return null;
     }
 
     private void addPatientToAssigned(Patient p) {

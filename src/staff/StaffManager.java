@@ -208,7 +208,7 @@ public class StaffManager {
 
     /**
      * Returns the formatted schedule for a given staff member.
-     * Delegation to {@link Staff#getSchedule()}.
+     * Delegation to Staff.getSchedule().
      *
      * @param s staff member whose schedule to retrieve
      * @return formatted schedule string, or empty string if s is null
@@ -222,7 +222,7 @@ public class StaffManager {
 
     /**
      * Adds an appointment shift to a staff member's schedule by name.
-     * Linear search by name + delegation to {@link Staff#addAppointment(Appointment)}.
+     * Linear search by name + delegation to Staff.addAppointment().
      *
      * @param name full name of the staff member
      * @param appt appointment to add to the staff schedule
@@ -276,7 +276,7 @@ public class StaffManager {
 
     /**
      * Computes total payroll by summing each staff member's pay.
-     * Loop — polymorphic total via {@link Staff#calculatePay()}.
+     * Loop — polymorphic total via Staff.calculatePay().
      *
      * @return combined pay for all staff in the current period
      */
@@ -292,7 +292,7 @@ public class StaffManager {
      * Loads staff records from a colon-separated text file.
      * File I/O — parses role-tagged records and constructs Doctor, Nurse, or Surgeon objects.
      *
-     * @param filename path to the staff data file (e.g. {@code data/staff.txt})
+     * @param filename path to the staff data file (e.g. data/staff.txt)
      */
     public void loadFromFile(String filename) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
@@ -341,7 +341,7 @@ public class StaffManager {
 
     /**
      * Saves all staff records to a colon-separated text file.
-     * File I/O — writes staffCount followed by each staff member's {@link Staff#toString()} output.
+     * File I/O — writes staffCount followed by each staff member's toString() output.
      *
      * @param filename path to the staff data file to write
      */
@@ -361,7 +361,7 @@ public class StaffManager {
      * Finds available nurses in a ward who have no conflict at the given date and time.
      * Linear search — skips non-nurses, wrong ward, and busy nurses.
      *
-     * @param ward  hospital ward to match (e.g. {@code "ER"})
+     * @param ward  hospital ward to match (e.g. "ER")
      * @param date  date to check for conflicts
      * @param time  time to check for conflicts (24-hour, stored as double)
      * @param count number of nurses required
@@ -398,7 +398,7 @@ public class StaffManager {
 
     /**
      * Returns the first available ER triage nurse at the given date and time.
-     * Delegation to {@link #getAvailableNurses(String, Date, double, int)} with ward {@code "ER"}.
+     * Delegation to getAvailableNurses with ward "ER".
      *
      * @param date date to check for conflicts
      * @param time time to check for conflicts (24-hour, stored as double)
@@ -477,7 +477,7 @@ public class StaffManager {
     /**
      * Parses a comma-separated off-days line from staff.txt into an array.
      *
-     * @param line off-days line ({@code NONE} or comma-separated YYYY-MM-DD dates)
+     * @param line off-days line (NONE or comma-separated YYYY-MM-DD dates)
      * @return off-days array with parsed dates in available slots
      */
     private String[] parseOffDays(String line) {
