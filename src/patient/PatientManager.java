@@ -168,8 +168,7 @@ public class PatientManager {
 
     /**
      * Loads patient records from the specified file.
-     * The file format is: PatientType|patientID|firstName|lastName|dateOfBirth|ward|address|phoneNum|numOHIP|dateRegistered|gender|emergencyContactPhoneNumber
-     * Date values use YYYY-MM-DD.
+     * Each record has 12 lines: type, patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber
      * @param fileName the patient file path
      * @return true if load succeeds, false otherwise
      */
@@ -184,7 +183,16 @@ public class PatientManager {
                 if (line.isEmpty() || line.startsWith("#")) {
                     continue;
                 }
-                Patient patient = parsePatientLine(line);
+                String[] patientLines = new String[12];
+                patientLines[0] = line;
+                for (int i = 1; i < 12; i++) {
+                    String nextLine = reader.readLine();
+                    if (nextLine == null) {
+                        return false;
+                    }
+                    patientLines[i] = nextLine.trim();
+                }
+                Patient patient = parsePatientLines(patientLines);
                 if (patient != null && numPatients < maxPatients) {
                     patients[numPatients++] = patient;
                 }
@@ -197,6 +205,7 @@ public class PatientManager {
 
     /**
      * Saves patient records to the specified file.
+     * Each record has 12 lines: type, patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber
      * @param fileName the patient file path
      * @return true if save succeeds, false otherwise
      */
@@ -207,21 +216,41 @@ public class PatientManager {
                 if (patient == null) {
                     continue;
                 }
-                String line = String.join("|",
-                    patient.getClass().getSimpleName(),
-                    Integer.toString(patient.getPatientID()),
-                    patient.getFirstName(),
-                    patient.getLastName(),
-                    formatDate(patient.getDateOfBirth()),
-                    patient.getWard(),
-                    patient.getAddress(),
-                    Integer.toString(patient.getPhoneNum()),
-                    Integer.toString(patient.getNumOHIP()),
-                    formatDate(patient.getDateRegistered()),
-                    Character.toString(patient.getGender()),
-                    Integer.toString(patient.getEmergencyContactPhoneNumber())
-                );
-                writer.write(line);
+                String type = patient.getClass().getSimpleName();
+                writer.write(type);
+                writer.newLine();
+                String patientIDStr = Integer.toString(patient.getPatientID());
+                writer.write(patientIDStr);
+                writer.newLine();
+                String firstName = patient.getFirstName();
+                writer.write(firstName);
+                writer.newLine();
+                String lastName = patient.getLastName();
+                writer.write(lastName);
+                writer.newLine();
+                String dob = formatDate(patient.getDateOfBirth());
+                writer.write(dob);
+                writer.newLine();
+                String ward = patient.getWard();
+                writer.write(ward);
+                writer.newLine();
+                String address = patient.getAddress();
+                writer.write(address);
+                writer.newLine();
+                String phoneNum = Integer.toString(patient.getPhoneNum());
+                writer.write(phoneNum);
+                writer.newLine();
+                String numOHIP = Integer.toString(patient.getNumOHIP());
+                writer.write(numOHIP);
+                writer.newLine();
+                String dateReg = formatDate(patient.getDateRegistered());
+                writer.write(dateReg);
+                writer.newLine();
+                String gender = Character.toString(patient.getGender());
+                writer.write(gender);
+                writer.newLine();
+                String emergencyPhone = Integer.toString(patient.getEmergencyContactPhoneNumber());
+                writer.write(emergencyPhone);
                 writer.newLine();
             }
             return true;
@@ -232,7 +261,7 @@ public class PatientManager {
 
     /**
      * Loads appointment records from the specified file and assigns them to matching patients.
-     * The file format is: patientID|appointmentType|apptID|date|time|duration|cost|status|extra...
+     * Each record has varying lines depending on appointment type.
      * @param fileName the appointment file path
      * @return true if load succeeds, false otherwise
      */
@@ -244,17 +273,18 @@ public class PatientManager {
                 if (line.isEmpty() || line.startsWith("#")) {
                     continue;
                 }
-                String[] parts = line.split("\\|");
-                if (parts.length < 8) {
-                    continue;
-                }
-                int patientID = Integer.parseInt(parts[0]);
+                int patientID = Integer.parseInt(line);
                 int patientIndex = searchPatientIndexByID(patientID);
                 if (patientIndex == -1) {
                     continue;
                 }
                 Patient patient = patients[patientIndex];
-                Appointment appt = parseAppointmentLine(parts, patient);
+                String apptType = reader.readLine();
+                if (apptType == null) {
+                    continue;
+                }
+                apptType = apptType.trim();
+                Appointment appt = parseAppointmentLines(apptType, patient, reader);
                 if (appt != null) {
                     patient.addAppointment(appt);
                 }
@@ -267,6 +297,7 @@ public class PatientManager {
 
     /**
      * Saves all patients' upcoming and past appointment records to the specified file.
+     * Each record has varying lines depending on appointment type.
      * @param fileName the appointment file path
      * @return true if save succeeds, false otherwise
      */
@@ -282,8 +313,7 @@ public class PatientManager {
                 if (upcoming != null) {
                     for (Appointment appt : upcoming) {
                         if (appt != null) {
-                            writer.write(serializeAppointmentLine(patient.getPatientID(), appt));
-                            writer.newLine();
+                            serializeAppointmentLines(patient.getPatientID(), appt, writer);
                         }
                     }
                 }
@@ -292,8 +322,7 @@ public class PatientManager {
                 if (past != null) {
                     for (Appointment appt : past) {
                         if (appt != null) {
-                            writer.write(serializeAppointmentLine(patient.getPatientID(), appt));
-                            writer.newLine();
+                            serializeAppointmentLines(patient.getPatientID(), appt, writer);
                         }
                     }
                 }
@@ -305,28 +334,32 @@ public class PatientManager {
     }
 
     /**
-     * Parses a patient record line from the patient file.
-     * @param line a pipe-delimited patient record line
+     * Parses patient record lines from the patient file.
+     * @param patientLines array of 12 lines representing a patient record
      * @return a Patient instance if parsing succeeds, null otherwise
      */
-    private Patient parsePatientLine(String line) {
-        String[] parts = line.split("\\|");
-        if (parts.length < 12) {
+    private Patient parsePatientLines(String[] patientLines) {
+        if (patientLines.length < 12) {
             return null;
         }
 
-        String type = parts[0];
-        int patientID = Integer.parseInt(parts[1]);
-        String firstName = parts[2];
-        String lastName = parts[3];
-        Date dateOfBirth = parseDate(parts[4]);
-        String ward = parts[5];
-        String address = parts[6];
-        int phoneNum = Integer.parseInt(parts[7]);
-        int numOHIP = Integer.parseInt(parts[8]);
-        Date dateRegistered = parseDate(parts[9]);
-        char gender = parts[10].isEmpty() ? ' ' : parts[10].charAt(0);
-        int emergencyContactPhoneNumber = Integer.parseInt(parts[11]);
+        String type = patientLines[0];
+        int patientID = Integer.parseInt(patientLines[1]);
+        String firstName = patientLines[2];
+        String lastName = patientLines[3];
+        Date dateOfBirth = parseDate(patientLines[4]);
+        String ward = patientLines[5];
+        String address = patientLines[6];
+        int phoneNum = Integer.parseInt(patientLines[7]);
+        int numOHIP = Integer.parseInt(patientLines[8]);
+        Date dateRegistered = parseDate(patientLines[9]);
+        char gender;
+        if (patientLines[10].isEmpty()) {
+            gender = ' ';
+        } else {
+            gender = patientLines[10].charAt(0);
+        }
+        int emergencyContactPhoneNumber = Integer.parseInt(patientLines[11]);
 
         switch (type) {
             case "InPatient":
@@ -341,74 +374,157 @@ public class PatientManager {
     }
 
     /**
-     * Parses an appointment record line from the appointment file.
-     * @param parts the split appointment fields from a pipe-delimited line
+     * Parses appointment record lines from the appointment file.
+     * @param apptType the type of appointment
      * @param patient the patient to associate with the appointment
+     * @param reader the BufferedReader to read additional lines
      * @return an Appointment instance if parsing succeeds, null otherwise
      */
-    private Appointment parseAppointmentLine(String[] parts, Patient patient) {
-        if (parts.length < 8 || patient == null) {
+    private Appointment parseAppointmentLines(String apptType, Patient patient, BufferedReader reader) throws IOException {
+        if (patient == null) {
             return null;
         }
 
-        String type = parts[1];
-        int apptID = Integer.parseInt(parts[2]);
-        Date date = parseDate(parts[3]);
-        double time = Double.parseDouble(parts[4]);
-        double duration = Double.parseDouble(parts[5]);
-        double cost = Double.parseDouble(parts[6]);
-        String status = parts[7];
+        String apptIDStr = reader.readLine();
+        if (apptIDStr == null) {
+            return null;
+        }
+        int apptID = Integer.parseInt(apptIDStr.trim());
+        String dateStr = reader.readLine();
+        if (dateStr == null) {
+            return null;
+        }
+        Date date = parseDate(dateStr.trim());
+        String timeStr = reader.readLine();
+        if (timeStr == null) {
+            return null;
+        }
+        double time = Double.parseDouble(timeStr.trim());
+        String durationStr = reader.readLine();
+        if (durationStr == null) {
+            return null;
+        }
+        double duration = Double.parseDouble(durationStr.trim());
+        String costStr = reader.readLine();
+        if (costStr == null) {
+            return null;
+        }
+        double cost = Double.parseDouble(costStr.trim());
+        String status = reader.readLine();
+        if (status == null) {
+            return null;
+        }
+        status = status.trim();
 
-        switch (type) {
+        switch (apptType) {
             case "RoutineCheckup":
-                int clinicRoomNum = parts.length > 8 ? Integer.parseInt(parts[8]) : 0;
+                String clinicRoomStr = reader.readLine();
+                if (clinicRoomStr == null) {
+                    return null;
+                }
+                int clinicRoomNum = Integer.parseInt(clinicRoomStr.trim());
                 return new RoutineCheckup(apptID, patient, null, date, time, duration, cost, status, clinicRoomNum, null);
             case "Surgery":
-                int operatingRoomNum = parts.length > 8 ? Integer.parseInt(parts[8]) : 0;
-                String anaesthesiaType = parts.length > 9 ? parts[9] : "";
-                double anaesthesiaDose = parts.length > 10 ? Double.parseDouble(parts[10]) : 0.0;
-                String surgeryType = parts.length > 11 ? parts[11] : "";
-                String preOpInstructions = parts.length > 12 ? parts[12] : "";
+                String operatingRoomStr = reader.readLine();
+                if (operatingRoomStr == null) {
+                    return null;
+                }
+                int operatingRoomNum = Integer.parseInt(operatingRoomStr.trim());
+                String anaesthesiaType = reader.readLine();
+                if (anaesthesiaType == null) {
+                    return null;
+                }
+                anaesthesiaType = anaesthesiaType.trim();
+                String anaesthesiaDoseStr = reader.readLine();
+                if (anaesthesiaDoseStr == null) {
+                    return null;
+                }
+                double anaesthesiaDose = Double.parseDouble(anaesthesiaDoseStr.trim());
+                String surgeryType = reader.readLine();
+                if (surgeryType == null) {
+                    return null;
+                }
+                surgeryType = surgeryType.trim();
+                String preOpInstructions = reader.readLine();
+                if (preOpInstructions == null) {
+                    return null;
+                }
+                preOpInstructions = preOpInstructions.trim();
                 return new Surgery(apptID, patient, null, date, time, duration, cost, status, operatingRoomNum, anaesthesiaType, anaesthesiaDose, surgeryType, preOpInstructions);
             case "EmergencyVisit":
-                int emergencyRoomNum = parts.length > 8 ? Integer.parseInt(parts[8]) : 0;
-                int urgencyIdx = parts.length > 9 ? Integer.parseInt(parts[9]) : 0;
+                String emergencyRoomStr = reader.readLine();
+                if (emergencyRoomStr == null) {
+                    return null;
+                }
+                int emergencyRoomNum = Integer.parseInt(emergencyRoomStr.trim());
+                String urgencyIdxStr = reader.readLine();
+                if (urgencyIdxStr == null) {
+                    return null;
+                }
+                int urgencyIdx = Integer.parseInt(urgencyIdxStr.trim());
                 return new EmergencyVisit(apptID, patient, null, date, time, duration, cost, status, emergencyRoomNum, urgencyIdx);
             default:
                 return null;
         }
     }
 
-    private String serializeAppointmentLine(int patientID, Appointment appt) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(patientID).append("|")
-               .append(appt.getClass().getSimpleName()).append("|")
-               .append(appt.getApptID()).append("|")
-               .append(formatDate(appt.getDate())).append("|")
-               .append(appt.getTime()).append("|")
-               .append(appt.getDuration()).append("|")
-               .append(appt.getCost()).append("|")
-               .append(appt.getStatus());
+    private void serializeAppointmentLines(int patientID, Appointment appt, BufferedWriter writer) throws IOException {
+        String patientIDStr = Integer.toString(patientID);
+        writer.write(patientIDStr);
+        writer.newLine();
+        String apptType = appt.getClass().getSimpleName();
+        writer.write(apptType);
+        writer.newLine();
+        String apptIDStr = Integer.toString(appt.getApptID());
+        writer.write(apptIDStr);
+        writer.newLine();
+        String dateStr = formatDate(appt.getDate());
+        writer.write(dateStr);
+        writer.newLine();
+        String timeStr = Double.toString(appt.getTime());
+        writer.write(timeStr);
+        writer.newLine();
+        String durationStr = Double.toString(appt.getDuration());
+        writer.write(durationStr);
+        writer.newLine();
+        String costStr = Double.toString(appt.getCost());
+        writer.write(costStr);
+        writer.newLine();
+        String statusStr = appt.getStatus();
+        writer.write(statusStr);
+        writer.newLine();
 
         if (appt instanceof RoutineCheckup) {
             RoutineCheckup routine = (RoutineCheckup) appt;
-            builder.append("|").append(routine.getRoomNum()).append("|").append("0");
+            String roomNumStr = Integer.toString(routine.getRoomNum());
+            writer.write(roomNumStr);
+            writer.newLine();
         } else if (appt instanceof Surgery) {
             Surgery surgery = (Surgery) appt;
-            builder.append("|")
-                   .append(surgery.getRoomNum()).append("|")
-                   .append(surgery.getAnaesthesiaType()).append("|")
-                   .append(surgery.getAnaesthesiaDose()).append("|")
-                   .append(surgery.getType()).append("|")
-                   .append("");
+            String roomNumStr = Integer.toString(surgery.getRoomNum());
+            writer.write(roomNumStr);
+            writer.newLine();
+            String anaesthTypeStr = surgery.getAnaesthesiaType();
+            writer.write(anaesthTypeStr);
+            writer.newLine();
+            String anaesthDoseStr = Double.toString(surgery.getAnaesthesiaDose());
+            writer.write(anaesthDoseStr);
+            writer.newLine();
+            String typeStr = surgery.getType();
+            writer.write(typeStr);
+            writer.newLine();
+            String preOpStr = "";
+            writer.write(preOpStr);
+            writer.newLine();
         } else if (appt instanceof EmergencyVisit) {
             EmergencyVisit emergency = (EmergencyVisit) appt;
-            builder.append("|")
-                   .append(emergency.getRoomNum()).append("|")
-                   .append(emergency.getUrgencyIdx());
+            String roomNumStr = Integer.toString(emergency.getRoomNum());
+            writer.write(roomNumStr);
+            writer.newLine();
+            String urgencyIdxStr = Integer.toString(emergency.getUrgencyIdx());
+            writer.write(urgencyIdxStr);
+            writer.newLine();
         }
-
-        return builder.toString();
     }
 
     /**
@@ -433,7 +549,12 @@ public class PatientManager {
      * @return the formatted date string
      */
     private String formatDate(Date date) {
-        return date.getYear() + "-" + date.getMonth() + "-" + date.getDay();
+        String year = String.valueOf(date.getYear());
+        String month = String.valueOf(date.getMonth());
+        String day = String.valueOf(date.getDay());
+        String separator = "-";
+        String formattedDate = year + separator + month + separator + day;
+        return formattedDate;
     }
 
     /**
