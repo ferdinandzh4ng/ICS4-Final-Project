@@ -106,7 +106,12 @@ public class HospitalRunner {
 
                 if (patientSelection == 1) {
                     System.out.println("Register, delete, or update a patient:");
-                    
+                    System.out.println("1. Register an in-patient");
+                    System.out.println("2. Register an out-patient");
+                    System.out.println("3. Register an emergency-patient");
+                    System.out.println("4. Delete a patient");
+                    System.out.println("5. Update a patient");
+                    System.out.print("Enter your selection (1, 2, ... 5): ");
                 }
 
                 mainSelection = -1;
