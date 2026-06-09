@@ -549,7 +549,7 @@ public class PatientManager {
     /**
      * Sorts the patients array by ward registered using an insertion sort
      */
-    public void sortByWard () {
+    public void sortByWardThenPatientID () {
         if (numPatients <= 1) {
             return;
         }
@@ -557,7 +557,8 @@ public class PatientManager {
         for (int upperBound = numPatients - 1; upperBound > 0; upperBound--) {
             int maxIndex = 0;
             for (int j = 1; j <= upperBound; j++) {
-                if (patients[j].getWard().compareToIgnoreCase(patients[maxIndex].getWard()) > 0) {
+                int wardComparison = patients[j].getWard().compareToIgnoreCase(patients[maxIndex].getWard());
+                if (wardComparison > 0 || (wardComparison == 0 && patients[j].getPatientID() > patients[maxIndex].getPatientID())) {
                     maxIndex = j;
                 }
             }
