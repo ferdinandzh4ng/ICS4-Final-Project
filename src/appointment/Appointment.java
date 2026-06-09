@@ -27,8 +27,7 @@ public abstract class Appointment {
     public static final String STATUS_SCHEDULED = "Scheduled";
     public static final String STATUS_CANCELLED = "Cancelled";
     public static final String STATUS_DONE = "Done";
-    public static final String STATUS_NO_SHOW = "No Show";
-    public static final int NO_SHOW_FEE = 50;
+    public static final String STATUS_NO_SHOW = "No Show";    public static final int NO_SHOW_FEE = 50;
 
     /**
      * Constructor for the Appointment class

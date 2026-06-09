@@ -3,7 +3,9 @@
  * Name: Ida Luo
  * Date: June 7, 2026
  * Class: ICS4U1
- * Description: This class represents a surgery appointment in the hospital management system. It extends the abstract Appointment class and includes specific fields and methods related to surgeries, such as operating room number, anaesthesia type and dose, surgery type, and pre-operative instructions. The class also includes functionality to assign an operating room based on availability and to give pre-operative instructions.
+ * Description: This class represents a surgery appointment in the hospital management system. 
+ * It extends the abstract Appointment class and includes specific fields and methods related to surgeries. 
+ * The class also includes functionality to assign an operating room based on availability and to give pre-operative instructions.
 */
 
 package appointment;
@@ -20,6 +22,7 @@ public class Surgery extends Appointment {
 
     //constants
     public static final int MAX_OR_ROOMS = 10;
+    public static final int SURGERY_COST_BASE = 3000; //base cost for surgery, can be modified based on type and anaesthesia
 
     /**
      * Constructor for surgery appointment
@@ -37,7 +40,7 @@ public class Surgery extends Appointment {
      * @param type the type of surgery
      * @param preOpInstructions the pre-operative instructions for the patient
      */
-    public Surgery(int apptID, Patient patient, Staff[] staffList, Date date, double time, double duration, double cost, String status,
+    public Surgery(int apptID, Patient patient, Staff[] staffList, Date date, double time, String status,
      int operatingRoomNum, String anaesthesiaType, double anaesthesiaDose, String type, String preOpInstructions) {
         super(apptID, patient, staffList, date, time, duration, cost, status);
         this.operatingRoomNum = operatingRoomNum;
@@ -174,7 +177,7 @@ public class Surgery extends Appointment {
      * @return the calculated cost of the surgery
      */
     public double calculateCost() {
-        cost = 5000; //base cost for surgery
+        cost = SURGERY_COST_BASE; 
         //COME UP WITH GENERAL TYPES OF SURGERIES AND ADD COSTS
         return cost;
     }

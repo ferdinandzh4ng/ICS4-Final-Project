@@ -3,7 +3,9 @@
  * Name: Ida Luo
  * Date: June 7, 2026
  * Class: ICS4U1
- * Description: This class represents a routine checkup appointment in the hospital management system. It extends the abstract Appointment class and includes specific fields and methods related to routine checkups, such as clinic room number, main doctor, cost calculation, duration estimation, and staff assignment. The class also includes functionality to assign a clinic room based on availability and to mark the appointment as a no-show if necessary.
+ * Description: This class represents a routine checkup appointment in the hospital management system. 
+ * It extends the abstract Appointment class and includes specific fields and methods related to routine checkups. 
+ * The class also includes functionality to assign a clinic room based on availability and to mark the appointment as a no-show if necessary.
 */
 
 package appointment;
@@ -13,7 +15,6 @@ import staff.Doctor;
 public class RoutineCheckup extends Appointment {
     //fields
     private int clinicRoomNum; //number of the clinic room assigned for the checkup
-    private Doctor mainDoctor; //the primary doctor responsible for the checkup
 
     //constants
     public static final int MAX_CLINIC_ROOMS = 20; //Maximum number of clinic rooms available for routine checkups
@@ -25,17 +26,13 @@ public class RoutineCheckup extends Appointment {
      * @param staffList the staff members associated with the appointment
      * @param date the date of the appointment
      * @param time the time of the appointment
-     * @param duration the duration of the appointment
-     * @param cost the cost of the appointment
      * @param status the status of the appointment
      * @param clinicRoomNum the room number assigned for the checkup
-     * @param mainDoctor the primary doctor responsible for the checkup
      */
     public RoutineCheckup(int apptID, Patient patient, Staff[] staffList, Date date, 
-    double time, double duration, double cost, String status, int clinicRoomNum, Doctor mainDoctor) {
+    double time, double duration, double cost, String status, int clinicRoomNum) {
         super(apptID, patient, staffList, date, time, duration, cost, status);
         this.clinicRoomNum = clinicRoomNum;
-        this.mainDoctor = mainDoctor;
     }
 
     //accessors and mutators
@@ -53,22 +50,6 @@ public class RoutineCheckup extends Appointment {
      */
     public void setClinicRoomNum(int clinicRoomNum) {
         this.clinicRoomNum = clinicRoomNum;
-    }
-
-    /**
-     * Returns the main doctor responsible for the routine checkup.
-     * @return the main doctor
-     */
-    public Doctor getMainDoctor() {
-        return mainDoctor;
-    }
-
-    /**
-     * Sets the main doctor for the routine checkup.
-     * @param mainDoctor the doctor to set
-     */
-    public void setMainDoctor(Doctor mainDoctor) {
-        this.mainDoctor = mainDoctor;
     }
 
     /**
@@ -157,7 +138,6 @@ public class RoutineCheckup extends Appointment {
      * @param mainDr the main doctor for the checkup
      */
    public void assignStaff(Doctor mainDr) {
-        this.mainDoctor = mainDr;
         staffList[0] = mainDr; //assuming the main doctor is always the first staff member in the list
    }
 
