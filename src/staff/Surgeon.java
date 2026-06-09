@@ -221,7 +221,7 @@ public class Surgeon extends Staff {
     }
 
     /**
-     * Adds a patient ID to the sorted referral list (called by {@link Doctor#referPatient}).
+     * Adds a patient ID to the sorted referral list (called by Doctor.referPatient).
      *
      * @param patientID referred patient identifier
      * @return true if the referral was added or already present; false if the list is full
