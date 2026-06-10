@@ -1,4 +1,4 @@
-/** 
+/**
  * File: Appointment.java
  * Name: Ida Luo
  * Date: June 7, 2026
@@ -306,7 +306,7 @@ public abstract class Appointment {
         String staffStr = "";
         if (staffList != null) {
             for (int i = 0; i < staffList.length; i++) {
-                staffStr += staffList[i].getID() + " ";
+                staffStr += staffList[i].getStaffID() + " ";
             }
         } else {
             staffStr = "None";
