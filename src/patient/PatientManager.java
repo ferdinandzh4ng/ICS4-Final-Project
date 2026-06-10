@@ -849,7 +849,7 @@ public class PatientManager {
             return false; // Patient not found
         }
 
-        patient.addDiagnoses(diagnosis);
+        patient.addDiagnosis(diagnosis);
         return true;
     }
 
@@ -865,7 +865,7 @@ public class PatientManager {
             return false; // Patient not found
         }
 
-        return patient.deleteDiagnoses(diagnosis);
+        return patient.deleteDiagnosis(diagnosis);
     }
 
     /**
@@ -881,7 +881,7 @@ public class PatientManager {
             return false;
         }
 
-        return patient.updateDiagnoses(orgDiagnosis, newDiagnosis);
+        return patient.updateDiagnosis(orgDiagnosis, newDiagnosis);
     }
 
     /**

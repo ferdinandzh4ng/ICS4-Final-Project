@@ -40,8 +40,8 @@ public class ApptManager {
  * Scans the schedule to see if a physical room is already booked during a specific time block.
  */
     public boolean isRoomOccupied(Class<?> apptClass, int testRoomNum, Date targetDate, double targetTime, double targetDuration) {
-        for (int i = 0; i < numAppt; i++) {
-            Appointment a = apptList[i];
+        for (int i = 0; i < numAppointments; i++) {
+            Appointment a = appointments[i];
 
             // Skip cancelled, done, or no-show appointments since they don't occupy the room
             if (!a.isActive()) {

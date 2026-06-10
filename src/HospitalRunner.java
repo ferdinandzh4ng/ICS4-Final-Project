@@ -327,7 +327,7 @@ public class HospitalRunner {
             }
         } else if (sel.equals("2")) {
             String first = prompt(sc, "  First name: ");
-            String last = prompt(sc, "  Last name : ");
+            String last = prompt(sc, "  Last name: ");
             int pid = pm.searchPatientIDByName(first, last);
             if (pid == -1) {
                 System.out.println("  Not found.");
@@ -739,7 +739,7 @@ public class HospitalRunner {
 
                             case "11":
                                 System.out.println(pm.listAllPatients());
-                                break;
+                                break;n
 
                             case "12": {
                                 int pid = promptInt(sc, "  Patient ID: ");

@@ -213,7 +213,7 @@ public class Doctor extends Staff {
 
         s.assignPatients(new Patient[] { p });
         removePatientFromAssigned(p);
-        p.updateAssignedStaff(s);
+        p.setAssignedStaff(s);
     }
 
     /** @return medical licence number */

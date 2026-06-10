@@ -198,7 +198,7 @@ public class Surgery extends Appointment {
         }
         Surgeon leadSurgeon = (Surgeon) team[0];
 
-        if (leadSurgeon.getSpecialty().equals(this.type)) {
+        if (leadSurgeon.getSpecialization().equals(this.type)) {
             return true; // The surgeon is qualified for this surgery type
         } else {
             System.out.println("Validation Error: Surgeon specialty does not match Surgery type.");

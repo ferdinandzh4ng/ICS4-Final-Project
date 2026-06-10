@@ -13,6 +13,8 @@ package staff;
 
 import appointment.Appointment;
 import patient.Patient;
+import patient.InPatient;
+import patient.Medication;
 
 public class Nurse extends Staff {
 
@@ -182,16 +184,20 @@ public class Nurse extends Staff {
      *
      * @param p   patient receiving the medication
      * @param med medication name
+     * @param m   dosage of medication
      */
-    public void administerMedication(Patient p, String med) {
+    public void administerMedication(Patient p, String med, String dosage) {
         if (p == null) {
             return;
         }
-        if (!p.hasMedication(med)) {
+        if (p.getIndexOfMedicationByName(med) == -1) {
             System.out.println("Warning: medication " + med + " is not prescribed for this patient.");
             return;
         }
-        p.logMedicationAdministered(med);
+        if (p instanceof InPatient) {
+            Medication m = new Medication(med, dosage);
+            ((InPatient)p).logMedicationsAdministered(m);
+        }
     }
 
     /**
@@ -205,7 +211,9 @@ public class Nurse extends Staff {
         if (p == null) {
             return;
         }
-        p.recordVitals(heartRate, bp);
+        if (p instanceof InPatient) {
+            ((InPatient)p).recordVitals(heartRate, bp);
+        }
     }
 
     /**
