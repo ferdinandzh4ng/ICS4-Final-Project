@@ -14,6 +14,7 @@ import staff.Staff;
 import shared.Date;
 
 public abstract class Appointment {
+    // Fields
     private int apptID; //unique identifier for each appointment
     private Patient patient; //the patient associated with the appointment
     private Staff[] staffList; //the staff members associated with the appointment (can be multiple)
@@ -23,11 +24,12 @@ public abstract class Appointment {
     private double cost; //cost of the appointment
     private String status; //status of the appointment (e.g. "Scheduled", "Done", "Cancelled")
 
-    //constants
+    //Constants
     public static final String STATUS_SCHEDULED = "Scheduled";
     public static final String STATUS_CANCELLED = "Cancelled";
     public static final String STATUS_DONE = "Done";
-    public static final String STATUS_NO_SHOW = "No Show";    public static final int NO_SHOW_FEE = 50;
+    public static final String STATUS_NO_SHOW = "No Show";    
+    public static final int NO_SHOW_FEE = 50;
 
     /**
      * Constructor for the Appointment class
@@ -51,6 +53,7 @@ public abstract class Appointment {
         this.status = status;
     }
 
+    // Accessors and Mutators
     /**
      * Returns the unique identifier for the appointment.
      * @return the appointment ID
@@ -193,15 +196,18 @@ public abstract class Appointment {
      * @return true if rescheduling is successful, false otherwise
      */
     public boolean reschedule(Date newDate, double newTime) {
+        // Store current date and time in temp variables
         Date curdate = this.date;
         double curtime = this.time;
 
+        // Change date and time
         date = newDate;
         time = newTime;
 
         if (validateBooking()) {
             return true;
         } else {
+            // Revert to old date and time if unsuccessful validation
             date = curdate;
             time = curtime;
             return false;
@@ -215,23 +221,26 @@ public abstract class Appointment {
      * @return true if the objects overlap, false otherwise
      */
     public boolean overlap(Object obj) {
+        // Check instance and cast
         if (!(obj instanceof Appointment)) {
             return false;
         }
 
         Appointment other = (Appointment) obj;
-        if (this == other || this.apptID == other.apptID) {
+        // Ignore if the 2 appointments have the same id
+        if (this == other || this.equals(other)) {
             return false;
         }
-
+        // Check for overlapping date
         if (!this.date.equals(other.date)) {
             return false;
         }
-
+        // Check for null staff lists
         if (this.staffList == null || other.staffList == null) {
             return false;
         }
 
+        // Check for overlaping time
         int thisStart = toMinutes(this.time);
         int otherStart = toMinutes(other.time);
         int thisEnd = thisStart + (int) Math.round(this.duration * 60);
@@ -240,11 +249,10 @@ public abstract class Appointment {
             return false;
         }
 
-        for (int j = 0; j < this.staffList.length; j++) {
-            for (int k = 0; k < other.staffList.length; k++) {
-                if (this.staffList[j].equals(other.staffList[k])) {
-                    return true;
-                }
+        // Check for common staff members
+        for (int j = 0; j < other.staffList.length; j++) {
+            if (this.hasStaffMember(other.staffList[j])) {
+                return true;
             }
         }
         return false;
@@ -257,10 +265,13 @@ public abstract class Appointment {
      * @return true if the objects are equal, false otherwise
      */
     public boolean equals(Object obj) {
+        // Check and create instance of Appointment
         if (!(obj instanceof Appointment)) {
             return false;
         }
         Appointment other = (Appointment) obj;
+        
+        //Compare apptIDs
         return this.apptID == other.apptID;
     }
 
@@ -285,12 +296,13 @@ public abstract class Appointment {
         this.staffList = staffTeam == null ? null : Arrays.copyOf(staffTeam, staffTeam.length);
     }
 
+    @Override
     /**
      * Returns a string representation of the appointment
      * @return a string representation of the appointment
      */
-    @Override
     public String toString() {
+        // Format for empty staffList array
         String staffStr = "";
         if (staffList != null) {
             for (int i = 0; i < staffList.length; i++) {
@@ -300,8 +312,13 @@ public abstract class Appointment {
             staffStr = "None";
         }
 
+        // Format time
+        int hours = (int) time;
+        String timeStr = hours + ":" + (toMinutes(time)-hours);
+
+        //Return String of information
         return "Appointment ID: " + apptID + "\nPatient: " + patient.getName()
-            + "\nStaff: " + staffStr + "\nDate: " + date.toString() + "\nTime: " + time + "\nDuration: " + duration + "\nCost: " + cost + "\nStatus: " + status;
+            + "\nStaff: " + staffStr + "\nDate: " + date.toString() + "\nTime: " + timeStr + "\nDuration: " + duration + "\nCost: " + cost + "\nStatus: " + status;
     }
 
     //abstract methods
@@ -311,7 +328,7 @@ public abstract class Appointment {
 
     abstract public int getRoomNum();
 
-    //helper methods
+    // Helper methods
     /**
      * Helper method that converts a time in hh.mm format to minutes
      * @param hhmm the time in hh.mm format
@@ -324,7 +341,7 @@ public abstract class Appointment {
     }
 
     /**
-     * Checks if the appointment is active (not cancelled, done, or no show)
+     * Helper method that checks if the appointment is active (not cancelled, done, or no show)
      * @return true if the appointment is active, false otherwise
      */
     public boolean isActive() {
@@ -337,14 +354,12 @@ public abstract class Appointment {
      * @return true if staff member is part of that staff list, otherwise false
      */
     public boolean hasStaffMember(Staff toCheck) {
-        if (staffList == null || s == null) return false;
+        if (staffList == null || toCheck == null) return false;
         for (int i = 0; i < staffList.length; i++) {
             if (staffList[i] != null && staffList[i].equals(toCheck)) {
                 return true;
             }
         }
         return false;
-    }
-
-    
+    }   
 }

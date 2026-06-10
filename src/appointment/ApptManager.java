@@ -20,7 +20,7 @@ public class ApptManager {
     private PatientManager patientManager;
 
     /**
-     * Constructor for the appointment manager
+     * Constructor for an empty appointment manager
      * @param maxAppointments the maximum number of appointments that can be stored in the manager
      * @param staffManager staffManager instance to connect managers
      * @param patientManager patientManager instance to connect managers
@@ -33,6 +33,23 @@ public class ApptManager {
         this.patientManager = patientManager;
     }
 
+    /**
+     * Constructor that loads appointments from a file
+     * @param maxAppointments the maximum number of appointments that can be stored in the manager
+     * @param staffManager staffManager instance to connect managers
+     * @param patientManager patientManager instance to connect managers
+     * @param filename name of file to load appointments from
+     */
+    public ApptManager(int maxAppointments, StaffManager staffManager, PatientManager patientManager, String filename) {
+        this.maxAppointments = maxAppointments;
+        appointments = new Appointment[maxAppointments];
+        numAppointments = 0;
+        this.staffManager = staffManager;
+        this.patientManager = patientManager;
+        this.loadFromFile(filename);
+    }
+
+    // Accessors and Mutators
     public Appointment[] getAppointments() {
         return appointments;
     }
@@ -272,7 +289,6 @@ public class ApptManager {
                         break;
                         
                     case "EmergencyVisit":
-                        // According to your fields, emergency records track urgency index next
                         int urgencyIdx = Integer.parseInt(parts[9].trim());
                         
                         Staff[] emergencyStaff = new Staff[5]; // Max amount of emergency staff
@@ -291,11 +307,11 @@ public class ApptManager {
                 }
             }
             
-            in.close(); // Remember to close your streams!
+            in.close(); 
             return true;
             
         } catch (IOException | NullPointerException | ArrayIndexOutOfBoundsException e) {
-            System.err.println("Error reading or parsing the appointment file: " + e.getMessage());
+            System.out.println("Error reading or parsing the appointment file.");
             return false;
         }
     }
@@ -331,7 +347,7 @@ public class ApptManager {
             out.close();
             return true;
         } catch (IOException e) {
-            System.err.println("Error saving to file.");
+            System.out.println("Error saving to file.");
             return false;
         }
     }
@@ -479,7 +495,7 @@ public class ApptManager {
         for (int i = 0; i < numAppointments; i++) {
             Appointment a = appointments[i];
 
-            // Skip cancelled, done, or no-show appointments since they don't occupy the room
+            // Skip inactive appointments
             if (!a.isActive()) {
                 continue;
             }
