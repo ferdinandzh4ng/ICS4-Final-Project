@@ -110,6 +110,19 @@ public abstract class Staff {
         System.out.println("Error: no available off-day slots.");
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof Staff)) {
+            return false;
+        }
+        return equals((Staff) other);
+    }
+
+    @Override
+    public int hashCode() {
+        return staffID.hashCode();
+    }
+
     /**
      * Compares this staff member to another by staff ID.
      *

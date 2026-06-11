@@ -20,11 +20,11 @@ public abstract class Patient {
     private Date dateOfBirth; // date of birth of the patient
     private String ward; // ward the patient is assigned to
     private String address; // home address of the patient
-    private int phoneNum; // phone number of the patient
+    private long phoneNum; // phone number of the patient
     private int numOHIP; // OHIP number of the patient
     private Date dateRegistered; // date the patient was registered in the hospital
     private char gender; // gender of the patient
-    private int emergencyContactPhoneNumber; // phone number of the patient's emergency contact
+    private long emergencyContactPhoneNumber; // phone number of the patient's emergency contact
     private Staff assignedStaff; // staff member assigned to the patient
     private String[] diagnosis; // diagnosis of the patient
     private Medication[] medications; // medications prescribed to the patient
@@ -49,8 +49,8 @@ public abstract class Patient {
      * @param emergencyContactPhoneNumber to be assigned to the patient
      * @param assignedStaff to be assigned to the patient
      */
-    public Patient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum,
-                    int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff) {
+    public Patient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum,
+                    int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
         this.patientID = patientID;
         this.firstName = firstName;
         this.lastName = lastName; 
@@ -134,7 +134,7 @@ public abstract class Patient {
      * Returns the phone number of the patient
      * @return the phone number
      */
-    public int getPhoneNum() {
+    public long getPhoneNum() {
         return phoneNum;
     }
 
@@ -158,7 +158,7 @@ public abstract class Patient {
      * Returns the emergency contact phone number of the patient
      * @return the emergency contact phone number
      */
-    public int getEmergencyContactPhoneNumber() {
+    public long getEmergencyContactPhoneNumber() {
         return emergencyContactPhoneNumber;
     }
 
@@ -262,7 +262,7 @@ public abstract class Patient {
      * Sets the phone number of the patient
      * @param phoneNum the phone number to be assigned to the patient
      */
-    public void setPhoneNum(int phoneNum) {
+    public void setPhoneNum(long phoneNum) {
         this.phoneNum = phoneNum;
     }
 
@@ -294,7 +294,7 @@ public abstract class Patient {
      * Sets the emergency contact phone number of the patient
      * @param emergencyContactPhoneNumber the emergency contact phone number to be assigned to the patient
      */
-    public void setEmergencyContactPhoneNumber(int emergencyContactPhoneNumber) {
+    public void setEmergencyContactPhoneNumber(long emergencyContactPhoneNumber) {
         this.emergencyContactPhoneNumber = emergencyContactPhoneNumber;
     }
 
@@ -335,7 +335,12 @@ public abstract class Patient {
      * @param dosage the dosage of the medication
      */
     public void addMedication (String medName, String dosage) {
-        medications[medications.length] = new Medication(medName, dosage);
+        for (int i = 0; i < medications.length; i++) {
+            if (medications[i] == null) {
+                medications[i] = new Medication(medName, dosage);
+                return;
+            }
+        }
     }
 
     /**
@@ -395,7 +400,12 @@ public abstract class Patient {
      * @param allergy the name of the allergy
      */
     public void addAllergy (String allergy) {
-        allergies[allergies.length] = allergy;
+        for (int i = 0; i < allergies.length; i++) {
+            if (allergies[i] == null) {
+                allergies[i] = allergy;
+                return;
+            }
+        }
     }
 
     /**
@@ -450,7 +460,12 @@ public abstract class Patient {
      * @param history the medical history entry to be added
      */
     public void addMedicalHistory (String history) {
-        this.medicalHistory[this.medicalHistory.length] = history;
+        for (int i = 0; i < medicalHistory.length; i++) {
+            if (medicalHistory[i] == null) {
+                medicalHistory[i] = history;
+                return;
+            }
+        }
     }
 
     /**
@@ -485,7 +500,12 @@ public abstract class Patient {
      * @param familyHistory the family history entry to be added
      */
     public void addFamilyHistory (String history) {
-        this.familyHistory[this.familyHistory.length] = history;
+        for (int i = 0; i < familyHistory.length; i++) {
+            if (familyHistory[i] == null) {
+                familyHistory[i] = history;
+                return;
+            }
+        }
     }
 
     /**
@@ -610,14 +630,15 @@ public abstract class Patient {
      * @param appt the appointment to be added
      */
     public void addAppointment (Appointment appt) {
-        if (appt.getStatus().equals("future")) {
+        String status = appt.getStatus();
+        if (status.equals("future") || status.equals(Appointment.STATUS_SCHEDULED)) {
             for (int i = 0; i < upcomingAppointments.length; i++) {
                 if (upcomingAppointments[i] == null) {
                     upcomingAppointments[i] = appt;
                     return;
                 }
             }
-        } else if (appt.getStatus().equals("past")) {
+        } else if (status.equals("past") || status.equals(Appointment.STATUS_DONE)) {
             for (int i = 0; i < pastAppointments.length; i++) {
                 if (pastAppointments[i] == null) {
                     pastAppointments[i] = appt;
@@ -678,8 +699,13 @@ public abstract class Patient {
      * Adds a diagnosis entry for the patient
      * @param diagnosis the diagnosis entry to be added
      */
-    public void addDiagnosis (String diagnosis) {
-        this.diagnosis[this.diagnosis.length] = diagnosis;
+    public void addDiagnoses (String diagnosis) {
+        for (int i = 0; i < this.diagnosis.length; i++) {
+            if (this.diagnosis[i] == null) {
+                this.diagnosis[i] = diagnosis;
+                return;
+            }
+        }
     }
 
     /**
@@ -848,11 +874,28 @@ public abstract class Patient {
         double total = 0.0;
         
         for (int i = 0; i < pastAppointments.length; i++) {
-            total += pastAppointments[i].calculateCost();
+            if (pastAppointments[i] != null) {
+                total += pastAppointments[i].calculateCost();
+            }
         }
 
         return total;
     }
+
+    /**
+     * Returns the admission date for display in patient listings.
+     * Subclasses override when they track a separate admission date.
+     * @return ISO date string for the admitted/registered date
+     */
+    public String getAdmittedDateDisplay() {
+        return getDateRegistered().toISODateString();
+    }
+
+    /**
+     * Computes the total bill for this patient (subclass-specific).
+     * @return total bill amount
+     */
+    public abstract double calculateBill();
 
     /**
      * Checks in the patient to the hospital and returns true if the patient is successfully checked in

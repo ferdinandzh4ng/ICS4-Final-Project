@@ -11,7 +11,14 @@
 package appointment;
 
 import java.io.*;
+import patient.Patient;
+import patient.PatientManager;
 import shared.Date;
+import staff.Doctor;
+import staff.Nurse;
+import staff.Staff;
+import staff.StaffManager;
+import staff.Surgeon;
 
 public class ApptManager {
     private Appointment[] appointments; //array to store all appointments
@@ -104,7 +111,7 @@ public class ApptManager {
      */
     public boolean cancelAppointment(int apptID) {
         // Find appointment
-        Appointment target = searchByID(apptID, 0, numAppointments - 1);
+        Appointment target = searchByID(apptID, 0);
         if (target == null) {
             return false;
         }
@@ -116,6 +123,10 @@ public class ApptManager {
             if (appointments[i].getApptID() == apptID) {
                 targetIdx = i;
             }
+        }
+
+        if (targetIdx == -1) {
+            return false;
         }
 
         // Shift remaining elements left to fill the gap
@@ -136,7 +147,7 @@ public class ApptManager {
      * @return true if successfully rescheduled, otherwise false
      */
     public boolean rescheduleAppointment(int apptID, Date newDate, double newTime) {
-        Appointment target = searchByID(apptID, 0, numAppointments - 1);
+        Appointment target = searchByID(apptID, 0);
         if (target == null) return false;
 
         Date oldDate = target.getDate();
@@ -228,7 +239,7 @@ public class ApptManager {
                 patientID = Integer.parseInt(parts[2].trim());
                 
                 // Find the patient object from database using their ID
-                Patient patient = patientManager.searchPatientByPatientID(patientID); 
+                Patient patient = patientManager.searchPatientByPatientID(patientID);
                 
                 date = new Date(parts[3].trim()); 
                 time = Double.parseDouble(parts[4].trim());
@@ -244,14 +255,15 @@ public class ApptManager {
                         doctorID = parts[9].trim();
                         
                         // Fetch the Doctor object from database
-                        Doctor doctor = (Doctor) staffManager.findStaffByID(doctorID);
+                        Doctor doctor = (Doctor) staffManager.findStaffByID(doctorID, 0);
                         
                         // Allocate space for the staff array (size 1 for single doctor)
                         Staff[] checkupStaff = new Staff[1];
                         checkupStaff[0] = doctor;
                         
                         // Instantiate and insert into appointments array
-                        RoutineCheckup checkupAppt = new RoutineCheckup(apptID, patient, checkupStaff, date, time, status, roomNum, doctor);
+                        RoutineCheckup checkupAppt = new RoutineCheckup(
+                            apptID, patient, checkupStaff, date, time, duration, cost, status, roomNum, doctor);
                         this.appointments[this.numAppointments] = checkupAppt;
                         this.numAppointments++;
                         break;
@@ -263,7 +275,7 @@ public class ApptManager {
                         preOpInstructions = parts[12].trim();
                         surgeonID = parts[13].trim();
                         
-                        Surgeon surgeon = (Surgeon) staffManager.findStaffByID(surgeonID);
+                        Surgeon surgeon = (Surgeon) staffManager.findStaffByID(surgeonID, 0);
                         
                         // Determine how many nurses are attached to this surgery record 
                         // Calculated by taking the total - existing parts
@@ -276,7 +288,7 @@ public class ApptManager {
                         // Loop to find and attach each nurse
                         for (int j = 0; j < numNurses; j++) {
                             String nurseID = parts[14 + j].trim();
-                            Nurse nurse = (Nurse) staffManager.staffManager.findStaffByID(nurseID);
+                            Nurse nurse = (Nurse) staffManager.findStaffByID(nurseID, 0);
                             surgeryStaff[1 + j] = nurse;
                         }   
                         
@@ -295,7 +307,8 @@ public class ApptManager {
                         Staff[] emergencyStaff = new Staff[5]; // Max amount of emergency staff
                         
                         EmergencyVisit emergencyAppt = new EmergencyVisit(
-                            apptID, patient, emergencyStaff, date, time, status, roomNum, urgencyIdx
+                            apptID, patient, emergencyStaff, date, time, duration, cost,
+                            status, roomNum, urgencyIdx
                         );
                         
                         this.appointments[this.numAppointments] = emergencyAppt;
@@ -327,21 +340,50 @@ public class ApptManager {
             BufferedWriter out = new BufferedWriter(new FileWriter(filename));
             out.write(String.valueOf(numAppointments));
             out.newLine();
-            String line;
 
             for (int i = 0; i < numAppointments; i++) {
                 Appointment a = appointments[i];
-                // Create a String of information separated by commas
+                String line;
+
+                // Common fields: type,apptID,patientID,date,time,status,roomNum,duration,cost
                 if (a instanceof RoutineCheckup) {
                     line = "RoutineCheckup";
                 } else if (a instanceof Surgery) {
                     line = "Surgery";
                 } else if (a instanceof EmergencyVisit) {
                     line = "EmergencyVisit";
+                } else {
+                    line = "Unknown";
                 }
-                line + "," + a.getApptID() + "," + a.getPatient().getPatientID() + "," + a.getDate().toString() + "," + 
-                              a.getTime() + "," + a.getStatus() + "," + a.getRoomNum();
-                
+                line = line + "," + a.getApptID() + "," + a.getPatient().getPatientID() + ","
+                        + a.getDate().toISODateString().replace("-", "") + ","
+                        + a.getTime() + "," + a.getStatus() + "," + a.getRoomNum() + ","
+                        + a.getDuration() + "," + a.getCost();
+
+                // Subclass-specific fields
+                if (a instanceof RoutineCheckup) {
+                    RoutineCheckup rc = (RoutineCheckup) a;
+                    String doctorID = rc.getMainDoctor() != null ? rc.getMainDoctor().getStaffID() : "";
+                    line = line + "," + doctorID;
+                } else if (a instanceof Surgery) {
+                    Surgery s = (Surgery) a;
+                    Staff[] team = s.getStaffList();
+                    String surgeonID = (team != null && team.length > 0 && team[0] != null)
+                            ? team[0].getStaffID() : "";
+                    line = line + "," + s.getType() + "," + s.getAnaesthesiaType() + ","
+                            + s.getAnaesthesiaDose() + "," + s.getPreOpInstructions() + "," + surgeonID;
+                    if (team != null) {
+                        for (int j = 1; j < team.length; j++) {
+                            if (team[j] != null) {
+                                line = line + "," + team[j].getStaffID();
+                            }
+                        }
+                    }
+                } else if (a instanceof EmergencyVisit) {
+                    EmergencyVisit ev = (EmergencyVisit) a;
+                    line = line + "," + ev.getUrgencyIdx();
+                }
+
                 out.write(line);
                 out.newLine();
             }
@@ -354,43 +396,38 @@ public class ApptManager {
     }
 
     /**
-     * Linear search to find an appointment that has the matching patient and date
-     * @param dateToFind target date
-     * @param PatientID target patient ID
-     * @return Appointment that matches patient ID and date, null if not found
+     * Recursive linear search to find an appointment matching a patient ID and date.
+     * @param patientID target patient ID
+     * @param date target date
+     * @param idx current search index (start at 0)
+     * @return Appointment matching patient and date, null if not found
      */
-    public Appointment searchByPatientThenDate(Date dateToFind, int PatientID) {
-        for (int i = 0; i < numAppointments; i++) {
-            if (appointments[i].getDate().compareTo(dateToFind) == 0
-            && appointments[i].getPatient().getPatientID() == patientID) {
-                return appointments[i];
-            }
+    public Appointment searchByPatientAndDate(int patientID, Date date, int idx) {
+        if (idx >= numAppointments) {
+            return null;
         }
-        return null;
+        if (appointments[idx].getDate().compareTo(date) == 0
+                && appointments[idx].getPatient().getPatientID() == patientID) {
+            return appointments[idx];
+        }
+        return searchByPatientAndDate(patientID, date, idx + 1);
     }
     
 
     /**
-     * Recursive binary search to find an appointment by its ID
+     * Recursive linear search to find an appointment by its ID.
      * @param apptID ID of target appointment
-     * @param topIdx top index for recursive binary search
-     * @param bottomIdx bottom index for recursive binary search
+     * @param idx current search index (start at 0)
      * @return Appointment that matches the target ID, null if not found
      */
-    public Appointment searchByID(int apptID, int topIdx, int bottomIdx) {
-        int midIdx;
-        if (topIdx > bottomIdx) {
+    public Appointment searchByID(int apptID, int idx) {
+        if (idx >= numAppointments) {
             return null;
-        } else {
-            midIdx = (topIdx + bottomIdx)/2;
-            if (appointment[midIdx].getApptID() == apptID) {
-                return appointment[midIdx];
-            } else if (apptID > appointment[midIdx].getApptID()) {
-                searchByID(apptID, midIdx+1, bottomIdx);
-            } else {
-                searchByID(apptID, topIdx, midIdx-1);
-            }    
         }
+        if (appointments[idx].getApptID() == apptID) {
+            return appointments[idx];
+        }
+        return searchByID(apptID, idx + 1);
     }
 
     /**

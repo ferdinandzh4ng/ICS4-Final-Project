@@ -16,6 +16,8 @@ import staff.Staff;
  */
 
 public class InPatient extends Patient {
+    public static final double DAILY_ROOM_RATE = 250.00;
+
     private Date dayIn; // Date of admission to the hospital
     private Date dayOut; // Date of discharge from the hospital
     private boolean hospitalBed; // If a hospital bed is assigned to a patient
@@ -38,7 +40,7 @@ public class InPatient extends Patient {
      * @param assignedStaff to be assigned to the patient
      * @param dayIn the date of admission to the hospital
      */
-    public InPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum, int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff) {
+    public InPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
         super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
         this.dayIn = null;
         this.dayOut = null;
@@ -65,7 +67,7 @@ public class InPatient extends Patient {
      * @param dayOut the date of discharge from the hospital
      * @param hospitalBed whether a hospital bed is assigned
      */
-    public InPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum, int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff, Date dayIn, Date dayOut, boolean hospitalBed) {
+    public InPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, Date dayIn, Date dayOut, boolean hospitalBed) {
         super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
         this.dayIn = dayIn;
         this.dayOut = dayOut;
@@ -148,12 +150,63 @@ public class InPatient extends Patient {
     }
 
     /**
+     * Returns the number of days the patient has been (or was) admitted.
+     * Uses dayOut when set; otherwise uses the current system date for preview.
+     * @return days admitted (minimum 1 when dayIn is set)
+     */
+    public int getDaysAdmitted() {
+        if (dayIn == null) {
+            return 0;
+        }
+        Date endDate = dayOut != null ? dayOut : PatientManager.CUR_DATE;
+        int days = 0;
+        Date current = dayIn;
+        while (current.compareTo(endDate) < 0) {
+            days++;
+            current = current.addDays(1);
+        }
+        return days < 1 ? 1 : days;
+    }
+
+    /**
+     * Returns the room fee based on days admitted and the daily room rate.
+     * @return room fee amount
+     */
+    public double getRoomFee() {
+        return getDaysAdmitted() * DAILY_ROOM_RATE;
+    }
+
+    /**
+     * Returns the sum of past appointment costs.
+     * @return total appointment fees
+     */
+    public double getAppointmentFees() {
+        return calculateTotalCost();
+    }
+
+    @Override
+    public String getAdmittedDateDisplay() {
+        return dayIn != null ? dayIn.toISODateString() : "N/A";
+    }
+
+    @Override
+    public double calculateBill() {
+        return getRoomFee() + getAppointmentFees();
+    }
+
+    /**
      * Records the patient's vital signs, including heart rate and blood pressure, and stores them in the vitals log
      * @param heartRate the patient's heart rate to be recorded
      * @param bloodPressure the patient's blood pressure to be recorded
      */
     public void recordVitals (double heartRate, double bloodPressure) {
-        vitalsLog[vitalsLog.length] = "Date: " + PatientManager.CUR_DATE + ", Heart Rate: " + heartRate + ", Blood Pressure: " + bloodPressure;
+        for (int i = 0; i < vitalsLog.length; i++) {
+            if (vitalsLog[i] == null) {
+                vitalsLog[i] = "Date: " + PatientManager.CUR_DATE + ", Heart Rate: " + heartRate
+                        + ", Blood Pressure: " + bloodPressure;
+                return;
+            }
+        }
     }
 
     /**
@@ -162,7 +215,13 @@ public class InPatient extends Patient {
      * @param dosage the dosage of the medication administered to the patient
      */
     public void logMedicationsAdministered (Medication med) {
-        medicationsAdministered[medicationsAdministered.length] = "Date: " + PatientManager.CUR_DATE + ", Medication: " + med.getMedName() + ", Dosage: " + med.getDosage();
+        for (int i = 0; i < medicationsAdministered.length; i++) {
+            if (medicationsAdministered[i] == null) {
+                medicationsAdministered[i] = "Date: " + PatientManager.CUR_DATE + ", Medication: "
+                        + med.getMedName() + ", Dosage: " + med.getDosage();
+                return;
+            }
+        }
     }
 
     /**
@@ -204,6 +263,7 @@ public class InPatient extends Patient {
     public boolean checkOut(String followUp) {
         dayOut = PatientManager.CUR_DATE;
         hospitalBed = false;
+        calculateBill();
 
         if (followUp.equals("checkup")) {
             scheduleNextRoutineCheckup();
@@ -222,6 +282,9 @@ public class InPatient extends Patient {
     @Override
     public void scheduleNextRoutineCheckup() {
         Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
+        if (completed == null) {
+            return;
+        }
         Doctor mainDoctorPlaceholder = getFollowUpDoctor(completed);
         Appointment newAppt = new RoutineCheckup(
             completed.getApptID() + 1,
@@ -231,7 +294,7 @@ public class InPatient extends Patient {
             completed.getTime(),
             completed.getDuration(),
             completed.getCost(),
-            "future",
+            Appointment.STATUS_SCHEDULED,
             1,
             mainDoctorPlaceholder);
         boolean validated = false;
@@ -255,6 +318,9 @@ public class InPatient extends Patient {
     @Override
     public void scheduleNextSurgery () {
         Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
+        if (completed == null) {
+            return;
+        }
         Appointment newAppt = new Surgery(
             completed.getApptID() + 1,
             completed.getPatient(),
@@ -263,11 +329,11 @@ public class InPatient extends Patient {
             completed.getTime(),
             completed.getDuration(),
             completed.getCost(),
-            "future",
+            Appointment.STATUS_SCHEDULED,
             1,
             "none",
             0.0,
-            "general",
+            "General",
             null
         );
         boolean validated = false;

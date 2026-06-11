@@ -18,6 +18,7 @@ import staff.Staff;
 public class RoutineCheckup extends Appointment {
     //fields
     private int clinicRoomNum; //number of the clinic room assigned for the checkup
+    private Doctor mainDoctor; // primary doctor for the checkup
 
     //constants
     public static final int MAX_CLINIC_ROOMS = 20; //Maximum number of clinic rooms available for routine checkups
@@ -36,6 +37,7 @@ public class RoutineCheckup extends Appointment {
             double time, double duration, double cost, String status, int clinicRoomNum, Doctor mainDoctor) {
         super(apptID, patient, staffList, date, time, duration, cost, status);
         this.clinicRoomNum = clinicRoomNum;
+        this.mainDoctor = mainDoctor;
     }
 
     //accessors and mutators
@@ -45,6 +47,16 @@ public class RoutineCheckup extends Appointment {
      */
     public int getRoomNum() {
         return clinicRoomNum;
+    }
+
+    @Override
+    public String getTypeLabel() {
+        return "Routine Checkup";
+    }
+
+    @Override
+    public String getLocationLabel() {
+        return "Rm " + clinicRoomNum;
     }
 
     /**
@@ -87,8 +99,9 @@ public class RoutineCheckup extends Appointment {
      * @return a string describing the appointment details
      */
     public String toString() {
+        String doctorName = mainDoctor != null ? mainDoctor.getName() : "None";
         return "Routine Checkup Appointment: " + super.toString()
-            + ", Clinic Room Number: " + clinicRoomNum + ", Main Doctor: " + mainDoctor.getName();
+            + ", Clinic Room Number: " + clinicRoomNum + ", Main Doctor: " + doctorName;
     }
 
     @Override
@@ -121,20 +134,27 @@ public class RoutineCheckup extends Appointment {
      * @return the estimated duration
      */
     public double estimateDuration(String reasonForVisit) {
-        int dur = 15; //default duration
-        switch(reasonForVisit) {
+        double estimated = 15; // default duration in minutes
+        switch (reasonForVisit) {
             case "Annual Physical":
-                dur += 15;
+                estimated += 15;
                 break;
             case "Flu Symptoms":
-                dur += 10;
+                estimated += 10;
                 break;
             case "Vaccination":
-                dur += 15;
+                estimated += 15;
+                break;
+            default:
                 break;
         }
-        this.setDuration(dur);
-        return dur;
+        setDuration(estimated / 60.0);
+        return estimated / 60.0;
+    }
+
+    /** @return the primary doctor assigned to this checkup */
+    public Doctor getMainDoctor() {
+        return mainDoctor;
     }
 
     /**

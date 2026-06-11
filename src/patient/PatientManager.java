@@ -101,7 +101,7 @@ public class PatientManager {
      * @param assignedStaff the staff member assigned to the patient
      * @return boolean if the patient is successfully registered
      */
-    public boolean registerInPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum, int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff) {
+    public boolean registerInPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
         if (numPatients >= maxPatients || !Patient.isValidOHIP(numOHIP)) {
             return false;
         }
@@ -128,7 +128,7 @@ public class PatientManager {
      * @param assignedStaff the staff member assigned to the patient
      * @return boolean if the patient is successfully registered
      */
-    public boolean registerOutPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum, int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff) {
+    public boolean registerOutPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
         if (numPatients >= maxPatients || !Patient.isValidOHIP(numOHIP)) {
             return false;
         }
@@ -155,7 +155,7 @@ public class PatientManager {
      * @param assignedStaff the staff member assigned to the patient
      * @return boolean if the patient is successfully registered
      */
-    public boolean registerEmergencyPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum, int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff) {
+    public boolean registerEmergencyPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
         if (numPatients >= maxPatients || !Patient.isValidOHIP(numOHIP)) {
             return false;
         }
@@ -298,7 +298,7 @@ public class PatientManager {
                 String address = patient.getAddress();
                 writer.write(address);
                 writer.newLine();
-                String phoneNum = Integer.toString(patient.getPhoneNum());
+                String phoneNum = Long.toString(patient.getPhoneNum());
                 writer.write(phoneNum);
                 writer.newLine();
                 String numOHIP = Integer.toString(patient.getNumOHIP());
@@ -310,7 +310,7 @@ public class PatientManager {
                 String gender = Character.toString(patient.getGender());
                 writer.write(gender);
                 writer.newLine();
-                String emergencyPhone = Integer.toString(patient.getEmergencyContactPhoneNumber());
+                String emergencyPhone = Long.toString(patient.getEmergencyContactPhoneNumber());
                 writer.write(emergencyPhone);
                 writer.newLine();
 
@@ -450,7 +450,7 @@ public class PatientManager {
         Date dateOfBirth = parseDate(patientLines[4]);
         String ward = patientLines[5];
         String address = patientLines[6];
-        int phoneNum = Integer.parseInt(patientLines[7]);
+        long phoneNum = Long.parseLong(patientLines[7]);
         int numOHIP = Integer.parseInt(patientLines[8]);
         Date dateRegistered = parseDate(patientLines[9]);
         char gender;
@@ -459,7 +459,7 @@ public class PatientManager {
         } else {
             gender = patientLines[10].charAt(0);
         }
-        int emergencyContactPhoneNumber = Integer.parseInt(patientLines[11]);
+        long emergencyContactPhoneNumber = Long.parseLong(patientLines[11]);
 
         switch (type) {
             case "InPatient":
@@ -706,6 +706,15 @@ public class PatientManager {
     }
 
     /**
+     * Searches for a patient by their ID (API alias used by ApptManager).
+     * @param patientID the ID of the patient to search for
+     * @return the patient if found, null otherwise
+     */
+    public Patient searchPatientByPatientID(int patientID) {
+        return searchPatientByID(patientID);
+    }
+
+    /**
      * Searches for a patient by their ID using binary search
      * @param patientID the ID of the patient to search for
      * @param bottom the lower bound of the search range
@@ -756,9 +765,10 @@ public class PatientManager {
     }
 
     /**
-     * Sorts the patients array by date registered using an insertion sort
+     * Sorts the patients array by date registered using an insertion sort.
+     * API alias: sortByDateEntered().
      */
-    public void sortByDateRegistered() {
+    public void sortByDateEntered() {
         if (numPatients <= 1) {
             return;
         }
@@ -778,7 +788,7 @@ public class PatientManager {
     }
 
     /**
-     * Sorts the patients array by ward registered using an insertion sort
+     * Sorts the patients array by ward, then patient ID (selection sort).
      */
     public void sortByWardThenPatientID () {
         if (numPatients <= 1) {
@@ -849,7 +859,7 @@ public class PatientManager {
             return false; // Patient not found
         }
 
-        patient.addDiagnosis(diagnosis);
+        patient.addDiagnoses(diagnosis);
         return true;
     }
 
@@ -875,7 +885,7 @@ public class PatientManager {
      * @param newDiagnosis the updated diagnosis
      * @return boolean if the diagnosis is successfully deleted
      */
-    public boolean deleteDiagnosis (int patientID, String orgDiagnosis, String newDiagnosis) {
+    public boolean updateDiagnosis (int patientID, String orgDiagnosis, String newDiagnosis) {
         Patient patient = searchPatientByID(patientID);
         if (patient == null) {
             return false;
@@ -1151,6 +1161,19 @@ public class PatientManager {
     }
 
     /**
+     * Computes the total bill for a patient by delegating to the patient's calculateBill().
+     * @param patientID the ID of the patient
+     * @return the total bill, or -1 if the patient is not found
+     */
+    public double calculateBill(int patientID) {
+        Patient patient = searchPatientByID(patientID);
+        if (patient == null) {
+            return -1;
+        }
+        return patient.calculateBill();
+    }
+
+    /**
      * Set the status of an emergency patient
      * @param patientID the ID of the patient
      * @param status the status of the patient
@@ -1196,15 +1219,19 @@ public class PatientManager {
         apptString += "Past appointments: \n";
         Appointment[] pastAppts = patient.getPastAppointments();
         for (int i = 0; i < pastAppts.length; i++) {
-            apptString += pastAppts[i].toString();
-            apptString += "\n";
+            if (pastAppts[i] != null) {
+                apptString += pastAppts[i].toString();
+                apptString += "\n";
+            }
         }
 
         apptString += "\nUpcoming appointments: \n";
         Appointment[] upcomingAppts = patient.getUpcomingAppointments();
         for (int i = 0; i < upcomingAppts.length; i++) {
-            apptString += upcomingAppts[i].toString();
-            apptString += "\n";
+            if (upcomingAppts[i] != null) {
+                apptString += upcomingAppts[i].toString();
+                apptString += "\n";
+            }
         }
 
         return apptString;

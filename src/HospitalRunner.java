@@ -1,784 +1,1162 @@
-import java.util.*;
+import appointment.*;
 import patient.*;
-import shared.Date;
-import staff.Staff;
+import shared.*;
+import staff.*;
+
+import java.util.Scanner;
 
 public class HospitalRunner {
-
-    static final String PATIENT_FILE = "patients.txt";
-    static final String APPT_FILE = "appointments.txt";
-    static final int MAX_PATIENTS = 100;
-
-    /**
-     * Reads a non-blank line from the scanner
-     * @param sc the Scanner to read from
-     * @param label the prompt label to display
-     * @return the trimmed non-blank input string
-     */
-    private static String prompt(Scanner sc, String label) {
-        String val = "";
-        while (val.isEmpty()) {
-            System.out.print(label);
-            val = sc.nextLine().trim();
-            if (val.isEmpty()) System.out.println("  (cannot be blank, try again)");
-        }
-        return val;
-    }
-
-    /**
-     * Reads an integer from the scanner, re-prompting on invalid input
-     * @param sc the Scanner to read from
-     * @param label the prompt label to display
-     * @return the parsed integer value
-     */
-    private static int promptInt(Scanner sc, String label) {
-        while (true) {
-            try {
-                return Integer.parseInt(prompt(sc, label));
-            } catch (NumberFormatException e) {
-                System.out.println("  Please enter a whole number.");
-            }
-        }
-    }
-
-    /**
-     * Reads a double from the scanner, re-prompting on invalid input
-     * @param sc the Scanner to read from
-     * @param label the prompt label to display
-     * @return the parsed double value
-     */
-    private static double promptDouble(Scanner sc, String label) {
-        while (true) {
-            try {
-                return Double.parseDouble(prompt(sc, label));
-            } catch (NumberFormatException e) {
-                System.out.println("  Please enter a number.");
-            }
-        }
-    }
-
-    /**
-     * Reads a date in YYYY-MM-DD format from the scanner, re-prompting on invalid input
-     * @param sc the Scanner to read from
-     * @param label the prompt label to display
-     * @return a Date object representing the parsed date
-     */
-    private static Date promptDate(Scanner sc, String label) {
-        while (true) {
-            String raw = prompt(sc, label + " (YYYY-MM-DD): ");
-            String[] p = raw.split("-");
-            if (p.length == 3) {
-                try {
-                    int y = Integer.parseInt(p[0]);
-                    int m = Integer.parseInt(p[1]);
-                    int d = Integer.parseInt(p[2]);
-                    return new Date(y, m, d);
-                } catch (NumberFormatException ignored) {}
-            }
-            System.out.println("  Invalid date format, try again.");
-        }
-    }
-
-    /**
-     * Reads a single character from the scanner, re-prompting if input is empty
-     * @param sc the Scanner to read from
-     * @param label the prompt label to display
-     * @return the first character of the input string
-     */
-    private static char promptChar(Scanner sc, String label) {
-        while (true) {
-            String raw = prompt(sc, label);
-            if (!raw.isEmpty()) return raw.charAt(0);
-        }
-    }
-
-    /**
-     * Searches for a Staff object by staff ID in the given array
-     * @param allStaff the array of staff to search through
-     * @param staffID the staff ID to search for
-     * @return the Staff if found, null otherwise
-     */
-    private static Staff findStaff(Staff[] allStaff, String staffID) {
-        for (Staff s : allStaff) {
-            if (s != null && s.getStaffID().equals(staffID)) return s;
-        }
-        return null;
-    }
-
-    /**
-     * Prompts for the 12 fields shared by all patient types and returns them as an Object array
-     * Index order: [0] patientID, [1] firstName, [2] lastName, [3] dateOfBirth,
-     *              [4] ward, [5] address, [6] phoneNum, [7] numOHIP,
-     *              [8] dateRegistered, [9] gender, [10] emergencyContactPhoneNumber, [11] assignedStaff
-     * @param sc the Scanner to read from
-     * @param allStaff the array of staff to look up the assigned staff member from
-     * @return an Object array containing the 12 base patient fields
-     */
-    private static Object[] promptBasePatientFields(Scanner sc, Staff[] allStaff) {
-        int patientID = promptInt(sc, "  Patient ID: ");
-        String firstName = prompt(sc, "  First name: ");
-        String lastName = prompt(sc, "  Last name: ");
-        Date dob = promptDate(sc, "  Date of birth");
-        String ward = prompt(sc, "  Ward: ");
-        String address = prompt(sc, "  Address: ");
-        int phone = promptInt(sc, "  Phone number: ");
-        int ohip = promptInt(sc, "  OHIP number: ");
-        Date dateReg = promptDate(sc, "  Date registered");
-        char gender = promptChar(sc, "  Gender (M/F/O): ");
-        int emergPhone = promptInt(sc, "  Emergency contact #: ");
-
-        Staff assigned = null;
-        while (true) {
-            String sid = prompt(sc, "  Assigned staff ID: ");
-            assigned = findStaff(allStaff, sid);
-            if (assigned != null) break;
-            System.out.println("  Staff ID \"" + sid + "\" not found. Try again.");
-        }
-
-        return new Object[]{patientID, firstName, lastName, dob, ward, address, phone, ohip, dateReg, gender, emergPhone, assigned};
-    }
-
-    /**
-     * Displays the register, delete, and update sub-menu and handles user selections
-     * @param sc the Scanner to read from
-     * @param pm the PatientManager to operate on
-     * @param allStaff the array of staff for staff lookups
-     */
-    private static void menuRegisterDeleteUpdate(Scanner sc, PatientManager pm, Staff[] allStaff) {
-        while (true) {
-            System.out.println();
-            System.out.println("  Register / Delete / Update");
-            System.out.println("  1. Register an in-patient");
-            System.out.println("  2. Register an out-patient");
-            System.out.println("  3. Register an emergency patient");
-            System.out.println("  4. Delete a patient");
-            System.out.println("  5. Update a patient (re-enter all fields)");
-            System.out.println("  6. Back");
-            System.out.print("  Selection: ");
-            String sel = sc.nextLine().trim();
-            System.out.println();
-
-            switch (sel) {
-                case "1": {
-                    System.out.println("  --- Register In-Patient ---");
-                    Object[] b = promptBasePatientFields(sc, allStaff);
-                    Date dayIn = promptDate(sc, "  Day in");
-                    Date dayOut = promptDate(sc, "  Day out");
-                    boolean bed = Boolean.parseBoolean(prompt(sc, "  Hospital bed assigned? (true/false): ").trim());
-                    boolean ok = pm.registerInPatient(
-                        (int)b[0], (String)b[1], (String)b[2], (Date)b[3],
-                        (String)b[4], (String)b[5], (int)b[6], (int)b[7],
-                        (Date)b[8], (char)b[9], (int)b[10], (Staff)b[11]
-                    );
-                    if (ok) {
-                        Patient p = pm.searchPatientByID((int)b[0]);
-                        if (p instanceof InPatient) {
-                            ((InPatient) p).setDayIn(dayIn);
-                            ((InPatient) p).setDayOut(dayOut);
-                            ((InPatient) p).setHospitalBed(bed);
-                        }
-                        System.out.println("  In-patient registered successfully.");
-                    } else {
-                        System.out.println("  Registration failed (capacity full or invalid OHIP).");
-                    }
-                    break;
-                }
-
-                case "2": {
-                    System.out.println("  --- Register Out-Patient ---");
-                    Object[] b = promptBasePatientFields(sc, allStaff);
-                    int apptMonths = promptInt(sc, "  Appointment timing (months): ");
-                    boolean ok = pm.registerOutPatient(
-                        (int)b[0], (String)b[1], (String)b[2], (Date)b[3],
-                        (String)b[4], (String)b[5], (int)b[6], (int)b[7],
-                        (Date)b[8], (char)b[9], (int)b[10], (Staff)b[11]
-                    );
-                    if (ok) {
-                        Patient p = pm.searchPatientByID((int)b[0]);
-                        if (p instanceof OutPatient) {
-                            ((OutPatient) p).setAppointmentTimingMonths(apptMonths);
-                        }
-                        System.out.println("  Out-patient registered successfully.");
-                    } else {
-                        System.out.println("  Registration failed (capacity full or invalid OHIP).");
-                    }
-                    break;
-                }
-
-                case "3": {
-                    System.out.println("  --- Register Emergency Patient ---");
-                    Object[] b = promptBasePatientFields(sc, allStaff);
-                    int arrivalTime = promptInt(sc, "  Arrival time (HHMM int): ");
-                    Date dayIn = promptDate(sc, "  Day in");
-                    Date dayOut = promptDate(sc, "  Day out");
-                    String complaint = prompt(sc, "  Presenting complaint: ");
-                    String arrivalType = prompt(sc, "  Arrival type: ");
-                    String status = prompt(sc, "  Status: ");
-                    boolean ok = pm.registerEmergencyPatient(
-                        (int)b[0], (String)b[1], (String)b[2], (Date)b[3],
-                        (String)b[4], (String)b[5], (int)b[6], (int)b[7],
-                        (Date)b[8], (char)b[9], (int)b[10], (Staff)b[11]
-                    );
-                    if (ok) {
-                        Patient p = pm.searchPatientByID((int)b[0]);
-                        if (p instanceof EmergencyPatient) {
-                            EmergencyPatient ep = (EmergencyPatient) p;
-                            ep.setArrivalTime(arrivalTime);
-                            ep.setDayIn(dayIn);
-                            ep.setDayOut(dayOut);
-                            ep.setPresentingComplaint(complaint);
-                            ep.setArrivalType(arrivalType);
-                            ep.setStatus(status);
-                        }
-                        System.out.println("  Emergency patient registered successfully.");
-                    } else {
-                        System.out.println("  Registration failed (capacity full or invalid OHIP).");
-                    }
-                    break;
-                }
-
-                case "4": {
-                    int pid = promptInt(sc, "  Patient ID to delete: ");
-                    if (pm.deletePatient(pid)) {
-                        System.out.println("  Patient " + pid + " deleted.");
-                    } else {
-                        System.out.println("  Patient not found.");
-                    }
-                    break;
-                }
-
-                case "5": {
-                    int pid = promptInt(sc, "  Patient ID to update: ");
-                    Patient existing = pm.searchPatientByID(pid);
-                    if (existing == null) {
-                        System.out.println("  Patient not found.");
-                        break;
-                    }
-                    System.out.println("  Patient found (" + existing.getClass().getSimpleName()
-                                       + "). Re-enter all fields:");
-                    Object[] b = promptBasePatientFields(sc, allStaff);
-                    Patient updated;
-                    if (existing instanceof InPatient) {
-                        Date dayIn = promptDate(sc, "  Day in");
-                        Date dayOut = promptDate(sc, "  Day out");
-                        boolean bed = Boolean.parseBoolean(prompt(sc, "  Hospital bed? (true/false): ").trim());
-                        updated = new InPatient(
-                            (int)b[0], (String)b[1], (String)b[2], (Date)b[3],
-                            (String)b[4], (String)b[5], (int)b[6], (int)b[7],
-                            (Date)b[8], (char)b[9], (int)b[10], (Staff)b[11],
-                            dayIn, dayOut, bed);
-                    } else if (existing instanceof OutPatient) {
-                        int months = promptInt(sc, "  Appointment timing (months): ");
-                        updated = new OutPatient(
-                            (int)b[0], (String)b[1], (String)b[2], (Date)b[3],
-                            (String)b[4], (String)b[5], (int)b[6], (int)b[7],
-                            (Date)b[8], (char)b[9], (int)b[10], (Staff)b[11],
-                            months);
-                    } else {
-                        int arrivalTime = promptInt(sc, "  Arrival time (HHMM): ");
-                        Date dayIn = promptDate(sc, "  Day in");
-                        Date dayOut = promptDate(sc, "  Day out");
-                        String complaint = prompt(sc, "  Presenting complaint: ");
-                        String arrType = prompt(sc, "  Arrival type: ");
-                        String status = prompt(sc, "  Status: ");
-                        updated = new EmergencyPatient(
-                            (int)b[0], (String)b[1], (String)b[2], (Date)b[3],
-                            (String)b[4], (String)b[5], (int)b[6], (int)b[7],
-                            (Date)b[8], (char)b[9], (int)b[10], (Staff)b[11],
-                            arrivalTime, dayIn, dayOut, complaint, arrType, status);
-                    }
-                    if (pm.updatePatient(pid, updated)) {
-                        System.out.println("  Patient updated successfully.");
-                    } else {
-                        System.out.println("  Update failed.");
-                    }
-                    break;
-                }
-
-                case "6":
-                    return;
-
-                default:
-                    System.out.println("  Invalid selection.");
-            }
-        }
-    }
-
-    /**
-     * Displays the search sub-menu and handles searching by ID or name
-     * @param sc the Scanner to read from
-     * @param pm the PatientManager to search in
-     */
-    private static void menuSearch(Scanner sc, PatientManager pm) {
-        System.out.println();
-        System.out.println("  Search by:");
-        System.out.println("  1. Patient ID");
-        System.out.println("  2. First and last name");
-        System.out.print("  Selection: ");
-        String sel = sc.nextLine().trim();
-
-        if (sel.equals("1")) {
-            int pid = promptInt(sc, "  Patient ID: ");
-            Patient p = pm.searchPatientByID(pid);
-            if (p == null) {
-                System.out.println("  Not found.");
-            } else {
-                System.out.println(p);
-            }
-        } else if (sel.equals("2")) {
-            String first = prompt(sc, "  First name: ");
-            String last = prompt(sc, "  Last name: ");
-            int pid = pm.searchPatientIDByName(first, last);
-            if (pid == -1) {
-                System.out.println("  Not found.");
-            } else {
-                System.out.println("  Found patient ID: " + pid);
-                System.out.println(pm.searchPatientByID(pid));
-            }
-        } else {
-            System.out.println("  Invalid selection.");
-        }
-    }
-
-    /**
-     * Displays the sort sub-menu and handles sorting by ID, date registered, or ward
-     * @param sc the Scanner to read from
-     * @param pm the PatientManager to sort
-     */
-    private static void menuSort(Scanner sc, PatientManager pm) {
-        System.out.println();
-        System.out.println("  Sort by:");
-        System.out.println("  1. Patient ID");
-        System.out.println("  2. Date registered");
-        System.out.println("  3. Ward then patient ID");
-        System.out.print("  Selection: ");
-        String sel = sc.nextLine().trim();
-
-        switch (sel) {
-            case "1":
-                pm.sortByPatientID();
-                System.out.println("  Sorted by patient ID.");
-                break;
-            case "2":
-                pm.sortByDateRegistered();
-                System.out.println("  Sorted by date registered.");
-                break;
-            case "3":
-                pm.sortByWardThenPatientID();
-                System.out.println("  Sorted by ward then patient ID.");
-                break;
-            default:
-                System.out.println("  Invalid selection.");
-        }
-    }
-
-    /**
-     * Displays the manage records sub-menu and handles diagnoses, medications,
-     * allergies, and medical/family history operations
-     * @param sc the Scanner to read from
-     * @param pm the PatientManager to operate on
-     */
-    private static void menuManageRecords(Scanner sc, PatientManager pm) {
-        System.out.println();
-        System.out.println("  Manage Records:");
-        System.out.println("  1.  Add diagnosis");
-        System.out.println("  2.  Delete diagnosis");
-        System.out.println("  3.  Update diagnosis");
-        System.out.println("  4.  Add medication");
-        System.out.println("  5.  Delete medication");
-        System.out.println("  6.  Update medication");
-        System.out.println("  7.  Add allergy");
-        System.out.println("  8.  Delete allergy");
-        System.out.println("  9.  Update allergy");
-        System.out.println("  10. Add medical history");
-        System.out.println("  11. Delete medical history");
-        System.out.println("  12. Add family history");
-        System.out.println("  13. Delete family history");
-        System.out.print("  Selection: ");
-        String sel = sc.nextLine().trim();
-        System.out.println();
-
-        int pid;
-        boolean ok;
-
-        switch (sel) {
-            case "1":
-                pid = promptInt(sc, "  Patient ID: ");
-                ok = pm.addDiagnosis(pid, prompt(sc, "  Diagnosis: "));
-                if (ok) {
-                    System.out.println("  Added.");
-                } else {
-                    System.out.println("  Failed - patient not found.");
-                }
-                break;
-            case "2":
-                pid = promptInt(sc, "  Patient ID: ");
-                ok = pm.deleteDiagnosis(pid, prompt(sc, "  Diagnosis: "));
-                if (ok) {
-                    System.out.println("  Deleted.");
-                } else {
-                    System.out.println("  Failed - patient or diagnosis not found.");
-                }
-                break;
-            case "3":
-                pid = promptInt(sc, "  Patient ID: ");
-                ok = pm.deleteDiagnosis(pid,
-                          prompt(sc, "  Original diagnosis: "),
-                          prompt(sc, "  New diagnosis: "));
-                if (ok) {
-                    System.out.println("  Updated.");
-                } else {
-                    System.out.println("  Failed - patient or original diagnosis not found.");
-                }
-                break;
-            case "4":
-                pid = promptInt(sc, "  Patient ID: ");
-                ok = pm.addMedication(pid,
-                          prompt(sc, "  Med name: "),
-                          prompt(sc, "  Dosage: "));
-                if (ok) {
-                    System.out.println("  Added.");
-                } else {
-                    System.out.println("  Failed.");
-                }
-                break;
-            case "5":
-                pid = promptInt(sc, "  Patient ID: ");
-                ok = pm.deleteMedication(pid, prompt(sc, "  Med name: "));
-                if (ok) {
-                    System.out.println("  Deleted.");
-                } else {
-                    System.out.println("  Failed.");
-                }
-                break;
-            case "6":
-                pid = promptInt(sc, "  Patient ID: ");
-                ok = pm.updateMedication(pid,
-                          prompt(sc, "  Original med name: "),
-                          prompt(sc, "  New med name: "),
-                          prompt(sc, "  New dosage: "));
-                if (ok) {
-                    System.out.println("  Updated.");
-                } else {
-                    System.out.println("  Failed.");
-                }
-                break;
-            case "7":
-                pid = promptInt(sc, "  Patient ID: ");
-                ok = pm.addAllergy(pid, prompt(sc, "  Allergy: "));
-                if (ok) {
-                    System.out.println("  Added.");
-                } else {
-                    System.out.println("  Failed.");
-                }
-                break;
-            case "8":
-                pid = promptInt(sc, "  Patient ID: ");
-                ok = pm.deleteAllergy(pid, prompt(sc, "  Allergy: "));
-                if (ok) {
-                    System.out.println("  Deleted.");
-                } else {
-                    System.out.println("  Failed.");
-                }
-                break;
-            case "9":
-                pid = promptInt(sc, "  Patient ID: ");
-                ok = pm.updateAllergy(pid,
-                          prompt(sc, "  Original allergy: "),
-                          prompt(sc, "  New allergy: "));
-                if (ok) {
-                    System.out.println("  Updated.");
-                } else {
-                    System.out.println("  Failed.");
-                }
-                break;
-            case "10":
-                pid = promptInt(sc, "  Patient ID: ");
-                ok = pm.addMedicalHistory(pid, prompt(sc, "  Medical history: "));
-                if (ok) {
-                    System.out.println("  Added.");
-                } else {
-                    System.out.println("  Failed.");
-                }
-                break;
-            case "11":
-                pid = promptInt(sc, "  Patient ID: ");
-                ok = pm.deleteMedicalHistory(pid, prompt(sc, "  Medical history: "));
-                if (ok) {
-                    System.out.println("  Deleted.");
-                } else {
-                    System.out.println("  Failed.");
-                }
-                break;
-            case "12":
-                pid = promptInt(sc, "  Patient ID: ");
-                ok = pm.addFamilyHistory(pid, prompt(sc, "  Family history: "));
-                if (ok) {
-                    System.out.println("  Added.");
-                } else {
-                    System.out.println("  Failed.");
-                }
-                break;
-            case "13":
-                pid = promptInt(sc, "  Patient ID: ");
-                ok = pm.deleteFamilyHistory(pid, prompt(sc, "  Family history: "));
-                if (ok) {
-                    System.out.println("  Deleted.");
-                } else {
-                    System.out.println("  Failed.");
-                }
-                break;
-            default:
-                System.out.println("  Invalid selection.");
-        }
-    }
-
-    /**
-     * Displays the in-patient sub-menu and handles logging medications administered
-     * and recording vitals
-     * @param sc the Scanner to read from
-     * @param pm the PatientManager to operate on
-     */
-    private static void menuInPatient(Scanner sc, PatientManager pm) {
-        System.out.println();
-        System.out.println("  In-Patient Management:");
-        System.out.println("  1. Log medication administered");
-        System.out.println("  2. Record vitals");
-        System.out.print("  Selection: ");
-        String sel = sc.nextLine().trim();
-        System.out.println();
-
-        int pid = promptInt(sc, "  Patient ID: ");
-
-        if (sel.equals("1")) {
-            String medName = prompt(sc, "  Medication name: ");
-            String dosage = prompt(sc, "  Dosage: ");
-            Medication med = new Medication(medName, dosage);
-            boolean ok = pm.logMedicationAdministeredForPatient(pid, med);
-            if (ok) {
-                System.out.println("  Logged.");
-            } else {
-                System.out.println("  Failed - patient not found or not an in-patient.");
-            }
-        } else if (sel.equals("2")) {
-            double hr = promptDouble(sc, "  Heart rate: ");
-            double bp = promptDouble(sc, "  Blood pressure: ");
-            boolean ok = pm.recordVitalsForPatient(pid, hr, bp);
-            if (ok) {
-                System.out.println("  Vitals recorded.");
-            } else {
-                System.out.println("  Failed - patient not found or not an in-patient.");
-            }
-        } else {
-            System.out.println("  Invalid selection.");
-        }
-    }
-
-    /**
-     * Prompts for a new status and updates it for the specified emergency patient
-     * @param sc the Scanner to read from
-     * @param pm the PatientManager to operate on
-     */
-    private static void menuEmergencyPatient(Scanner sc, PatientManager pm) {
-        System.out.println();
-        int pid = promptInt(sc, "  Patient ID: ");
-        String status = prompt(sc, "  New status: ");
-        boolean ok = pm.setEmergencyPatientStatus(pid, status);
-        if (ok) {
-            System.out.println("  Status updated.");
-        } else {
-            System.out.println("  Failed - patient not found or not an emergency patient.");
-        }
-    }
-
-    /**
-     * Entry point for the hospital management system
-     * Loads patient and appointment data from files if available,
-     * then presents the main menu until the user exits
-     * @param args command-line arguments (not used)
-     */
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
 
-        PatientManager pm = new PatientManager(MAX_PATIENTS);
-        boolean patientsLoaded = pm.loadPatientInfo(PATIENT_FILE);
-        if (patientsLoaded) {
-            System.out.println("Patients loaded from " + PATIENT_FILE + ".");
-            boolean apptsLoaded = pm.loadPatientAppts(APPT_FILE);
-            if (apptsLoaded) {
-                System.out.println("Appointments loaded from " + APPT_FILE + ".");
-            } else {
-                System.out.println("No appointment file found.");
+        StaffManager staffManager = new StaffManager(50);
+        PatientManager patientManager = new PatientManager(100);
+        ApptManager apptManager = new ApptManager(200, staffManager, patientManager);
+
+        staffManager.loadFromFile("data/staff.txt");
+        patientManager.loadPatientInfo("data/patients.txt");
+        patientManager.loadPatientAppts("data/patient_appointments.txt");
+        apptManager.loadFromFile("data/appointments.txt");
+
+        int nextApptID = 5000;
+        Appointment[] loaded = apptManager.getAppointments();
+        for (int i = 0; i < apptManager.getNumAppointments(); i++) {
+            if (loaded[i] != null && loaded[i].getApptID() >= nextApptID) {
+                nextApptID = loaded[i].getApptID() + 1;
             }
-        } else {
-            System.out.println("No patient file found.");
         }
 
-        // change later
-        Staff[] allStaff = new Staff[0];
+        System.out.println("=== Hospital Management System ===");
+        boolean running = true;
 
-        boolean exit = false;
-
-        while (!exit) {
+        while (running) {
             System.out.println();
-            System.out.println("========== Main Menu ==========");
-            System.out.println("1. Manage Appointments");
-            System.out.println("2. Manage Patients");
-            System.out.println("3. Manage Staff");
-            System.out.println("4. Save and exit");
-            System.out.print("Selection: ");
-            String mainSel = sc.nextLine().trim();
-            System.out.println();
+            System.out.println("--- Main Menu ---");
+            System.out.println("[1] Staff Management");
+            System.out.println("[2] Patient Management");
+            System.out.println("[3] Appointment Management");
+            System.out.println("[4] Save All Data");
+            System.out.println("[5] Exit");
 
-            switch (mainSel) {
-                case "1":
-                case "3":
-                    break;
+            int choice = -1;
+            while (choice == -1) {
+                System.out.print("> ");
+                try {
+                    choice = Integer.parseInt(scanner.nextLine().trim());
+                } catch (NumberFormatException e) {
+                    System.out.println("Error: please enter a valid integer.");
+                }
+            }
 
-                case "4":
-                    exit = true;
-                    break;
+            if (choice == 1) {
+                // ── Staff Management submenu ──
+                boolean staffBack = false;
+                while (!staffBack) {
+                    System.out.println();
+                    System.out.println("--- Staff Management ---");
+                    System.out.println("[1] Search by Specialty and Experience");
+                    System.out.println("[2] Search by Name");
+                    System.out.println("[3] Sort Staff by Name");
+                    System.out.println("[4] Sort Staff by Experience");
+                    System.out.println("[5] List All Staff");
+                    System.out.println("[6] View Staff Schedule");
+                    System.out.println("[7] Run Payroll");
+                    System.out.println("[8] Add Staff");
+                    System.out.println("[9] Remove Staff");
+                    System.out.println("[10] Edit Staff");
+                    System.out.println("[11] Back");
 
-                case "2":
-                    boolean backToMain = false;
-                    while (!backToMain) {
-                        System.out.println();
-                        System.out.println("  ===== Patient Management =====");
-                        System.out.println("  1.  Register, delete, or update a patient");
-                        System.out.println("  2.  Search for a patient");
-                        System.out.println("  3.  Sort patients");
-                        System.out.println("  4.  Manage diagnoses, medications, allergies, history");
-                        System.out.println("  5.  In-patient: log medications administered / vitals");
-                        System.out.println("  6.  Emergency patient: update status");
-                        System.out.println("  7.  Update assigned staff for a patient");
-                        System.out.println("  8.  Check in a patient");
-                        System.out.println("  9.  Check out a patient");
-                        System.out.println("  10. Calculate total cost for a patient");
-                        System.out.println("  11. List all patients");
-                        System.out.println("  12. List all appointments for a patient");
-                        System.out.println("  13. Back to main menu");
-                        System.out.print("  Selection: ");
-                        String patSel = sc.nextLine().trim();
-                        System.out.println();
+                    int staffChoice = -1;
+                    while (staffChoice == -1) {
+                        System.out.print("> ");
+                        try {
+                            staffChoice = Integer.parseInt(scanner.nextLine().trim());
+                        } catch (NumberFormatException e) {
+                            System.out.println("Error: please enter a valid integer.");
+                        }
+                    }
 
-                        switch (patSel) {
-                            case "1":
-                                menuRegisterDeleteUpdate(sc, pm, allStaff);
-                                break;
+                    if (staffChoice == 1) {
+                        System.out.println("--- Search Staff by Specialty and Experience ---");
+                        System.out.print("Specialty: ");
+                        String specialty = scanner.nextLine().trim();
+                        int minExp = -1;
+                        while (minExp == -1) {
+                            System.out.print("Minimum years of experience: ");
+                            try {
+                                minExp = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        Staff[] results = staffManager.findStaff(specialty, minExp);
+                        System.out.println("Results (" + results.length + " found):");
+                        for (int i = 0; i < results.length; i++) {
+                            Staff s = results[i];
+                            String line = "[" + (i + 1) + "] " + s.getName()
+                                    + "  -- " + s.getSpecialization()
+                                    + ", " + s.getExperience() + " years";
+                            if (s instanceof Doctor) {
+                                line += ", License: " + ((Doctor) s).getLicenseNumber();
+                            }
+                            System.out.println(line);
+                        }
+                    } else if (staffChoice == 2) {
+                        System.out.print("Staff name: ");
+                        String name = scanner.nextLine().trim();
+                        Staff found = staffManager.findStaff(name);
+                        if (found == null) {
+                            System.out.println("No staff member found with that name.");
+                        } else {
+                            System.out.println(found.toString());
+                        }
+                    } else if (staffChoice == 3) {
+                        staffManager.sortStaff();
+                        System.out.println("Staff sorted by name.");
+                    } else if (staffChoice == 4) {
+                        staffManager.sortStaffByExp();
+                        System.out.println("Staff sorted by experience.");
+                    } else if (staffChoice == 5) {
+                        Staff[] staff = staffManager.getStaffArray();
+                        if (staff.length == 0) {
+                            System.out.println("No staff on record.");
+                        } else {
+                            for (Staff s : staff) {
+                                System.out.println(s.getName() + " (" + s.getStaffID() + ") — "
+                                        + s.getSpecialization());
+                            }
+                        }
+                    } else if (staffChoice == 6) {
+                        System.out.print("Staff name: ");
+                        String name = scanner.nextLine().trim();
+                        Staff found = staffManager.findStaff(name);
+                        if (found == null) {
+                            System.out.println("Error: staff member not found.");
+                        } else {
+                            System.out.println(staffManager.checkShifts(found));
+                        }
+                    } else if (staffChoice == 7) {
+                        System.out.printf("Total payroll: $%.2f%n", staffManager.runPayroll());
+                    } else if (staffChoice == 8) {
+                        System.out.println("--- Add Staff ---");
+                        System.out.println("[1] Doctor  [2] Nurse  [3] Surgeon");
+                        int roleChoice = -1;
+                        while (roleChoice == -1) {
+                            System.out.print("> ");
+                            try {
+                                roleChoice = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        if (roleChoice < 1 || roleChoice > 3) {
+                            System.out.println("Error: invalid role.");
+                            continue;
+                        }
+                        System.out.print("Staff ID: ");
+                        String staffID = scanner.nextLine().trim();
+                        System.out.print("Name: ");
+                        String staffName = scanner.nextLine().trim();
+                        int experience = -1;
+                        while (experience == -1) {
+                            System.out.print("Years of experience: ");
+                            try {
+                                experience = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        System.out.print("Specialization: ");
+                        String staffSpec = scanner.nextLine().trim();
+                        String[] offDays = new String[10];
+                        Appointment[] schedule = new Appointment[20];
 
-                            case "2":
-                                menuSearch(sc, pm);
-                                break;
+                        if (roleChoice == 1) {
+                            System.out.print("License number: ");
+                            String license = scanner.nextLine().trim();
+                            double fee = -1;
+                            while (fee == -1) {
+                                System.out.print("Consultation fee: ");
+                                try {
+                                    fee = Double.parseDouble(scanner.nextLine().trim());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Error: please enter a valid number.");
+                                }
+                            }
+                            int maxPatients = -1;
+                            while (maxPatients == -1) {
+                                System.out.print("Max patients: ");
+                                try {
+                                    maxPatients = Integer.parseInt(scanner.nextLine().trim());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Error: please enter a valid integer.");
+                                }
+                            }
+                            staffManager.addStaff(new Doctor(staffID, staffName, experience,
+                                    staffSpec, offDays, schedule, license, fee, maxPatients));
+                        } else if (roleChoice == 2) {
+                            System.out.print("Ward: ");
+                            String ward = scanner.nextLine().trim();
+                            System.out.print("Shift type (Day/Night/Rotating): ");
+                            String shiftType = scanner.nextLine().trim();
+                            double hourlyRate = -1;
+                            while (hourlyRate == -1) {
+                                System.out.print("Hourly rate: ");
+                                try {
+                                    hourlyRate = Double.parseDouble(scanner.nextLine().trim());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Error: please enter a valid number.");
+                                }
+                            }
+                            int hoursWorked = -1;
+                            while (hoursWorked == -1) {
+                                System.out.print("Hours worked this week: ");
+                                try {
+                                    hoursWorked = Integer.parseInt(scanner.nextLine().trim());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Error: please enter a valid integer.");
+                                }
+                            }
+                            staffManager.addStaff(new Nurse(staffID, staffName, experience,
+                                    staffSpec, offDays, schedule, ward, shiftType,
+                                    hourlyRate, hoursWorked));
+                        } else {
+                            int operatingRoom = -1;
+                            while (operatingRoom == -1) {
+                                System.out.print("Operating room number: ");
+                                try {
+                                    operatingRoom = Integer.parseInt(scanner.nextLine().trim());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Error: please enter a valid integer.");
+                                }
+                            }
+                            int surgeriesDone = -1;
+                            while (surgeriesDone == -1) {
+                                System.out.print("Surgeries completed: ");
+                                try {
+                                    surgeriesDone = Integer.parseInt(scanner.nextLine().trim());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Error: please enter a valid integer.");
+                                }
+                            }
+                            System.out.print("Specialty area: ");
+                            String specialtyArea = scanner.nextLine().trim();
+                            double surgeryFee = -1;
+                            while (surgeryFee == -1) {
+                                System.out.print("Surgery fee per procedure: ");
+                                try {
+                                    surgeryFee = Double.parseDouble(scanner.nextLine().trim());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Error: please enter a valid number.");
+                                }
+                            }
+                            staffManager.addStaff(new Surgeon(staffID, staffName, experience,
+                                    staffSpec, offDays, schedule, operatingRoom, surgeriesDone,
+                                    specialtyArea, surgeryFee));
+                        }
+                        System.out.println("Staff member added.");
 
-                            case "3":
-                                menuSort(sc, pm);
-                                break;
+                    } else if (staffChoice == 9) {
+                        System.out.print("Staff ID to remove: ");
+                        String removeID = scanner.nextLine().trim();
+                        if (staffManager.removeStaff(removeID)) {
+                            System.out.println("Staff member removed.");
+                        } else {
+                            System.out.println("Error: staff member not found.");
+                        }
 
-                            case "4":
-                                menuManageRecords(sc, pm);
-                                break;
+                    } else if (staffChoice == 10) {
+                        System.out.print("Staff ID to edit: ");
+                        String editID = scanner.nextLine().trim();
+                        System.out.print("New name: ");
+                        String newName = scanner.nextLine().trim();
+                        int newExp = -1;
+                        while (newExp == -1) {
+                            System.out.print("New years of experience: ");
+                            try {
+                                newExp = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        System.out.print("New specialization: ");
+                        String newSpec = scanner.nextLine().trim();
+                        if (staffManager.updateStaff(editID, newName, newExp, newSpec)) {
+                            System.out.println("Staff member updated.");
+                        } else {
+                            System.out.println("Error: staff member not found.");
+                        }
 
-                            case "5":
-                                menuInPatient(sc, pm);
-                                break;
+                    } else if (staffChoice == 11) {
+                        staffBack = true;
+                    } else {
+                        System.out.println("Error: invalid choice.");
+                    }
+                }
 
-                            case "6":
-                                menuEmergencyPatient(sc, pm);
-                                break;
+            } else if (choice == 2) {
+                // ── Patient Management submenu ──
+                boolean patientBack = false;
+                while (!patientBack) {
+                    System.out.println();
+                    System.out.println("--- Patient Management ---");
+                    System.out.println("[1] Register InPatient");
+                    System.out.println("[2] Register OutPatient");
+                    System.out.println("[3] Register Emergency Patient");
+                    System.out.println("[4] Search by Patient ID");
+                    System.out.println("[5] Sort Patients by Ward");
+                    System.out.println("[6] Sort Patients by Date Registered");
+                    System.out.println("[7] Sort Patients by Patient ID");
+                    System.out.println("[8] List All Patients");
+                    System.out.println("[9] Check In Patient");
+                    System.out.println("[10] Check Out Patient");
+                    System.out.println("[11] View Patient Appointments");
+                    System.out.println("[12] Delete Patient");
+                    System.out.println("[13] Medical Records");
+                    System.out.println("[14] Back");
 
-                            case "7": {
-                                int pid = promptInt(sc, "  Patient ID: ");
-                                String sid = prompt(sc, "  Staff ID: ");
-                                Staff s = findStaff(allStaff, sid);
-                                if (s == null) {
-                                    System.out.println("  Staff ID \"" + sid + "\" not found.");
-                                } else {
-                                    boolean ok = pm.updateAssignedStaffForPatient(pid, s);
-                                    if (ok) {
-                                        System.out.println("  Staff updated.");
-                                    } else {
-                                        System.out.println("  Patient not found.");
+                    int patientChoice = -1;
+                    while (patientChoice == -1) {
+                        System.out.print("> ");
+                        try {
+                            patientChoice = Integer.parseInt(scanner.nextLine().trim());
+                        } catch (NumberFormatException e) {
+                            System.out.println("Error: please enter a valid integer.");
+                        }
+                    }
+
+                    if (patientChoice >= 1 && patientChoice <= 3) {
+                        String type = patientChoice == 1 ? "InPatient"
+                                : patientChoice == 2 ? "OutPatient" : "EmergencyPatient";
+                        System.out.println("--- Register " + type + " ---");
+                        int id = -1;
+                        while (id == -1) {
+                            System.out.print("Patient ID: ");
+                            try {
+                                id = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        System.out.print("First name: ");
+                        String first = scanner.nextLine().trim();
+                        System.out.print("Last name: ");
+                        String last = scanner.nextLine().trim();
+                        System.out.print("Date of birth (YYYY-MM-DD): ");
+                        String dobStr = scanner.nextLine().trim();
+                        if (!dobStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                            System.out.println("Error: invalid date format. Use YYYY-MM-DD.");
+                            continue;
+                        }
+                        Date dob = new Date(dobStr);
+                        System.out.print("Ward: ");
+                        String ward = scanner.nextLine().trim();
+                        System.out.print("Address: ");
+                        String address = scanner.nextLine().trim();
+                        long phone = -1;
+                        while (phone == -1) {
+                            System.out.print("Phone number: ");
+                            try {
+                                phone = Long.parseLong(scanner.nextLine().trim());
+                                if (phone < 0) {
+                                    phone = -1;
+                                    System.out.println("Error: phone number must be positive.");
+                                }
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid number.");
+                            }
+                        }
+                        int ohip = -1;
+                        while (ohip == -1) {
+                            System.out.print("OHIP number (10 digits): ");
+                            try {
+                                ohip = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        System.out.print("Date registered (YYYY-MM-DD): ");
+                        String regStr = scanner.nextLine().trim();
+                        if (!regStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                            System.out.println("Error: invalid date format. Use YYYY-MM-DD.");
+                            continue;
+                        }
+                        Date registered = new Date(regStr);
+                        System.out.print("Gender (M/F): ");
+                        String genderStr = scanner.nextLine().trim();
+                        char gender = genderStr.isEmpty() ? ' ' : genderStr.charAt(0);
+                        long emergencyPhone = -1;
+                        while (emergencyPhone == -1) {
+                            System.out.print("Emergency contact phone: ");
+                            try {
+                                emergencyPhone = Long.parseLong(scanner.nextLine().trim());
+                                if (emergencyPhone < 0) {
+                                    emergencyPhone = -1;
+                                    System.out.println("Error: phone number must be positive.");
+                                }
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid number.");
+                            }
+                        }
+                        boolean ok;
+                        if (type.equals("InPatient")) {
+                            ok = patientManager.registerInPatient(id, first, last, dob, ward,
+                                    address, phone, ohip, registered, gender, emergencyPhone, null);
+                        } else if (type.equals("OutPatient")) {
+                            ok = patientManager.registerOutPatient(id, first, last, dob, ward,
+                                    address, phone, ohip, registered, gender, emergencyPhone, null);
+                        } else {
+                            ok = patientManager.registerEmergencyPatient(id, first, last, dob, ward,
+                                    address, phone, ohip, registered, gender, emergencyPhone, null);
+                        }
+                        if (ok) {
+                            System.out.println("Patient registered successfully.");
+                        } else {
+                            System.out.println("Error: could not register patient.");
+                        }
+
+                    } else if (patientChoice == 4) {
+                        int id = -1;
+                        while (id == -1) {
+                            System.out.print("Patient ID: ");
+                            try {
+                                id = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        Patient p = patientManager.searchPatientByPatientID(id);
+                        if (p == null) {
+                            System.out.println("No patient found with that ID.");
+                        } else {
+                            System.out.println(p.toString());
+                        }
+
+                    } else if (patientChoice == 5) {
+                        patientManager.sortByWardThenPatientID();
+                        System.out.println("--- Patients Sorted by Ward ---");
+                        System.out.printf("%-12s %-15s %-6s %-12s %-12s%n",
+                                "Ward", "Name", "ID", "Type", "Admitted");
+                        Patient[] patients = patientManager.getPatients();
+                        for (int i = 0; i < patientManager.getNumPatients(); i++) {
+                            Patient p = patients[i];
+                            if (p == null) {
+                                continue;
+                            }
+                            String admitted = p.getAdmittedDateDisplay();
+                            System.out.printf("%-12s %-15s %04d   %-12s %-12s%n",
+                                    p.getWard(), p.getLastName() + ", " + p.getFirstName(),
+                                    p.getPatientID(), p.getClass().getSimpleName(), admitted);
+                        }
+
+                    } else if (patientChoice == 6) {
+                        patientManager.sortByDateEntered();
+                        System.out.println("Patients sorted by date registered.");
+                    } else if (patientChoice == 7) {
+                        patientManager.sortByPatientID();
+                        System.out.println("Patients sorted by patient ID.");
+                    } else if (patientChoice == 8) {
+                        System.out.println(patientManager.listAllPatients());
+                    } else if (patientChoice == 9) {
+                        int id = -1;
+                        while (id == -1) {
+                            System.out.print("Patient ID: ");
+                            try {
+                                id = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        if (patientManager.checkInPatient(id)) {
+                            System.out.println("Patient checked in successfully.");
+                        } else {
+                            System.out.println("Error: check-in failed.");
+                        }
+
+                    } else if (patientChoice == 10) {
+                        int id = -1;
+                        while (id == -1) {
+                            System.out.print("Patient ID: ");
+                            try {
+                                id = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        Patient p = patientManager.searchPatientByPatientID(id);
+                        if (p == null) {
+                            System.out.println("Error: patient not found.");
+                        } else {
+                            System.out.println("--- Check Out: " + p.getFirstName() + " "
+                                    + p.getLastName() + " (ID: " + id + ") ---");
+                            System.out.println("Ward: " + p.getWard());
+                            if (p instanceof InPatient) {
+                                InPatient ip = (InPatient) p;
+                                System.out.println("Days admitted: " + ip.getDaysAdmitted());
+                                System.out.printf("Room fee (%d days x $%.2f)     = $%.2f%n",
+                                        ip.getDaysAdmitted(), InPatient.DAILY_ROOM_RATE, ip.getRoomFee());
+                                System.out.printf("Appointment fees                = $%.2f%n",
+                                        ip.getAppointmentFees());
+                                System.out.println("----------------------------------------");
+                                System.out.printf("Total Bill                      = $%.2f%n",
+                                        ip.calculateBill());
+                            }
+                            System.out.println("Follow-up type: [1] Routine Checkup  [2] Surgery  [3] None");
+                            int followChoice = -1;
+                            while (followChoice == -1) {
+                                System.out.print("> ");
+                                try {
+                                    followChoice = Integer.parseInt(scanner.nextLine().trim());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Error: please enter a valid integer.");
+                                }
+                            }
+                            String followUp = followChoice == 1 ? "checkup"
+                                    : followChoice == 2 ? "surgery" : "none";
+                            if (followUp.equals("none")) {
+                                System.out.println("Check-out cancelled.");
+                            } else if (patientManager.checkOutPatient(id, followUp)) {
+                                System.out.println("Checked out successfully.");
+                                if (p instanceof InPatient) {
+                                    InPatient ip = (InPatient) p;
+                                    if (ip.getDayOut() != null) {
+                                        System.out.println("Day out        : "
+                                                + ip.getDayOut().toISODateString());
+                                    }
+                                    for (Appointment a : p.getUpcomingAppointments()) {
+                                        if (a != null) {
+                                            System.out.println("Next appointment: "
+                                                    + a.getDate().toISODateString());
+                                            break;
+                                        }
                                     }
                                 }
-                                break;
+                            } else {
+                                System.out.println("Error: check-out failed.");
                             }
+                        }
 
-                            case "8": {
-                                int pid = promptInt(sc, "  Patient ID: ");
-                                boolean ok = pm.checkInPatient(pid);
-                                if (ok) {
-                                    System.out.println("  Checked in.");
-                                } else {
-                                    System.out.println("  Patient not found.");
+                    } else if (patientChoice == 11) {
+                        int id = -1;
+                        while (id == -1) {
+                            System.out.print("Patient ID: ");
+                            try {
+                                id = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        String listing = patientManager.listAppointmentsForPatient(id);
+                        if (listing == null) {
+                            System.out.println("Error: patient not found.");
+                        } else {
+                            System.out.println(listing);
+                        }
+
+                    } else if (patientChoice == 12) {
+                        int id = -1;
+                        while (id == -1) {
+                            System.out.print("Patient ID: ");
+                            try {
+                                id = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        if (patientManager.deletePatient(id)) {
+                            System.out.println("Patient deleted.");
+                        } else {
+                            System.out.println("Error: patient not found.");
+                        }
+
+                    } else if (patientChoice == 13) {
+                        boolean medBack = false;
+                        while (!medBack) {
+                            System.out.println();
+                            System.out.println("--- Medical Records ---");
+                            System.out.println("[1] Add Diagnosis");
+                            System.out.println("[2] Delete Diagnosis");
+                            System.out.println("[3] Update Diagnosis");
+                            System.out.println("[4] Add Medication");
+                            System.out.println("[5] Delete Medication");
+                            System.out.println("[6] Update Medication");
+                            System.out.println("[7] Add Allergy");
+                            System.out.println("[8] Delete Allergy");
+                            System.out.println("[9] Update Allergy");
+                            System.out.println("[10] Record Vitals (InPatient)");
+                            System.out.println("[11] Log Medication Administered (InPatient)");
+                            System.out.println("[12] Back");
+
+                            int medChoice = -1;
+                            while (medChoice == -1) {
+                                System.out.print("> ");
+                                try {
+                                    medChoice = Integer.parseInt(scanner.nextLine().trim());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Error: please enter a valid integer.");
                                 }
-                                break;
                             }
 
-                            case "9": {
-                                int pid = promptInt(sc, "  Patient ID: ");
-                                String follow = prompt(sc, "  Follow-up type: ");
-                                boolean ok = pm.checkOutPatient(pid, follow);
-                                if (ok) {
-                                    System.out.println("  Checked out.");
-                                } else {
-                                    System.out.println("  Patient not found.");
+                            int medPatientID = -1;
+                            if (medChoice >= 1 && medChoice <= 11) {
+                                while (medPatientID == -1) {
+                                    System.out.print("Patient ID: ");
+                                    try {
+                                        medPatientID = Integer.parseInt(scanner.nextLine().trim());
+                                    } catch (NumberFormatException e) {
+                                        System.out.println("Error: please enter a valid integer.");
+                                    }
                                 }
-                                break;
                             }
 
-                            case "10": {
-                                int pid = promptInt(sc, "  Patient ID: ");
-                                double cost = pm.calculateTotalCostForPatient(pid);
-                                if (cost < 0) {
-                                    System.out.println("  Patient not found.");
+                            if (medChoice == 1) {
+                                System.out.print("Diagnosis: ");
+                                String diagnosis = scanner.nextLine().trim();
+                                if (patientManager.addDiagnosis(medPatientID, diagnosis)) {
+                                    System.out.println("Diagnosis added.");
                                 } else {
-                                    System.out.printf("  Total cost: $%.2f%n", cost);
+                                    System.out.println("Error: patient not found.");
                                 }
-                                break;
-                            }
-
-                            case "11":
-                                System.out.println(pm.listAllPatients());
-                                break;n
-
-                            case "12": {
-                                int pid = promptInt(sc, "  Patient ID: ");
-                                String appts = pm.listAppointmentsForPatient(pid);
-                                if (appts == null) {
-                                    System.out.println("  Patient not found.");
+                            } else if (medChoice == 2) {
+                                System.out.print("Diagnosis to delete: ");
+                                String diagnosis = scanner.nextLine().trim();
+                                if (patientManager.deleteDiagnosis(medPatientID, diagnosis)) {
+                                    System.out.println("Diagnosis deleted.");
                                 } else {
-                                    System.out.println(appts);
+                                    System.out.println("Error: diagnosis not found or patient not found.");
                                 }
-                                break;
+                            } else if (medChoice == 3) {
+                                System.out.print("Original diagnosis: ");
+                                String orgDiagnosis = scanner.nextLine().trim();
+                                System.out.print("New diagnosis: ");
+                                String newDiagnosis = scanner.nextLine().trim();
+                                if (patientManager.updateDiagnosis(medPatientID, orgDiagnosis,
+                                        newDiagnosis)) {
+                                    System.out.println("Diagnosis updated.");
+                                } else {
+                                    System.out.println("Error: could not update diagnosis.");
+                                }
+                            } else if (medChoice == 4) {
+                                System.out.print("Medication name: ");
+                                String medName = scanner.nextLine().trim();
+                                System.out.print("Dosage: ");
+                                String dosage = scanner.nextLine().trim();
+                                if (patientManager.addMedication(medPatientID, medName, dosage)) {
+                                    System.out.println("Medication added.");
+                                } else {
+                                    System.out.println("Error: patient not found.");
+                                }
+                            } else if (medChoice == 5) {
+                                System.out.print("Medication name to delete: ");
+                                String medName = scanner.nextLine().trim();
+                                if (patientManager.deleteMedication(medPatientID, medName)) {
+                                    System.out.println("Medication deleted.");
+                                } else {
+                                    System.out.println("Error: medication not found or patient not found.");
+                                }
+                            } else if (medChoice == 6) {
+                                System.out.print("Original medication name: ");
+                                String orgMed = scanner.nextLine().trim();
+                                System.out.print("New medication name: ");
+                                String newMed = scanner.nextLine().trim();
+                                System.out.print("New dosage: ");
+                                String newDosage = scanner.nextLine().trim();
+                                if (patientManager.updateMedication(medPatientID, orgMed, newMed,
+                                        newDosage)) {
+                                    System.out.println("Medication updated.");
+                                } else {
+                                    System.out.println("Error: could not update medication.");
+                                }
+                            } else if (medChoice == 7) {
+                                System.out.print("Allergy: ");
+                                String allergy = scanner.nextLine().trim();
+                                if (patientManager.addAllergy(medPatientID, allergy)) {
+                                    System.out.println("Allergy added.");
+                                } else {
+                                    System.out.println("Error: patient not found.");
+                                }
+                            } else if (medChoice == 8) {
+                                System.out.print("Allergy to delete: ");
+                                String allergy = scanner.nextLine().trim();
+                                if (patientManager.deleteAllergy(medPatientID, allergy)) {
+                                    System.out.println("Allergy deleted.");
+                                } else {
+                                    System.out.println("Error: allergy not found or patient not found.");
+                                }
+                            } else if (medChoice == 9) {
+                                System.out.print("Original allergy: ");
+                                String orgAllergy = scanner.nextLine().trim();
+                                System.out.print("New allergy: ");
+                                String newAllergy = scanner.nextLine().trim();
+                                if (patientManager.updateAllergy(medPatientID, orgAllergy, newAllergy)) {
+                                    System.out.println("Allergy updated.");
+                                } else {
+                                    System.out.println("Error: could not update allergy.");
+                                }
+                            } else if (medChoice == 10) {
+                                double heartRate = -1;
+                                while (heartRate == -1) {
+                                    System.out.print("Heart rate: ");
+                                    try {
+                                        heartRate = Double.parseDouble(scanner.nextLine().trim());
+                                    } catch (NumberFormatException e) {
+                                        System.out.println("Error: please enter a valid number.");
+                                    }
+                                }
+                                double bloodPressure = -1;
+                                while (bloodPressure == -1) {
+                                    System.out.print("Blood pressure: ");
+                                    try {
+                                        bloodPressure = Double.parseDouble(scanner.nextLine().trim());
+                                    } catch (NumberFormatException e) {
+                                        System.out.println("Error: please enter a valid number.");
+                                    }
+                                }
+                                if (patientManager.recordVitalsForPatient(medPatientID, heartRate,
+                                        bloodPressure)) {
+                                    System.out.println("Vitals recorded.");
+                                } else {
+                                    System.out.println("Error: patient not found or not an InPatient.");
+                                }
+                            } else if (medChoice == 11) {
+                                System.out.print("Medication name: ");
+                                String medName = scanner.nextLine().trim();
+                                System.out.print("Dosage: ");
+                                String dosage = scanner.nextLine().trim();
+                                if (patientManager.logMedicationAdministeredForPatient(medPatientID,
+                                        new Medication(medName, dosage))) {
+                                    System.out.println("Medication administration logged.");
+                                } else {
+                                    System.out.println("Error: patient not found or not an InPatient.");
+                                }
+                            } else if (medChoice == 12) {
+                                medBack = true;
+                            } else {
+                                System.out.println("Error: invalid choice.");
                             }
+                        }
 
-                            case "13":
-                                backToMain = true;
-                                break;
+                    } else if (patientChoice == 14) {
+                        patientBack = true;
+                    } else {
+                        System.out.println("Error: invalid choice.");
+                    }
+                }
 
-                            default:
-                                System.out.println("  Invalid selection.");
+            } else if (choice == 3) {
+                // ── Appointment Management submenu ──
+                boolean apptBack = false;
+                while (!apptBack) {
+                    System.out.println();
+                    System.out.println("--- Appointment Management ---");
+                    System.out.println("[1] Book Appointment");
+                    System.out.println("[2] Cancel Appointment");
+                    System.out.println("[3] Reschedule Appointment");
+                    System.out.println("[4] View Daily Schedule");
+                    System.out.println("[5] View Upcoming Appointments");
+                    System.out.println("[6] Daily Cost Summary");
+                    System.out.println("[7] Sort Appointments by Date");
+                    System.out.println("[8] Back");
+
+                    int apptChoice = -1;
+                    while (apptChoice == -1) {
+                        System.out.print("> ");
+                        try {
+                            apptChoice = Integer.parseInt(scanner.nextLine().trim());
+                        } catch (NumberFormatException e) {
+                            System.out.println("Error: please enter a valid integer.");
                         }
                     }
-                    break;
 
-                default:
-                    System.out.println("Invalid selection.");
+                    if (apptChoice == 1) {
+                        System.out.println("--- Book Appointment ---");
+                        System.out.println("[1] Routine Checkup  [2] Surgery  [3] Emergency Visit");
+                        int bookType = -1;
+                        while (bookType == -1) {
+                            System.out.print("> ");
+                            try {
+                                bookType = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+
+                        int patientID = -1;
+                        while (patientID == -1) {
+                            System.out.print("Patient ID: ");
+                            try {
+                                patientID = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        Patient patient = patientManager.searchPatientByPatientID(patientID);
+                        if (patient == null) {
+                            System.out.println("Error: patient not found.");
+                            continue;
+                        }
+                        System.out.print("Date (YYYY-MM-DD): ");
+                        String dateStr = scanner.nextLine().trim();
+                        if (!dateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                            System.out.println("Error: invalid date format. Use YYYY-MM-DD.");
+                            continue;
+                        }
+                        Date date = new Date(dateStr);
+                        double time = -1;
+                        while (time == -1) {
+                            System.out.print("Time (e.g. 10.30): ");
+                            try {
+                                time = Double.parseDouble(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid number.");
+                            }
+                        }
+
+                        if (bookType == 1) {
+                            Doctor doctor = null;
+                            for (Staff s : staffManager.getStaffArray()) {
+                                if (s instanceof Doctor && !s.hasTimeConflict(date, time)) {
+                                    doctor = (Doctor) s;
+                                    break;
+                                }
+                            }
+                            if (doctor == null) {
+                                System.out.println("Error: no available doctor at that time.");
+                                continue;
+                            }
+                            RoutineCheckup appt = new RoutineCheckup(
+                                    nextApptID, patient, new Staff[1], date, time,
+                                    0.0, 0.0, Appointment.STATUS_SCHEDULED, 0, doctor);
+                            appt.estimateDuration("Annual Physical");
+                            appt.assignStaff(doctor);
+                            if (appt.assignClinicRoom(apptManager) <= 0) {
+                                System.out.println("Error: no clinic room available.");
+                                continue;
+                            }
+                            if (!apptManager.addAppointment(appt)) {
+                                System.out.println("Error: could not book appointment.");
+                                continue;
+                            }
+                            patientManager.addAppointment(patientID, appt);
+                            staffManager.addShift(doctor.getName(), appt);
+                            int hours = (int) time;
+                            int minutes = (int) Math.round((time - hours) * 100);
+                            String timeFormatted = String.format("%02d:%02d", hours, minutes);
+                            System.out.println("Appointment booked successfully.");
+                            System.out.println("Appointment ID   : " + appt.getApptID());
+                            System.out.println("Patient          : " + patient.getFirstName() + " "
+                                    + patient.getLastName() + " (ID: " + patientID + ")");
+                            System.out.println("Staff            : Dr. " + doctor.getName()
+                                    + " (Doctor)");
+                            System.out.println("Date / Time      : " + date.toISODateString()
+                                    + " at " + timeFormatted);
+                            System.out.println("Clinic Room      : " + appt.getRoomNum());
+                            System.out.println("Est. Duration    : "
+                                    + (int) (appt.getDuration() * 60) + " min");
+                            System.out.printf("Cost             : $%.2f%n", appt.calculateCost());
+                            nextApptID++;
+
+                        } else if (bookType == 2) {
+                            System.out.println("Valid surgery types:");
+                            for (int i = 0; i < Surgery.SURGERY_TYPES.length; i++) {
+                                System.out.println("  - " + Surgery.SURGERY_TYPES[i]);
+                            }
+                            String surgeryType = null;
+                            while (surgeryType == null) {
+                                System.out.print("Surgery type: ");
+                                String input = scanner.nextLine().trim();
+                                for (int i = 0; i < Surgery.SURGERY_TYPES.length; i++) {
+                                    if (Surgery.SURGERY_TYPES[i].equalsIgnoreCase(input)) {
+                                        surgeryType = Surgery.SURGERY_TYPES[i];
+                                        break;
+                                    }
+                                }
+                                if (surgeryType == null) {
+                                    System.out.println("Error: invalid surgery type. "
+                                            + "Must be one of the listed types.");
+                                }
+                            }
+                            int preferredOR = -1;
+                            while (preferredOR == -1) {
+                                System.out.print("Preferred OR number: ");
+                                try {
+                                    preferredOR = Integer.parseInt(scanner.nextLine().trim());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Error: please enter a valid integer.");
+                                }
+                            }
+                            Surgeon surgeon = null;
+                            for (Staff s : staffManager.getStaffArray()) {
+                                if (s instanceof Surgeon) {
+                                    Surgeon sg = (Surgeon) s;
+                                    if (sg.getSpecialtyArea() != null
+                                            && sg.getSpecialtyArea().equalsIgnoreCase(surgeryType)
+                                            && !sg.hasTimeConflict(date, time)) {
+                                        surgeon = sg;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (surgeon == null) {
+                                System.out.println("Error: no available surgeon.");
+                                continue;
+                            }
+                            Nurse[] nurses = staffManager.getAvailableNurses(
+                                    patient.getWard(), date, time, 1);
+                            if (nurses == null) {
+                                nurses = new Nurse[0];
+                            }
+                            Surgery appt = new Surgery(
+                                    nextApptID, patient, new Staff[1 + nurses.length], date, time,
+                                    2.0, 0.0, Appointment.STATUS_SCHEDULED,
+                                    0, "General", 0.0, surgeryType, null);
+                            appt.estimateDuration();
+                            if (appt.assignOperatingRoom(apptManager, preferredOR) <= 0) {
+                                System.out.println("Error: no operating room available.");
+                                continue;
+                            }
+                            appt.assignStaff(surgeon, nurses);
+                            appt.calculateCost();
+                            if (!appt.validateBooking()) {
+                                System.out.println("Error: surgery booking validation failed.");
+                                continue;
+                            }
+                            if (!apptManager.addAppointment(appt)) {
+                                System.out.println("Error: could not book surgery.");
+                                continue;
+                            }
+                            patientManager.addAppointment(patientID, appt);
+                            staffManager.addShift(surgeon.getName(), appt);
+                            for (Nurse nurse : nurses) {
+                                if (nurse != null) {
+                                    staffManager.addShift(nurse.getName(), appt);
+                                }
+                            }
+                            System.out.println("Surgery booked successfully.");
+                            System.out.println("Appointment ID   : " + appt.getApptID());
+                            System.out.printf("Cost             : $%.2f%n", appt.calculateCost());
+                            nextApptID++;
+
+                        } else if (bookType == 3) {
+                            int urgencyIdx = -1;
+                            while (urgencyIdx == -1) {
+                                System.out.print("Urgency index (1-5): ");
+                                try {
+                                    urgencyIdx = Integer.parseInt(scanner.nextLine().trim());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Error: please enter a valid integer.");
+                                }
+                            }
+                            if (urgencyIdx < 1 || urgencyIdx > 5) {
+                                System.out.println("Error: urgency must be between 1 and 5.");
+                                continue;
+                            }
+                            EmergencyVisit appt = new EmergencyVisit(
+                                    nextApptID, patient, new Staff[5], date, time,
+                                    0.0, 0.0, Appointment.STATUS_SCHEDULED, 0, urgencyIdx);
+                            appt.estimateDuration();
+                            if (appt.assignEmergencyRoom(apptManager) <= 0) {
+                                System.out.println("Error: no emergency room available.");
+                                continue;
+                            }
+                            Doctor doctor = staffManager.getTraumaDoctor(urgencyIdx, date, time);
+                            if (doctor == null) {
+                                System.out.println("Error: no available ER doctor.");
+                                continue;
+                            }
+                            appt.assignStaff(doctor, urgencyIdx);
+                            Nurse triageNurse = staffManager.getTriageNurse(date, time);
+                            if (triageNurse != null) {
+                                appt.autoAssignNurse(triageNurse);
+                            }
+                            appt.calculateCost();
+                            if (!apptManager.addAppointment(appt)) {
+                                System.out.println("Error: could not book emergency visit.");
+                                continue;
+                            }
+                            patientManager.addAppointment(patientID, appt);
+                            staffManager.addShift(doctor.getName(), appt);
+                            if (triageNurse != null) {
+                                staffManager.addShift(triageNurse.getName(), appt);
+                            }
+                            System.out.println("Emergency visit booked successfully.");
+                            System.out.println("Appointment ID   : " + appt.getApptID());
+                            System.out.printf("Cost             : $%.2f%n", appt.calculateCost());
+                            nextApptID++;
+
+                        } else {
+                            System.out.println("Error: invalid appointment type.");
+                        }
+
+                    } else if (apptChoice == 2) {
+                        int apptID = -1;
+                        while (apptID == -1) {
+                            System.out.print("Appointment ID to cancel: ");
+                            try {
+                                apptID = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        if (apptManager.cancelAppointment(apptID)) {
+                            System.out.println("Appointment cancelled.");
+                        } else {
+                            System.out.println("Error: appointment not found.");
+                        }
+
+                    } else if (apptChoice == 3) {
+                        int apptID = -1;
+                        while (apptID == -1) {
+                            System.out.print("Appointment ID: ");
+                            try {
+                                apptID = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        System.out.print("New date (YYYY-MM-DD): ");
+                        String newDateStr = scanner.nextLine().trim();
+                        if (!newDateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                            System.out.println("Error: invalid date format. Use YYYY-MM-DD.");
+                            continue;
+                        }
+                        Date newDate = new Date(newDateStr);
+                        double newTime = -1;
+                        while (newTime == -1) {
+                            System.out.print("New time (e.g. 14.00): ");
+                            try {
+                                newTime = Double.parseDouble(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid number.");
+                            }
+                        }
+                        if (apptManager.rescheduleAppointment(apptID, newDate, newTime)) {
+                            System.out.println("Appointment rescheduled.");
+                        } else {
+                            System.out.println("Error: could not reschedule.");
+                        }
+
+                    } else if (apptChoice == 4) {
+                        System.out.print("Date (YYYY-MM-DD): ");
+                        String schedDateStr = scanner.nextLine().trim();
+                        if (!schedDateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                            System.out.println("Error: invalid date format. Use YYYY-MM-DD.");
+                            continue;
+                        }
+                        Date schedDate = new Date(schedDateStr);
+                        System.out.println("--- Daily Schedule: " + schedDate.toISODateString()
+                                + " ---");
+                        Appointment[] appts = apptManager.getAppointments();
+                        int count = apptManager.getNumAppointments();
+                        Appointment[] dayAppts = new Appointment[count];
+                        int dayCount = 0;
+                        for (int i = 0; i < count; i++) {
+                            if (appts[i] != null
+                                    && appts[i].getDate().compareTo(schedDate) == 0
+                                    && appts[i].isActive()) {
+                                dayAppts[dayCount++] = appts[i];
+                            }
+                        }
+                        for (int i = 0; i < dayCount - 1; i++) {
+                            int minIdx = i;
+                            for (int j = i + 1; j < dayCount; j++) {
+                                if (dayAppts[j].getTime() < dayAppts[minIdx].getTime()) {
+                                    minIdx = j;
+                                }
+                            }
+                            if (minIdx != i) {
+                                Appointment temp = dayAppts[i];
+                                dayAppts[i] = dayAppts[minIdx];
+                                dayAppts[minIdx] = temp;
+                            }
+                        }
+                        if (dayCount == 0) {
+                            System.out.println("No appointments scheduled for this date.");
+                        } else {
+                            for (int i = 0; i < dayCount; i++) {
+                                Appointment a = dayAppts[i];
+                                Patient p = a.getPatient();
+                                String patientLabel = "Unknown";
+                                if (p != null) {
+                                    patientLabel = p.getFirstName() + " " + p.getLastName()
+                                            + " (" + p.getPatientID() + ")";
+                                }
+                                int h = (int) a.getTime();
+                                int m = (int) Math.round((a.getTime() - h) * 100);
+                                String timeFmt = String.format("%02d:%02d", h, m);
+                                String typeLabel = a.getTypeLabel();
+                                String location = a.getLocationLabel();
+                                String staffName = "Unassigned";
+                                Staff[] team = a.getStaffList();
+                                if (team != null) {
+                                    for (Staff s : team) {
+                                        if (s != null) {
+                                            staffName = s instanceof Doctor
+                                                    ? "Dr. " + s.getName() : s.getName();
+                                            break;
+                                        }
+                                    }
+                                }
+                                System.out.printf("%-5s  #%d  %-16s %-22s %-6s  %s%n",
+                                        timeFmt, a.getApptID(), typeLabel,
+                                        patientLabel, location, staffName);
+                            }
+                        }
+
+                    } else if (apptChoice == 5) {
+                        int pid = -1;
+                        while (pid == -1) {
+                            System.out.print("Patient ID: ");
+                            try {
+                                pid = Integer.parseInt(scanner.nextLine().trim());
+                            } catch (NumberFormatException e) {
+                                System.out.println("Error: please enter a valid integer.");
+                            }
+                        }
+                        apptManager.viewUpcomingAppointments(pid);
+
+                    } else if (apptChoice == 6) {
+                        System.out.print("Date (YYYY-MM-DD): ");
+                        String costDateStr = scanner.nextLine().trim();
+                        if (!costDateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                            System.out.println("Error: invalid date format. Use YYYY-MM-DD.");
+                            continue;
+                        }
+                        Date costDate = new Date(costDateStr);
+                        double total = apptManager.runCostSummary(costDate);
+                        System.out.printf("Total revenue on %s: $%.2f%n",
+                                costDate.toISODateString(), total);
+
+                    } else if (apptChoice == 7) {
+                        apptManager.sortByDate();
+                        System.out.println("Appointments sorted by date.");
+                    } else if (apptChoice == 8) {
+                        apptBack = true;
+                    } else {
+                        System.out.println("Error: invalid choice.");
+                    }
+                }
+
+            } else if (choice == 4) {
+                staffManager.saveToFile("data/staff.txt");
+                patientManager.savePatientInfo("data/patients.txt");
+                patientManager.savePatientAppts("data/patient_appointments.txt");
+                apptManager.saveToFile("data/appointments.txt");
+                System.out.println("All data saved.");
+
+            } else if (choice == 5) {
+                staffManager.saveToFile("data/staff.txt");
+                patientManager.savePatientInfo("data/patients.txt");
+                patientManager.savePatientAppts("data/patient_appointments.txt");
+                apptManager.saveToFile("data/appointments.txt");
+                System.out.println("Goodbye.");
+                running = false;
+
+            } else {
+                System.out.println("Error: invalid choice. Please enter 1–5.");
             }
         }
 
-        boolean savedPatients = pm.savePatientInfo(PATIENT_FILE);
-        boolean savedAppts = pm.savePatientAppts(APPT_FILE);
-        if (savedPatients) {
-            System.out.println("Patients saved to " + PATIENT_FILE + ".");
-        } else {
-            System.out.println("Error saving patients.");
-        }
-        if (savedAppts) {
-            System.out.println("Appointments saved to " + APPT_FILE + ".");
-        } else {
-            System.out.println("Error saving appointments.");
-        }
-        sc.close();
+        scanner.close();
     }
 }

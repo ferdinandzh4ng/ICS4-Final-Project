@@ -16,6 +16,8 @@ import staff.Staff;
  */
 
 public class EmergencyPatient extends Patient {
+    public static final double ER_DAILY_RATE = 500.00;
+
     private int arrivalTime; // time of arrival at the hospital
     private Date dayIn; // Date of admission to the hospital
     private Date dayOut; // Date of discharge from the hospital
@@ -38,7 +40,7 @@ public class EmergencyPatient extends Patient {
      * @param emergencyContactPhoneNumber The phone number of the emergency contact.
      * @param assignedStaff The staff member assigned to the patient.
      */
-    public EmergencyPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum, int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff) {
+    public EmergencyPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
         super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
         arrivalTime = -1;
         dayIn = null;
@@ -69,7 +71,7 @@ public class EmergencyPatient extends Patient {
      * @param arrivalType The mode of arrival.
      * @param status The current status of the patient.
      */
-    public EmergencyPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum, int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff, int arrivalTime, Date dayIn, Date dayOut, String presentingComplaint, String arrivalType, String status) {
+    public EmergencyPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, int arrivalTime, Date dayIn, Date dayOut, String presentingComplaint, String arrivalType, String status) {
         super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
         this.arrivalTime = arrivalTime;
         this.dayIn = dayIn;
@@ -223,6 +225,8 @@ public class EmergencyPatient extends Patient {
     @Override
     public boolean checkOut(String followUp) {
         dayOut = PatientManager.CUR_DATE;
+        status = "Discharged";
+        calculateBill();
 
         if (followUp.equals("checkup")) {
             scheduleNextRoutineCheckup();
@@ -241,6 +245,9 @@ public class EmergencyPatient extends Patient {
     @Override
     public void scheduleNextRoutineCheckup() {
         Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
+        if (completed == null) {
+            return;
+        }
         Doctor mainDoctorPlaceholder = getFollowUpDoctor(completed);
         Appointment newAppt = new RoutineCheckup(
             completed.getApptID() + 1,
@@ -250,7 +257,7 @@ public class EmergencyPatient extends Patient {
             completed.getTime(),
             completed.getDuration(),
             completed.getCost(),
-            "future",
+            Appointment.STATUS_SCHEDULED,
             1,
             mainDoctorPlaceholder);
         boolean validated = false;
@@ -274,6 +281,9 @@ public class EmergencyPatient extends Patient {
     @Override
     public void scheduleNextSurgery () {
         Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
+        if (completed == null) {
+            return;
+        }
         Appointment newAppt = new Surgery(
             completed.getApptID() + 1,
             completed.getPatient(),
@@ -282,11 +292,11 @@ public class EmergencyPatient extends Patient {
             completed.getTime(),
             completed.getDuration(),
             completed.getCost(),
-            "future",
+            Appointment.STATUS_SCHEDULED,
             1,
             "none",
             0.0,
-            "general",
+            "General",
             null
         );
         boolean validated = false;
@@ -302,6 +312,33 @@ public class EmergencyPatient extends Patient {
         }
 
         addUpcomingAppointment(newAppt);
+    }
+
+    @Override
+    public String getAdmittedDateDisplay() {
+        return dayIn != null ? dayIn.toISODateString() : "N/A";
+    }
+
+    @Override
+    public double calculateBill() {
+        double total = calculateTotalCost();
+        if (dayIn != null) {
+            Date endDate = dayOut != null ? dayOut : PatientManager.CUR_DATE;
+            int days = 0;
+            Date current = dayIn;
+            while (current.compareTo(endDate) < 0) {
+                days++;
+                current = current.addDays(1);
+            }
+            if (days < 1) {
+                days = 1;
+            }
+            total += days * ER_DAILY_RATE;
+        }
+        if ("Critical".equals(status)) {
+            total *= 1.5;
+        }
+        return total;
     }
 
     /**
