@@ -114,10 +114,38 @@ public class HospitalRunner {
                         }
                     } else if (staffChoice == 3) {
                         staffManager.sortStaff();
-                        System.out.println("Staff sorted by name.");
+                        System.out.println("--- Staff Sorted by Name ---");
+                        System.out.printf("%-20s %-12s %-18s %-12s%n",
+                                "Name", "Staff ID", "Specialization", "Type");
+
+                        Staff[] staff = staffManager.getStaffArray();
+                        for (int i = 0; i < staff.length; i++) {
+                            Staff s = staff[i];
+                            if (s == null) {
+                                continue;
+                            }
+
+                            String typeName = s.getClass().getSimpleName();
+                            System.out.printf("%-20s %-12s %-18s %-12s%n",
+                                    s.getName(), s.getStaffID(), s.getSpecialization(), typeName);
+                        }
                     } else if (staffChoice == 4) {
                         staffManager.sortStaffByExp();
-                        System.out.println("Staff sorted by experience.");
+                        System.out.println("--- Staff Sorted by Experience ---");
+                        System.out.printf("%-20s %-12s %-18s %-12s %-12s%n",
+                                "Name", "Staff ID", "Specialization", "Experience", "Type");
+
+                        Staff[] staff = staffManager.getStaffArray();
+                        for (int i = 0; i < staff.length; i++) {
+                            Staff s = staff[i];
+                            if (s == null) {
+                                continue;
+                            }
+
+                            String typeName = s.getClass().getSimpleName();
+                            System.out.printf("%-20s %-12s %-18s %-12d %-12s%n",
+                                    s.getName(), s.getStaffID(), s.getSpecialization(), s.getExperience(), typeName);
+                        }
                     } else if (staffChoice == 5) {
                         Staff[] staff = staffManager.getStaffArray();
                         if (staff.length == 0) {
@@ -775,7 +803,8 @@ public class HospitalRunner {
                     System.out.println("[5] View Upcoming Appointments");
                     System.out.println("[6] Daily Cost Summary");
                     System.out.println("[7] Sort Appointments by Date");
-                    System.out.println("[8] Back");
+                    System.out.println("[8] Sort Appointments by Patient and Date")
+                    System.out.println("[9] Back");
 
                     int apptChoice = -1;
                     while (apptChoice == -1) {
@@ -1139,8 +1168,40 @@ public class HospitalRunner {
 
                     } else if (apptChoice == 7) {
                         apptManager.sortByDate();
-                        System.out.println("Appointments sorted by date.");
+                        System.out.println("--- Appointments Sorted by Date ---");
+                        System.out.printf("%-12s %-20s %-15s %-18s %-12s%n",
+                                "Date", "Patient Name", "Appointment ID", "Type", "Status");
+                        Appointment[] appts = apptManager.getAppointments();
+                        for (int i = 0; i < apptManager.getNumAppointments(); i++) {
+                            Appointment a = appts[i];
+                            if (a == null) {
+                                continue;
+                            }
+                            String patientName = a.getPatient().getName();
+                            String typeName = a.getClass().getSimpleName();
+                            System.out.printf("%-12s %-20s %-15d %-18s %-12s%n",
+                                    a.getDate(), patientName, a.getApptID(), typeName, a.getStatus());
+                        }
                     } else if (apptChoice == 8) {
+                        apptManager.sortByPatientThenDate();
+                        System.out.println("--- Appointments Sorted by Patient then Date ---");
+                        System.out.printf("%-20s %-12s %-15s %-18s %-12s%n",
+                            "Patient Name", "Date", "Appointment ID", "Type", "Status");
+
+                        Appointment[] appts = apptManager.getAppointments();
+                        for (int i = 0; i < apptManager.getNumAppointments(); i++) {
+                            Appointment a = appts[i];
+                            if (a == null) {
+                                continue;
+                            }
+
+                            String patientName = a.getPatient().getName();
+                            String typeName = a.getClass().getSimpleName();
+
+                            System.out.printf("%-20s %-12s %-15d %-18s %-12s%n",
+                                patientName, a.getDate(), a.getApptID(), typeName, a.getStatus());
+                        }
+                    } else if (apptChoice == 9) {
                         apptBack = true;
                     } else {
                         System.out.println("Error: invalid choice.");

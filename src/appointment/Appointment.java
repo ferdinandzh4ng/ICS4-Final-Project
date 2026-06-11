@@ -335,7 +335,7 @@ public abstract class Appointment {
         }
 
         //Return String of information
-        return "Appointment ID: " + apptID + "\nPatient: " + patientName
+        return "\nAppointment ID: " + apptID + "\nPatient: " + patientName
             + "\nStaff: " + staffStr + "\nDate: " + date.toString() + "\nTime: " + timeStr + "\nDuration: " + duration + "\nCost: " + cost + "\nStatus: " + status;
     }
 

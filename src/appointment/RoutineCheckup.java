@@ -106,7 +106,7 @@ public class RoutineCheckup extends Appointment {
             doctorName = "None";
         }
         return "Routine Checkup Appointment: " + super.toString()
-            + ", Clinic Room Number: " + clinicRoomNum + ", Main Doctor: " + doctorName;
+            + "\nClinic Room Number: " + clinicRoomNum + "\nMain Doctor: " + doctorName;
     }
 
     @Override

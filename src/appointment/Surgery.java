@@ -210,9 +210,9 @@ public class Surgery extends Appointment {
      */
     @Override
     public String toString() {
-        return "Surgery Appointment: " + super.toString() + ", Operating Room Number: " + operatingRoomNum
-            + ", Anaesthesia Type: " + anaesthesiaType + ", Anaesthesia Dose: " + anaesthesiaDose
-            + ", Surgery Type: " + type + ", Pre-Op Instructions: " + preOpInstructions;
+        return "\nSurgery Appointment: " + super.toString() + "\nOperating Room Number: " + operatingRoomNum
+            + "\nAnaesthesia Type: " + anaesthesiaType + "\nAnaesthesia Dose: " + anaesthesiaDose
+            + "\nSurgery Type: " + type + "\nPre-Op Instructions: " + preOpInstructions;
     }
 
     /**
