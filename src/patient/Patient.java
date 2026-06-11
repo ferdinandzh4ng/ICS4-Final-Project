@@ -319,7 +319,7 @@ public abstract class Patient {
      * @param medName the name of the medication
      * @return the index in the medications array
      */
-    private int getIndexOfMedicationByName (String medName) {
+    public int getIndexOfMedicationByName (String medName) {
         for (int i = 0; i < medications.length; i++) {
             if (medications[i] != null && medName.equals(medications[i].getMedName())) {
                 return i;
@@ -678,7 +678,7 @@ public abstract class Patient {
      * Adds a diagnosis entry for the patient
      * @param diagnosis the diagnosis entry to be added
      */
-    public void addDiagnoses (String diagnosis) {
+    public void addDiagnosis (String diagnosis) {
         this.diagnosis[this.diagnosis.length] = diagnosis;
     }
 
@@ -687,7 +687,7 @@ public abstract class Patient {
      * @param diagnosis the diagnosis entry to be deleted
      * @return boolean if the diagnosis is found and deleted
      */
-    public boolean deleteDiagnoses (String diagnosis) {
+    public boolean deleteDiagnosis (String diagnosis) {
         int index = -1;
         boolean found = false;
 
@@ -715,7 +715,7 @@ public abstract class Patient {
      * @param newDiagnosis the new diagnosis entry
      * @return boolean if the diagnosis is found and updated
      */
-    public boolean updateDiagnoses (String diagnosis, String newDiagnosis) {
+    public boolean updateDiagnosis (String diagnosis, String newDiagnosis) {
         int index = -1;
         boolean found = false;
 
@@ -813,7 +813,7 @@ public abstract class Patient {
     public int compareToDateRegistered (Patient other) {
         return this.dateRegistered.compareTo(other.getDateRegistered());
     }
-
+    
     /**
      * Returns a string representation of the patient
      * @return String the string representation of the patient

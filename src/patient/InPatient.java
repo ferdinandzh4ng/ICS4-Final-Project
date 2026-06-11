@@ -48,6 +48,33 @@ public class InPatient extends Patient {
     }
 
     /**
+     * Overloaded constructor for the InPatient class with all fields
+     * @param patientID to be assigned to the patient
+     * @param firstName to be assigned to the patient
+     * @param lastName to be assigned to the patient
+     * @param dateOfBirth to be assigned to the patient
+     * @param ward to be assigned to the patient
+     * @param address to be assigned to the patient
+     * @param phoneNum to be assigned to the patient
+     * @param numOHIP to be assigned to the patient
+     * @param dateRegistered to be assigned to the patient
+     * @param gender to be assigned to the patient
+     * @param emergencyContactPhoneNumber to be assigned to the patient
+     * @param assignedStaff to be assigned to the patient
+     * @param dayIn the date of admission to the hospital
+     * @param dayOut the date of discharge from the hospital
+     * @param hospitalBed whether a hospital bed is assigned
+     */
+    public InPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum, int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff, Date dayIn, Date dayOut, boolean hospitalBed) {
+        super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
+        this.dayIn = dayIn;
+        this.dayOut = dayOut;
+        this.hospitalBed = hospitalBed;
+        vitalsLog = new String[100]; // Assuming a maximum of 100 entries for vital signs
+        medicationsAdministered = new String[100]; // Assuming a maximum of 100 entries
+    }
+
+    /**
      * Gets the date that the patient entered the hospital
      * @return the day in
      */

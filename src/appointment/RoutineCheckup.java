@@ -121,19 +121,20 @@ public class RoutineCheckup extends Appointment {
      * @return the estimated duration
      */
     public double estimateDuration(String reasonForVisit) {
-        duration = 15; //default duration
+        int dur = 15; //default duration
         switch(reasonForVisit) {
             case "Annual Physical":
-                duration += 15;
+                dur += 15;
                 break;
             case "Flu Symptoms":
-                duration += 10;
+                dur += 10;
                 break;
             case "Vaccination":
-                duration += 15;
+                dur += 15;
                 break;
         }
-        return duration;
+        this.setDuration(dur);
+        return dur;
     }
 
     /**
