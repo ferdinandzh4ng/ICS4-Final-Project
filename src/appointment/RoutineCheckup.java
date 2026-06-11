@@ -101,7 +101,7 @@ public class RoutineCheckup extends Appointment {
     public String toString() {
         String doctorName = mainDoctor != null ? mainDoctor.getName() : "None";
         return "Routine Checkup Appointment: " + super.toString()
-            + ", Clinic Room Number: " + clinicRoomNum + ", Main Doctor: " + doctorName;
+            + "\nClinic Room Number: " + clinicRoomNum + "\nMain Doctor: " + doctorName;
     }
 
     @Override
