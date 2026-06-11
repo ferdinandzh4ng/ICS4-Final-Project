@@ -34,7 +34,7 @@ public class OutPatient extends Patient {
      * @param assignedStaff to be assigned to the patient
      * @param appointmentTimingMonths the number of months until the patient's next appointment
      */
-    public OutPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum, int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff) {
+    public OutPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
         super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
         appointmentTimingMonths = 6;
     }
@@ -55,7 +55,7 @@ public class OutPatient extends Patient {
      * @param assignedStaff to be assigned to the patient
      * @param appointmentTimingMonths the number of months until the patient's next appointment
      */
-    public OutPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, int phoneNum, int numOHIP, Date dateRegistered, char gender, int emergencyContactPhoneNumber, Staff assignedStaff, int appointmentTimingMonths) {
+    public OutPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, int appointmentTimingMonths) {
         super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
         this.appointmentTimingMonths = appointmentTimingMonths;
     }
@@ -85,6 +85,11 @@ public class OutPatient extends Patient {
         return super.toString() + "\nAppointment Timing (months): " + appointmentTimingMonths;
     }
 
+    @Override
+    public double calculateBill() {
+        return calculateTotalCost();
+    }
+
     /**
      * Checks in the patient
      * @return true if the patient is checked in successfully, false otherwise
@@ -105,6 +110,7 @@ public class OutPatient extends Patient {
      */
     @Override
     public boolean checkOut(String followUp) {
+        calculateBill();
         if (followUp.equals("checkup")) {
             scheduleNextRoutineCheckup();
             return true;
@@ -122,6 +128,9 @@ public class OutPatient extends Patient {
     @Override
     public void scheduleNextRoutineCheckup() {
         Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
+        if (completed == null) {
+            return;
+        }
         Doctor mainDoctorPlaceholder = getFollowUpDoctor(completed);
         Appointment newAppt = new RoutineCheckup(
             completed.getApptID() + 1,
@@ -131,7 +140,7 @@ public class OutPatient extends Patient {
             completed.getTime(),
             completed.getDuration(),
             completed.getCost(),
-            "future",
+            Appointment.STATUS_SCHEDULED,
             1,
             mainDoctorPlaceholder);
         boolean validated = false;
@@ -155,6 +164,9 @@ public class OutPatient extends Patient {
     @Override
     public void scheduleNextSurgery () {
         Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
+        if (completed == null) {
+            return;
+        }
         Appointment newAppt = new Surgery(
             completed.getApptID() + 1,
             completed.getPatient(),
@@ -163,11 +175,11 @@ public class OutPatient extends Patient {
             completed.getTime(),
             completed.getDuration(),
             completed.getCost(),
-            "future",
+            Appointment.STATUS_SCHEDULED,
             1,
             "none",
             0.0,
-            "general",
+            "General",
             null
         );
         boolean validated = false;

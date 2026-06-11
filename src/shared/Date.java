@@ -13,8 +13,32 @@ public class Date {
     }
 
     public Date(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            this.year = 0;
+            this.month = 0;
+            this.day = 0;
+            return;
+        }
+
+        // YYYY-MM-DD (API file I/O format)
+        if (dateStr.contains("-") && dateStr.length() >= 10) {
+            this.year = Integer.parseInt(dateStr.substring(0, 4));
+            this.month = Integer.parseInt(dateStr.substring(5, 7));
+            this.day = Integer.parseInt(dateStr.substring(8, 10));
+            return;
+        }
+
+        // YYYYMMDD (appointments.txt format)
+        if (dateStr.length() == 8 && dateStr.matches("\\d{8}")) {
+            this.year = Integer.parseInt(dateStr.substring(0, 4));
+            this.month = Integer.parseInt(dateStr.substring(4, 6));
+            this.day = Integer.parseInt(dateStr.substring(6, 8));
+            return;
+        }
+
+        // "Month day, year" display format
         String[] parts = dateStr.split(" ");
-        switch(parts[0]) {
+        switch (parts[0]) {
             case "January":
                 this.month = 1;
                 break;
@@ -51,9 +75,12 @@ public class Date {
             case "December":
                 this.month = 12;
                 break;
+            default:
+                this.month = 0;
+                break;
         }
         this.year = Integer.parseInt(parts[2]);
-        this.day = Integer.parseInt(parts[1]);
+        this.day = Integer.parseInt(parts[1].replace(",", ""));
     }
 
     /**

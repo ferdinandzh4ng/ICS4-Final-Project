@@ -52,6 +52,16 @@ public class EmergencyVisit extends Appointment {
         return emergencyRoomNum;
     }
 
+    @Override
+    public String getTypeLabel() {
+        return "Emergency Visit";
+    }
+
+    @Override
+    public String getLocationLabel() {
+        return "ER " + emergencyRoomNum;
+    }
+
     /**
     * Sets the emergency room number for the visit.
     * @param emergencyRoomNum the emergency room number to set
@@ -81,7 +91,20 @@ public class EmergencyVisit extends Appointment {
      * @param n the nurse to assign
      */
     public void autoAssignNurse(Nurse n) {
-        // Staff assignment is handled elsewhere. This method is intentionally left blank.
+        if (n == null) {
+            return;
+        }
+        Staff[] list = getStaffList();
+        if (list == null) {
+            list = new Staff[5];
+        }
+        for (int i = 1; i < list.length; i++) {
+            if (list[i] == null) {
+                list[i] = n;
+                super.assignStaff(list);
+                return;
+            }
+        }
     }
 
     /**
@@ -90,7 +113,15 @@ public class EmergencyVisit extends Appointment {
      * @param nurses the array of trauma nurses to assign
      */
     public void urgentAssignStaff(Doctor d, Nurse[] nurses) {
-        // Staff assignment is handled elsewhere. This method is intentionally left blank.
+        int nurseCount = nurses == null ? 0 : nurses.length;
+        Staff[] list = new Staff[1 + nurseCount];
+        list[0] = d;
+        if (nurses != null) {
+            for (int i = 0; i < nurses.length; i++) {
+                list[i + 1] = nurses[i];
+            }
+        }
+        super.assignStaff(list);
     }
 
     /**
@@ -190,9 +221,37 @@ public class EmergencyVisit extends Appointment {
     /**
      * Overloaded method that assigns a doctor to the emergency visit.
      * @param d the doctor to assign
+     * @param urgencyIdx the triage urgency index (1–5)
+     */
+    public void assignStaff(Doctor d, int urgencyIdx) {
+        this.urgencyIdx = urgencyIdx;
+        assignStaff(d);
+    }
+
+    /**
+     * Overloaded method that assigns a doctor to the emergency visit.
+     * @param d the doctor to assign
      */
     public void assignStaff(Doctor d) {
-        // Staff assignment is handled elsewhere. This method is intentionally left blank.
+        if (d == null) {
+            return;
+        }
+        Staff[] list = getStaffList();
+        if (list == null || list.length == 0) {
+            list = new Staff[5];
+        }
+        list[0] = d;
+        super.assignStaff(list);
+    }
+
+    /**
+     * Decrements urgency when the patient is stabilized.
+     * @param isStable true if the patient has stabilized
+     */
+    public void markStabilized(boolean isStable) {
+        if (isStable && urgencyIdx > 1) {
+            urgencyIdx--;
+        }
     }
 
 }

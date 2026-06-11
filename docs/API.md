@@ -39,7 +39,7 @@ Reference output for `HospitalRunner` and manager display methods. User prompts 
 
 ### Book a routine checkup
 
-Triggered when booking via `ApptManager.addAppt()` after selecting **Routine Checkup**.
+Triggered when booking via `ApptManager.addAppointment()` after selecting **Routine Checkup**.
 
 ```
 --- Book Appointment ---
@@ -89,7 +89,7 @@ Each result line: staff name, specialization, experience, and doctor `licenseNum
 
 ### Sort patients by ward
 
-Triggered by `PatientManager.sortByWard()` then listing patients.
+Triggered by `PatientManager.sortByWardThenPatientID()` then listing patients.
 
 ```
 --- Patients Sorted by Ward ---
@@ -105,21 +105,20 @@ Pediatrics   Doe, Emily     1105  InPatient   2026-06-11
 | Name | `lastName, firstName` |
 | ID | `getPatientID()` (zero-padded if desired) |
 | Type | Subclass name (`InPatient`, `OutPatient`, `EmergencyPatient`) |
-| Admitted | `dayIn` or `dateRegistered` depending on patient type |
+| Admitted | `patient.getAdmittedDateDisplay()` (`dayIn` for inpatients/emergency; `dateRegistered` otherwise) |
 
 ---
 
 ### Patient check-out and bill (InPatient)
 
-Triggered by `PatientManager.checkOutPatient()` on an `InPatient`.
+Triggered by `PatientManager.checkOutPatient(int patientID, String followUp)` on an `InPatient`.
 
 ```
 --- Check Out: Jane Smith (ID: 1042) ---
 Ward: Cardiology
 Days admitted: 3
 Room fee (3 days x $250.00)     = $750.00
-Routine Checkup fee             = $150.00
-Medications administered        = $45.00
+Appointment fees                = $195.00
 ----------------------------------------
 Total Bill                      = $945.00
 Checked out successfully.
@@ -129,19 +128,18 @@ Next appointment: 2026-07-15
 
 | Line | Source |
 |------|--------|
-| Days admitted | Difference between `dayIn` and checkout date |
-| Room fee | Daily room rate × days (InPatient only) |
-| Appointment fees | Sum of `calculateCost()` on past appointments |
-| Medications | Medication/administration charges from patient record |
+| Days admitted | `InPatient.getDaysAdmitted()` |
+| Room fee | `InPatient.getRoomFee()` (`DAILY_ROOM_RATE` × days) |
+| Appointment fees | `InPatient.getAppointmentFees()` (sum of past appointment costs) |
 | Total Bill | `InPatient.calculateBill()` |
 | Day out | `dayOut` after checkout |
-| Next appointment | Date from `scheduleNextAppointment()` |
+| Next appointment | First upcoming appointment date after follow-up scheduling |
 
 ---
 
 ### View daily schedule
 
-Triggered by `ApptManager.viewDailySchedule(String date)`.
+Triggered by `ApptManager.viewDailySchedule(Date date)` (or equivalent display logic in `HospitalRunner`).
 
 ```
 --- Daily Schedule: 2026-06-15 ---
@@ -150,15 +148,15 @@ Triggered by `ApptManager.viewDailySchedule(String date)`.
 13:00  #5082  Emergency Visit  Tom Brown (0987)  ER 1   Dr. Yuen
 ```
 
-Each row (sorted by time): time (`HH:MM`), appointment ID, type label, patient name and ID, room/OR/ER identifier, primary staff name.
+Each row (sorted by time): time (`HH:MM`), appointment ID, type label, patient name and ID, room/OR/ER identifier, primary staff name. `HospitalRunner` uses polymorphic display methods on each appointment subclass.
 
 | Column | Source |
 |--------|--------|
 | Time | `time` field formatted as `HH:MM` |
 | `#` + ID | `getApptID()` |
-| Type | Subclass label (`Routine Checkup`, `Surgery`, `Emergency Visit`) |
+| Type | `getTypeLabel()` (`Routine Checkup`, `Surgery`, `Emergency Visit`) |
 | Patient | Name and ID from linked `Patient` |
-| Location | `Rm n` / `OR n` / `ER n` from subclass room field |
+| Location | `getLocationLabel()` (`Rm n` / `OR n` / `ER n`) |
 | Staff | Primary assigned staff member name |
 
 ---
@@ -204,63 +202,50 @@ Colon-separated records. First line is entry count.
 
 ### `patients.txt`
 
-Colon-separated records. First line is entry count.
+Pipe-delimited records (one patient per line). Lines starting with `#` or blank lines are skipped.
 
 ```
-<count>
-<type: InPatient | OutPatient | EmergencyPatient>
-<patientID>
-<firstName>
-<lastName>
-<dateOfBirth>
-<ward>
-<address>
-<phoneNum>
-<numOHIP>
-<dateRegistered>
-<gender>
-<emergencyContactPhoneNumber>
-<diagnoses: semicolon-separated, or NONE>
-<allergies: semicolon-separated, or NONE>
-<medicalHistory: semicolon-separated, or NONE>
-<familyHistory: semicolon-separated, or NONE>
-<type-specific fields...>
-:
+<type>|<patientID>|<firstName>|<lastName>|<dateOfBirth>|<ward>|<address>|<phoneNum>|<numOHIP>|<dateRegistered>|<gender>|<emergencyContactPhoneNumber>
 ```
 
-| Type | Additional Fields |
-|------|-------------------|
-| **InPatient** | `dayIn`, `dayOut` (or `NONE`), `hospitalBedNum` |
-| **OutPatient** | `appointmentTimingMonths` |
-| **EmergencyPatient** | `arrivalTime`, `dayIn`, `dayOut` (or `NONE`), `presentingComplaint`, `arrivalType`, `status` |
+- **Type values:** `InPatient`, `OutPatient`, `EmergencyPatient`
+- **Date format:** `YYYY-MM-DD`
 
 ---
 
 ### `patient_appointments.txt`
 
-Links appointment IDs to patients.
+Pipe-delimited appointment links (one record per line). Lines starting with `#` or blank lines are skipped.
 
 ```
-<patientID>
-<past | upcoming>
-<apptID>
-:
+<patientID>|<appointmentType>|<apptID>|<date>|<time>|<duration>|<cost>|<status>|<type-specific fields...>
 ```
+
+| Type | Additional Fields |
+|------|-------------------|
+| **RoutineCheckup** | `clinicRoomNum`, `doctorID placeholder` |
+| **Surgery** | `operatingRoomNum`, `anaesthesiaType`, `anaesthesiaDose`, `surgeryType`, `preOpInstructions` |
+| **EmergencyVisit** | `emergencyRoomNum`, `urgencyIdx` |
+
+- **Date format:** `YYYY-MM-DD`
 
 ---
 
 ### `appointments.txt`
 
-One comma-separated record per line.
+First line is entry count. Each subsequent line is one comma-separated record.
 
-| Type | Format |
-|------|--------|
-| **Checkup** | `Checkup,<apptID>,<patientID>,<date>,<time>,<status>,<clinicRoomNum>,<doctorID>` |
-| **Surgery** | `Surgery,<apptID>,<patientID>,<date>,<time>,<status>,<ORnum>,<surgeryType>,<anaesthesiaType>,<anaesthesiaDose>,<preOpInstructions>,<surgeonID>,<nurseIDs...>` |
-| **Emergency** | `Emergency,<apptID>,<patientID>,<date>,<time>,<status>,<ERnum>,<urgencyIdx>,<doctorID>,<nurseIDs...>` |
+**Common fields (all types):** `type,apptID,patientID,date,time,status,roomNum,duration,cost`
+
+| Type | Additional Fields |
+|------|-------------------|
+| **RoutineCheckup** | `doctorID` |
+| **Surgery** | `surgeryType,anaesthesiaType,anaesthesiaDose,preOpInstructions,surgeonID,nurseIDs...` |
+| **EmergencyVisit** | `urgencyIdx` |
 
 - **Date format:** `YYYYMMDD`
 - **Time format:** `hh.mm` (24-hour, stored as `double`)
+- **Status values:** `"Scheduled"`, `"Done"`, `"Cancelled"`, `"No Show"` (see `Appointment` status constants)
 
 ---
 
@@ -283,7 +268,7 @@ Calendar date helper used across all modules.
 | Signature | Algorithm | Description |
 |-----------|-----------|-------------|
 | `Date(int year, int month, int day)` | Direct assignment | Assign each parameter to its corresponding field |
-| `Date(String dateStr)` | Substring extraction | Extract chars 0–4 as year, 5–7 as month, 8–10 as day; convert each to `int` |
+| `Date(String dateStr)` | Multi-format parse | Accepts `YYYY-MM-DD`, `YYYYMMDD`, or `"Month day, year"` display format; empty/null → zero date |
 
 #### Methods
 
@@ -292,6 +277,9 @@ Calendar date helper used across all modules.
 | `toString()` | `String` | Switch-case | Convert month `int` to month name; combine with day and year |
 | `toISODateString()` | `String` | String formatting | Return `YYYY-MM-DD` for file I/O, off-days, and OR booking records |
 | `compareTo(Date other)` | `int` | Sequential comparison | Compare year, then month, then day; return difference or `0` if equal |
+| `addDays(int daysToAdd)` | `Date` | Date arithmetic | Return a new `Date` offset by the given number of days |
+| `isValid()` | `boolean` | Bounds check | Return `true` if year/month/day form a valid calendar date |
+| `equals(Object other)` | `boolean` | Field comparison | Compare year, month, and day |
 
 ---
 
@@ -327,7 +315,9 @@ Base class for all hospital staff.
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
 | `takeOffDay(String date)` | `void` | Format validation + linear search | Validate `YYYY-MM-DD`; check duplicate in `offDays`; add to next available slot |
+| `equals(Object other)` | `boolean` | Type check + delegation | Delegate to `equals(Staff other)` |
 | `equals(Staff other)` | `boolean` | Direct comparison | Return `false` if `other` is null; compare `staffID` strings |
+| `hashCode()` | `int` | String hash | Return `staffID.hashCode()` |
 | `hasTimeConflict(Date date, double time)` | `boolean` | Linear search | Loop through `schedule`; return `true` if same date and time found |
 | `formatTime(double time)` | `String` | String formatting | *(protected)* Format stored `hh.mm` time as `HH:MM` for schedule display |
 | `formatOffDaysForFile()` | `String` | Loop + string build | *(protected)* Comma-separate `offDays` as `YYYY-MM-DD`, or `NONE` if empty |
@@ -478,14 +468,14 @@ Base class for all patients.
 |-------|------|-------------|
 | `patientID` | `int` | Unique identifier |
 | `firstName`, `lastName` | `String` | Patient name |
-| `dateOfBirth` | `String` | Date of birth |
+| `dateOfBirth` | `Date` | Date of birth |
 | `ward` | `String` | Hospital ward |
 | `address` | `String` | Home address |
-| `phoneNum` | `int` | Phone number |
+| `phoneNum` | `long` | Phone number |
 | `numOHIP` | `int` | 10-digit OHIP number |
-| `dateRegistered` | `String` | Registration date |
+| `dateRegistered` | `Date` | Registration date |
 | `gender` | `char` | `'M'` or `'F'` |
-| `emergencyContactPhoneNumber` | `int` | Emergency contact |
+| `emergencyContactPhoneNumber` | `long` | Emergency contact |
 | `assignedStaff` | `Staff` | Responsible staff member |
 | `diagnosis` | `String[]` | Diagnosis list |
 | `medications` | `Medication[]` | Prescribed medications |
@@ -501,9 +491,10 @@ Base class for all patients.
 |--------|---------|-----------|-------------|
 | `toString()` | `String` | Abstract — subclass-specific | Full patient info |
 | `checkIn()` | `boolean` | Abstract — subclass-specific | Check patient in |
-| `checkOut()` | `boolean` | Abstract — subclass-specific | Check out, bill, schedule follow-up |
+| `checkOut(String followUp)` | `boolean` | Abstract — subclass-specific | Check out, bill, schedule follow-up (`"checkup"`, `"surgery"`, or other) |
 | `calculateBill()` | `double` | Abstract — subclass-specific | Compute total bill |
-| `scheduleNextAppointment()` | `void` | Abstract — subclass-specific | Schedule follow-up appointment |
+| `scheduleNextRoutineCheckup()` | `void` | Abstract — subclass-specific | Schedule a follow-up routine checkup |
+| `scheduleNextSurgery()` | `void` | Abstract — subclass-specific | Schedule a follow-up surgery |
 
 #### Concrete Methods
 
@@ -525,7 +516,7 @@ Base class for all patients.
 | `deleteFamilyHistory(String entry)` | `boolean` | Linear search + left shift | Search and remove with left shift |
 | `getIndexOfApptByIDPast(String apptID)` | `int` | **Linear search** | Search `pastAppointments` by ID; return index or −1 |
 | `getIndexOfApptByIDUpcoming(String apptID)` | `int` | **Linear search** | Search `upcomingAppointments` by ID; return index or −1 |
-| `addAppointment(Appointment a)` | `void` | Insert at end | Add to end of `upcomingAppointments` |
+| `addAppointment(Appointment a)` | `void` | Insert at end | Route to `upcomingAppointments` if status is `"future"` or `STATUS_SCHEDULED`; to `pastAppointments` if `"past"` or `STATUS_DONE` |
 | `updateAppointment(Appointment org, Appointment newA)` | `boolean` | Index-find-then-modify | Find in upcoming by ID; if −1 return `false`; replace at index |
 | `deleteAppointment(Appointment a)` | `boolean` | Index-find-then-modify | Find in upcoming by ID; remove and left-shift |
 | `addDiagnoses(String diagnosis)` | `void` | Insert at end | Add to end of `diagnosis` array |
@@ -539,6 +530,8 @@ Base class for all patients.
 | `compareToDateRegistered(Patient other)` | `int` | Sequential comparison | Split dates into year/month/day; compare year, then month, then day |
 | `hasSameHospitalBed(Patient other)` | `boolean` | Type check + compare | If either not `InPatient` return `false`; cast and compare `hospitalBedNum` |
 | `addToHistory(Appointment a)` | `boolean` | Index-find-then-modify | Find in upcoming; remove with left-shift; add to end of past |
+| `calculateTotalCost()` | `double` | Loop + sum | Sum `calculateCost()` on all non-null past appointments |
+| `getAdmittedDateDisplay()` | `String` | Polymorphic | Return ISO admission date for listings; default is `dateRegistered` |
 | *getters/setters* | — | Accessor / mutator | Standard accessors for all fields |
 
 ---
@@ -549,9 +542,9 @@ Base class for all patients.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `dayIn` | `String` | Admission date |
-| `dayOut` | `String` | Discharge date (`null` if admitted) |
-| `hospitalBedNum` | `int` | Assigned bed number |
+| `dayIn` | `Date` | Admission date |
+| `dayOut` | `Date` | Discharge date (`null` if admitted) |
+| `hospitalBed` | `boolean` | Whether a hospital bed is assigned |
 | `vitalsLog` | `String[]` | Timestamped vitals entries |
 | `medicationsAdministered` | `String[]` | Timestamped medication log |
 
@@ -559,20 +552,22 @@ Base class for all patients.
 
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
-| `checkIn()` | `boolean` | Direct assignment | Set `dayIn` to current date; return `true` |
-| `checkIn(String date)` | `boolean` | Format validation | Validate `YYYY-MM-DD`; if invalid return `false`; set `dayIn` |
-| `checkOut()` | `boolean` | Sequential operations | Set `dayOut` to current date; set `hospitalBedNum` to −1; call `calculateBill()` and `scheduleNextAppointment()` |
-| `calculateBill()` | `double` | Loop + arithmetic | Sum `calculateCost()` on past appointments; add daily room rate × days between `dayIn` and `dayOut` |
-| `scheduleNextAppointment()` | `void` | Date arithmetic | Split `dayOut`; add 1–2 days; create appointment; call `addAppointment()` |
-| `toString()` | `String` | String formatting | All patient info + `dayIn`, `dayOut`, `hospitalBedNum` |
+| `checkIn()` | `boolean` | Linear search | Find today's upcoming appointment; set `dayIn` and assign bed |
+| `checkIn(Date dayIn)` | `boolean` | Format validation | Validate date; set `dayIn` and assign bed |
+| `checkOut(String followUp)` | `boolean` | Sequential operations | Set `dayOut`; call `calculateBill()`; schedule follow-up by type |
+| `calculateBill()` | `double` | Loop + arithmetic | Return `getRoomFee()` + `getAppointmentFees()` |
+| `getAdmittedDateDisplay()` | `String` | Conditional | Return `dayIn` as ISO string, or `"N/A"` |
+| `scheduleNextRoutineCheckup()` | `void` | Date arithmetic | Create follow-up checkup 1–2 days after checkout |
+| `scheduleNextSurgery()` | `void` | Date arithmetic | Create follow-up surgery 1–2 days after checkout |
+| `toString()` | `String` | String formatting | All patient info + `dayIn`, `dayOut`, bed status |
 
 #### Unique Methods
 
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
-| `assignHospitalBed(int bedNum)` | `boolean` | Direct assignment | Set `hospitalBedNum` to `bedNum`; return `true` |
-| `transferWard(String newWard)` | `boolean` | Direct assignment | Update `ward` field |
-| `availableBed(int bedNum)` | `boolean` | **Linear search** | Loop all patients; for each `InPatient`, if bed number matches return `false`; return `true` after loop |
+| `getDaysAdmitted()` | `int` | Date arithmetic | Days between `dayIn` and `dayOut` (or current date for preview) |
+| `getRoomFee()` | `double` | Arithmetic | `getDaysAdmitted()` × `DAILY_ROOM_RATE` |
+| `getAppointmentFees()` | `double` | Delegation | Call `calculateTotalCost()` on past appointments |
 | `recordVitals(double heartRate, double bloodPressure)` | `void` | Insert at end | Combine vitals with date/time; add to end of `vitalsLog` |
 | `logMedicationsAdministered(Medication med)` | `void` | Insert at end | Combine medication name, dosage, and date; add to end of `medicationsAdministered` |
 
@@ -591,36 +586,45 @@ Base class for all patients.
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
 | `checkIn()` | `boolean` | **Linear search** | Get current date; search `upcomingAppointments` for match today; return `false` if not found |
-| `checkOut()` | `boolean` | Sequential operations | Call `calculateBill()` and `scheduleNextAppointment()`; return `true` |
-| `calculateBill()` | `double` | Loop + sum | Initialize total to 0; loop past appointments adding `calculateCost()` |
-| `scheduleNextAppointment()` | `void` | Date arithmetic | Add `appointmentTimingMonths` to current date; create appointment; call `addAppointment()` |
+| `checkOut(String followUp)` | `boolean` | Sequential operations | Call `calculateBill()`; schedule follow-up by type; return `true` |
+| `calculateBill()` | `double` | Loop + sum | Return `calculateTotalCost()` on past appointments |
+| `scheduleNextRoutineCheckup()` | `void` | Date arithmetic | Create follow-up checkup after completed appointment |
+| `scheduleNextSurgery()` | `void` | Date arithmetic | Create follow-up surgery after completed appointment |
 | `toString()` | `String` | String formatting | All base patient fields |
 
 ---
 
 ### `patient.EmergencyPatient` extends `Patient`
 
+#### Constants
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `ER_DAILY_RATE` | `500.00` | Daily emergency stay fee |
+
 #### Additional Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `arrivalTime` | `String` | Time of arrival |
-| `dayIn` | `String` | Date of arrival |
-| `dayOut` | `String` | Date of discharge |
+| `arrivalTime` | `int` | Time of arrival (24-hour integer, e.g. `1200`) |
+| `dayIn` | `Date` | Date of arrival |
+| `dayOut` | `Date` | Date of discharge |
 | `presentingComplaint` | `String` | Reason for visit |
 | `arrivalType` | `String` | Mode of arrival (e.g. `"Ambulance"`) |
-| `status` | `String` | `"Awaiting Triage"`, `"In Treatment"`, `"Stable"`, `"Critical"`, `"Discharged"` |
+| `status` | `String` | `"Awaiting triage"`, `"In Treatment"`, `"Stable"`, `"Critical"`, `"Discharged"` |
 
 #### Overridden Methods
 
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
-| `checkIn()` | `boolean` | Direct assignment | Set `arrivalTime`, `dayIn`, status to `"Awaiting Triage"`; return `true` |
-| `checkIn(String arrivalTime, String arrivalType)` | `boolean` | Direct assignment | Set provided fields; set `dayIn` and status to `"Awaiting Triage"` |
-| `checkIn(String arrivalTime, String arrivalType, String complaint)` | `boolean` | Direct assignment | Set all provided fields; set `dayIn` and status to `"Awaiting Triage"` |
-| `checkOut()` | `boolean` | Sequential operations | Set `dayOut`; set status to `"Discharged"`; call `calculateBill()` and `scheduleNextAppointment()` |
-| `calculateBill()` | `double` | Loop + arithmetic + multiplier | Sum appointment costs; add ER daily rate × days; apply status-based surcharge |
-| `scheduleNextAppointment()` | `void` | Date arithmetic | Split `dayOut`; add 1 day; create appointment; call `addAppointment()` |
+| `checkIn()` | `boolean` | Direct assignment | Set `arrivalTime`, `dayIn`, status to `"Awaiting triage"`; return `true` |
+| `checkIn(String arrivalType)` | `boolean` | Direct assignment | Set provided fields; set `dayIn` and status to `"Awaiting triage"` |
+| `checkIn(String arrivalType, String complaint)` | `boolean` | Direct assignment | Set all provided fields; set `dayIn` and status to `"Awaiting triage"` |
+| `checkOut(String followUp)` | `boolean` | Sequential operations | Set `dayOut`; set status to `"Discharged"`; call `calculateBill()`; schedule follow-up |
+| `calculateBill()` | `double` | Loop + arithmetic + multiplier | Sum appointment costs; add `ER_DAILY_RATE` × days; apply 1.5× surcharge if status is `"Critical"` |
+| `getAdmittedDateDisplay()` | `String` | Conditional | Return `dayIn` as ISO string, or `"N/A"` |
+| `scheduleNextRoutineCheckup()` | `void` | Date arithmetic | Create follow-up checkup 1 day after checkout |
+| `scheduleNextSurgery()` | `void` | Date arithmetic | Create follow-up surgery 1 day after checkout |
 | `toString()` | `String` | String formatting | All fields + arrival info and status |
 
 #### Unique Methods
@@ -667,45 +671,46 @@ Central controller for all patient records.
 
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
-| `registerPatient(...)` | `void` | Bounds check + insert | If at capacity return; determine subclass; create object; insert at `patients[numPatients]`; increment count |
-| `deletePatient(int patientID)` | `boolean` | Recursive binary search + left shift | Call `searchPatientByPatientID()`; if null return `false`; remove, shift left, decrement count |
-| `updatePatient(int patientID, ...)` | `boolean` | Search + update | Find patient by ID; call setters; return result |
+| `registerInPatient(...)` | `boolean` | Bounds check + insert | Validate OHIP; create `InPatient`; insert at end |
+| `registerOutPatient(...)` | `boolean` | Bounds check + insert | Validate OHIP; create `OutPatient`; insert at end |
+| `registerEmergencyPatient(...)` | `boolean` | Bounds check + insert | Validate OHIP; create `EmergencyPatient`; insert at end |
+| `deletePatient(int patientID)` | `boolean` | Linear search + left shift | Find by ID; shift left; decrement count |
+| `updatePatient(int patientID, Patient updated)` | `boolean` | Search + update | Replace patient record at found index |
 | `addDiagnosis(int patientID, String)` | `boolean` | Delegation | Call `patient.addDiagnoses()` |
 | `deleteDiagnosis(int patientID, String)` | `boolean` | Delegation | Call `patient.deleteDiagnoses()` |
 | `updateDiagnosis(int patientID, String org, String newD)` | `boolean` | Delegation | Call `patient.updateDiagnoses()` |
-| `addAppointment(Appointment a)` | `boolean` | Delegation | Call patient's `addAppointment()` |
-| `deleteAppointment(Appointment a)` | `boolean` | Delegation | Call patient's `deleteAppointment()` |
-| `updateAppointment(Appointment org, Appointment newA)` | `boolean` | Delegation | Call patient's `updateAppointment()` |
-| `addMedication(Patient, String med, String dosage)` | `boolean` | Delegation | Call `addMedication()` on patient |
-| `deleteMedication(Patient, String med)` | `boolean` | Delegation | Call `deleteMedication()` on patient |
-| `updateMedication(Patient, String, String newMed, String newDosage)` | `boolean` | Delegation | Call `updateMedication()` on patient |
-| `addAllergy(Patient, String allergy)` | `boolean` | Delegation | Call `addAllergy()` on patient |
-| `deleteAllergy(Patient, String allergy)` | `boolean` | Delegation | Call `deleteAllergy()` on patient |
-| `updateAllergy(Patient, String org, String newA)` | `boolean` | Delegation | Call `updateAllergy()` on patient |
-| `addMedicalHistory(Patient, String entry)` | `boolean` | Delegation | Call `addMedicalHistory()` on patient |
-| `deleteMedicalHistory(Patient, String entry)` | `boolean` | Delegation | Call `deleteMedicalHistory()` on patient |
-| `addFamilyHistory(Patient, String entry)` | `boolean` | Delegation | Call `addFamilyHistory()` on patient |
-| `deleteFamilyHistory(Patient, String entry)` | `boolean` | Delegation | Call `deleteFamilyHistory()` on patient |
+| `addAppointment(int patientID, Appointment a)` | `boolean` | Delegation | Find patient; call `addAppointment()` |
+| `deleteAppointment(int patientID, Appointment a)` | `boolean` | Delegation | Find patient; call `deleteAppointment()` |
+| `updateAppointment(int patientID, Appointment org, Appointment newA)` | `boolean` | Delegation | Find patient; call `updateAppointment()` |
+| `addMedication(int patientID, String med, String dosage)` | `boolean` | Delegation | Call `addMedication()` on patient |
+| `deleteMedication(int patientID, String med)` | `boolean` | Delegation | Call `deleteMedication()` on patient |
+| `updateMedication(int patientID, String, String newMed, String newDosage)` | `boolean` | Delegation | Call `updateMedication()` on patient |
+| `addAllergy(int patientID, String allergy)` | `boolean` | Delegation | Call `addAllergy()` on patient |
+| `deleteAllergy(int patientID, String allergy)` | `boolean` | Delegation | Call `deleteAllergy()` on patient |
+| `updateAllergy(int patientID, String org, String newA)` | `boolean` | Delegation | Call `updateAllergy()` on patient |
+| `addMedicalHistory(int patientID, String entry)` | `boolean` | Delegation | Call `addMedicalHistory()` on patient |
+| `deleteMedicalHistory(int patientID, String entry)` | `boolean` | Delegation | Call `deleteMedicalHistory()` on patient |
+| `addFamilyHistory(int patientID, String entry)` | `boolean` | Delegation | Call `addFamilyHistory()` on patient |
+| `deleteFamilyHistory(int patientID, String entry)` | `boolean` | Delegation | Call `deleteFamilyHistory()` on patient |
 | `updateAssignedStaffForPatient(int patientID, Staff)` | `boolean` | Delegation | Call `patient.setAssignedStaff()` |
-| `loadPatientInfo(String fileName)` | `void` | **File I/O** | Parse type tag and fields; create subclass; call `registerPatient()` or equivalent |
-| `savePatientInfo(String fileName)` | `void` | **File I/O** | Write each patient via `toString()` |
-| `loadPatientAppts(String fileName)` | `void` | **File I/O** | For each record, find patient by ID; call `addAppointment()` or `addToHistory()` by tag |
-| `savePatientAppts(String fileName)` | `void` | **File I/O** | Write patient appointment associations |
-| `checkInPatient(Patient)` | `void` | Delegation | Call `checkIn()` on patient |
-| `checkOutPatient(Patient)` | `void` | Delegation | Call `checkOut()` on patient |
-| `calculateBill(Patient)` | `double` | Delegation | Call `calculateBill()` on patient |
-| `scheduleNextAppointmentForPatient(Patient, Appointment)` | `void` | Delegation | Schedule follow-up on patient |
-| `listAllPatients()` | `void` | Loop + print | Loop and print all patients |
-| `viewAppointments(Patient)` | `void` | Loop + print | Print patient's appointments |
+| `loadPatientInfo(String fileName)` | `boolean` | **File I/O** | Parse pipe-delimited records; create subclass; insert into array |
+| `savePatientInfo(String fileName)` | `boolean` | **File I/O** | Write each patient as pipe-delimited record |
+| `loadPatientAppts(String fileName)` | `boolean` | **File I/O** | Parse appointment records; find patient by ID; call `addAppointment()` |
+| `savePatientAppts(String fileName)` | `boolean` | **File I/O** | Write patient appointment associations |
+| `checkInPatient(int patientID)` | `boolean` | Delegation | Call `checkIn()` on patient |
+| `checkOutPatient(int patientID, String followUp)` | `boolean` | Delegation | Call `checkOut(followUp)` on patient |
+| `calculateBill(int patientID)` | `double` | Delegation | Call `calculateBill()` on patient |
+| `calculateTotalCostForPatient(int patientID)` | `double` | Delegation | Call `calculateTotalCost()` on patient |
+| `listAllPatients()` | `String` | Loop + string build | Concatenate `toString()` for all patients |
+| `listAppointmentsForPatient(int patientID)` | `String` | Loop + string build | Return past and upcoming appointment listings |
 | `logMedicationAdministeredForPatient(int patientID, Medication med)` | `boolean` | Delegation | If `InPatient`, call `logMedicationsAdministered(med)` |
 | `recordVitalsForPatient(int patientID, double heartRate, double bloodPressure)` | `boolean` | Delegation | If `InPatient`, call `recordVitals(heartRate, bloodPressure)` |
-| `addToHistory(Patient, Appointment a)` | `void` | Delegation | Call `addToHistory()` on patient |
-| `updateStatus(EmergencyPatient, String status)` | `void` | Delegation | Call `updateStatus()` on emergency patient |
-| `searchPatientByName(String firstName, String lastName)` | `Patient` | **Sequential search** | Loop patients; call `equalsName()`; return match or `null` |
-| `searchPatientByPatientID(int patientID)` | `Patient` | **Recursive binary search** | Set low/high; base case low > high return `null`; mid compare; recurse left or right |
-| `sortByDateEntered()` | `void` | **Insertion sort** | Loop from index 1; store key; shift right while key compares greater; insert key |
-| `sortByWard()` | `void` | **Selection sort** | Outer loop sets `minIndex`; inner finds alphabetically smallest ward; swap |
-| `sortByPatientID()` | `void` | **Bubble sort** | Outer and inner loops; swap adjacent if patient IDs out of order |
+| `addtoHistory(int patientID, Appointment a)` | `boolean` | Delegation | Call `addToHistory()` on patient |
+| `setEmergencyPatientStatus(int patientID, String status)` | `boolean` | Delegation | If `EmergencyPatient`, update status |
+| `searchPatientByPatientID(int patientID)` | `Patient` | **Binary search** | Sort by ID; recurse on sorted `patients` array |
+| `sortByDateEntered()` | `void` | **Insertion sort** | Sort patients by `dateRegistered` ascending |
+| `sortByWardThenPatientID()` | `void` | **Selection sort** | Sort patients by ward name ascending, then patient ID |
+| `sortByPatientID()` | `void` | **Bubble sort** | Sort patients by patient ID ascending |
 
 ---
 
@@ -721,12 +726,21 @@ Base class for all appointments.
 |-------|------|-------------|
 | `apptID` | `int` | Unique identifier |
 | `patient` | `Patient` | Patient for this appointment |
-| `staff` | `Staff[]` | Assigned staff members |
-| `date` | `String` | Date (`YYYYMMDD`) |
+| `staffList` | `Staff[]` | Assigned staff members |
+| `date` | `Date` | Appointment date |
 | `time` | `double` | Time (`hh.mm`, 24-hour) |
 | `duration` | `double` | Duration in hours |
 | `cost` | `double` | Computed cost |
-| `status` | `String` | `"future"`, `"done"`, `"cancelled"`, `"no-show"` |
+| `status` | `String` | `"Scheduled"`, `"Done"`, `"Cancelled"`, `"No Show"` |
+
+#### Status Constants
+
+| Constant | Value |
+|----------|-------|
+| `STATUS_SCHEDULED` | `"Scheduled"` |
+| `STATUS_DONE` | `"Done"` |
+| `STATUS_CANCELLED` | `"Cancelled"` |
+| `STATUS_NO_SHOW` | `"No Show"` |
 
 #### Abstract Methods
 
@@ -734,18 +748,25 @@ Base class for all appointments.
 |--------|---------|-----------|-------------|
 | `calculateCost()` | `double` | Abstract — subclass-specific | Compute appointment cost |
 | `validateBooking()` | `boolean` | Abstract — subclass-specific | Validate booking requirements |
-| `assignStaff()` | `void` | Abstract — subclass-specific | Assign staff to appointment |
+| `getRoomNum()` | `int` | Abstract — subclass-specific | Return room/OR/ER number for conflict checks |
+| `getTypeLabel()` | `String` | Abstract — subclass-specific | Human-readable type label for schedule display |
+| `getLocationLabel()` | `String` | Abstract — subclass-specific | Human-readable location label (`Rm n`, `OR n`, `ER n`) |
 | `toString()` | `String` | Abstract — subclass-specific | Formatted appointment info |
 
 #### Concrete Methods
 
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
-| `cancel()` | `void` | Direct assignment | Set status to `"cancelled"` |
-| `reschedule(String newDate, double newTime)` | `boolean` | Validate-and-revert | Store old values; set new date/time; call `validateBooking()`; revert if invalid |
-| `equals(Appointment other)` | `boolean` | Nested loop (conflict check) | Compare date/time; if same room return `true`; nested loop compare staff arrays |
-| `markDone()` | `void` | Delegation | Set status to `"complete"`; call `patient.addToHistory(this)` |
-| *getters/setters* | — | Accessor / mutator | Standard accessors; each subclass implements `getRoomNum()` for conflict checks |
+| `cancel()` | `void` | Direct assignment | Set status to `STATUS_CANCELLED` |
+| `reschedule(Date newDate, double newTime)` | `boolean` | Validate-and-revert | Store old values; set new date/time; call `validateBooking()`; revert if invalid |
+| `assignStaff(Staff[] staffTeam)` | `void` | Array copy | Assign staff array (defensive copy) |
+| `overlap(Object obj)` | `boolean` | Nested loop | Compare date/time overlap and shared staff members |
+| `equals(Object obj)` | `boolean` | Direct comparison | Compare by `apptID` |
+| `hashCode()` | `int` | Integer hash | Hash of `apptID` |
+| `markDone()` | `void` | Delegation | Set status to `STATUS_DONE`; call `patient.addToHistory(this)` |
+| `isActive()` | `boolean` | Status check | Return `false` if cancelled, done, or no-show |
+| `toMinutes(double hhmm)` | `int` | **Static** formatting | Convert `hh.mm` double to total minutes |
+| *getters/setters* | — | Accessor / mutator | Standard accessors for all fields |
 
 ---
 
@@ -764,11 +785,14 @@ Base class for all appointments.
 |--------|---------|-----------|-------------|
 | `calculateCost()` | `double` | Direct return | Return flat routine checkup fee |
 | `validateBooking()` | `boolean` | Conditional check | Return `false` if `clinicRoomNum ≤ 0` or `mainDoctor` is null; else `true` |
-| `assignStaff(Doctor d)` | `void` | Direct assignment | Set `mainDoctor`; assign `d` to `staff[0]` |
-| `assignClinicRoom()` | `void` | **Linear search** | Iterate room roster; find first unallocated room; assign to `clinicRoomNum` |
-| `markNoShow()` | `void` | Direct assignment + arithmetic | Set status to `"NoShow"`; add no-show fee to cost |
-| `estimateDuration(String reasonForVisit)` | `double` | Keyword scan | Initialize base duration; check reason for keywords that add time; return total |
-| `toString()` | `String` | String formatting | Base info + `clinicRoomNum` |
+| `getTypeLabel()` | `String` | Direct return | Return `"Routine Checkup"` |
+| `getLocationLabel()` | `String` | String formatting | Return `"Rm "` + `clinicRoomNum` |
+| `assignStaff(Doctor d)` | `void` | Direct assignment | Set `mainDoctor`; assign `d` to `staffList[0]` |
+| `assignClinicRoom(ApptManager manager)` | `int` | **Linear search** | Find first unoccupied clinic room; return room number or `-1` |
+| `getMainDoctor()` | `Doctor` | Accessor | Return primary doctor |
+| `markNoShow()` | `void` | Direct assignment + arithmetic | Set status to `STATUS_NO_SHOW`; set cost to no-show fee |
+| `estimateDuration(String reasonForVisit)` | `double` | Keyword scan | Base 15 min; add time for known visit reasons; store as hours |
+| `toString()` | `String` | String formatting | Base info + `clinicRoomNum` and doctor |
 
 ---
 
@@ -788,13 +812,15 @@ Base class for all appointments.
 
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
-| `calculateCost()` | `double` | Arithmetic | Base fee + type/anaesthesia surcharges + hourly rate × duration |
-| `validateBooking()` | `boolean` | Direct comparison | Extract surgeon from `staff[0]`; compare specialty to `type` |
-| `assignStaff(Surgeon surgeon, Nurse[] nurses)` | `void` | Loop + assignment | Assign surgeon to `staff[0]`; loop nurses into `staff[1..n]` |
-| `assignOperatingRoom(int ORnum)` | `void` | Linear search | Check preferred OR free; if occupied loop alternatives until free found |
-| `givePreOpInstructions()` | `void` | Conditional assignment | Evaluate `type`; set `preOpInstructions` to matching guidelines |
-| `estimateDuration(int experience)` | `double` | Arithmetic | Set baseline by type; adjust by surgeon experience factor |
-| `calculateNursesNeeded()` | `int` | Conditional | Return 3 if urgency ≥ 4; 2 if urgency == 3; else 1 |
+| `calculateCost()` | `double` | Arithmetic | Return base surgery fee (`SURGERY_COST_BASE`) |
+| `validateBooking()` | `boolean` | Direct comparison | Extract surgeon from `staffList[0]`; compare `specialtyArea` to `type` |
+| `getTypeLabel()` | `String` | Direct return | Return `"Surgery"` |
+| `getLocationLabel()` | `String` | String formatting | Return `"OR "` + `operatingRoomNum` |
+| `assignStaff(Surgeon surgeon, Nurse[] nurses)` | `void` | Loop + assignment | Assign surgeon to `staffList[0]`; loop nurses into `[1..n]` |
+| `assignOperatingRoom(ApptManager manager, int preferredOR)` | `int` | Linear search | Check preferred OR free; if occupied loop alternatives; return assigned room or `-1` |
+| `getPreOpInstructions()` | `String` | Accessor | Return pre-op instructions string |
+| `givePreOpInstructions()` | `void` | Conditional assignment | Set `preOpInstructions` based on `anaesthesiaType` |
+| `estimateDuration()` | `double` | Arithmetic | Return stored duration |
 | `toString()` | `String` | String formatting | Base info + OR number, anaesthesia dose and type |
 
 ---
@@ -812,13 +838,17 @@ Base class for all appointments.
 
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
-| `calculateCost()` | `double` | Arithmetic | Base fee + medication costs + staff duration fees |
+| `calculateCost()` | `double` | Arithmetic | Base ER fee + duration × hourly rate |
 | `validateBooking()` | `boolean` | Conditional check | Return `true` if `emergencyRoomNum > 0`, else `false` |
-| `assignStaff(Doctor d, int urgencyIdx)` | `void` | Direct assignment | Assign `d` to `staff[0]` |
-| `autoAssignNurse(Nurse n)` | `void` | **Linear search** | Loop `staff` from index 1; find first null slot; assign nurse |
+| `getTypeLabel()` | `String` | Direct return | Return `"Emergency Visit"` |
+| `getLocationLabel()` | `String` | String formatting | Return `"ER "` + `emergencyRoomNum` |
+| `assignStaff(Doctor d, int urgencyIdx)` | `void` | Direct assignment | Set `urgencyIdx`; assign `d` to `staffList[0]` |
+| `assignStaff(Doctor d)` | `void` | Direct assignment | Assign `d` to `staffList[0]` |
+| `autoAssignNurse(Nurse n)` | `void` | **Linear search** | Loop `staffList` from index 1; find first null slot; assign nurse |
 | `urgentAssignStaff(Doctor d, Nurse[] nurses)` | `void` | Loop + assignment | Clear staff array; assign doctor at `[0]`; loop nurses into `[1..n]` |
-| `markStabilized(boolean isStable)` | `void` | Conditional decrement | If `isStable`, decrement `urgencyIdx` |
-| `assignEmergencyRoom()` | `int` | **Linear search** | Scan ER bay roster; find first unoccupied bay; set and return number |
+| `markStabilized(boolean isStable)` | `void` | Conditional decrement | If `isStable` and `urgencyIdx > 1`, decrement `urgencyIdx` |
+| `assignEmergencyRoom(ApptManager manager)` | `int` | **Linear search** | Scan ER bay roster; find first unoccupied bay; return number or `-1` |
+| `calculateNursesNeeded()` | `int` | Conditional | Return 3 if urgency ≥ 4; 2 if urgency == 3; else 1 |
 | `estimateDuration()` | `double` | Conditional arithmetic | Initialize to `0.5 × urgencyIdx`; add 1.5 h if urgency ≥ 2; add 2 h if urgency ≥ 4 |
 | `toString()` | `String` | String formatting | Base info + ER room number and urgency index |
 
@@ -832,26 +862,27 @@ Central controller for all appointments.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `apptList` | `Appointment[]` | All appointments |
-| `apptNum` | `int` | Current appointment count |
-| `maxAppts` | `int` | Array capacity |
+| `appointments` | `Appointment[]` | All appointments |
+| `numAppointments` | `int` | Current appointment count |
+| `maxAppointments` | `int` | Array capacity |
+| `staffManager` | `StaffManager` | Cross-module staff lookup |
+| `patientManager` | `PatientManager` | Cross-module patient lookup |
 
 #### Methods
 
 | Method | Returns | Algorithm | Description |
 |--------|---------|-----------|-------------|
-| `addAppt(Appointment a)` | `boolean` | Validation + insert | Call `validateBooking()`; call `isSlotConflict()`; insert at `apptList[apptNum]`; increment count |
-| `cancelAppt(int apptID)` | `boolean` | Recursive search + left shift | Call `searchByID()`; call `cancel()`; find index; shift left; decrement count |
-| `rescheduleAppt(int apptID, String newDate, double newTime)` | `boolean` | Recursive search + validate-and-revert | Find by ID; store old values; call `reschedule()`; check conflict; revert on failure |
-| `isSlotConflict(Appointment checkAppt)` | `boolean` | **Linear search** | Loop `apptList`; skip cancelled and same ID; call `equals()`; return `true` on conflict |
-| `searchByDate(String date)` | `Appointment` | **Linear search** | Loop appointments; return first matching date |
-| `searchByPatientAndDate(int patientID, String date, int idx)` | `Appointment` | **Recursive** | Base case: idx ≥ `apptNum` return `null`; if match return it; else recurse with `idx + 1` |
-| `searchByID(int apptID, int idx)` | `Appointment` | **Recursive** | Base case: idx ≥ `apptNum` return `null`; if ID matches return appointment; else recurse |
+| `addAppointment(Appointment a)` | `boolean` | Validation + insert | Call `validateBooking()`; call `isSlotConflict()`; insert at end; increment count |
+| `cancelAppointment(int apptID)` | `boolean` | Recursive search + left shift | Call `searchByID()`; call `cancel()`; shift left; decrement count |
+| `rescheduleAppointment(int apptID, Date newDate, double newTime)` | `boolean` | Recursive search + validate-and-revert | Find by ID; call `reschedule()`; check conflict; revert on failure |
+| `isSlotConflict(Appointment checkAppt)` | `boolean` | **Linear search** | Loop appointments; skip inactive/same ID; call `overlap()`; return `true` on conflict |
+| `searchByPatientAndDate(int patientID, Date date, int idx)` | `Appointment` | **Recursive linear search** | Base case: idx ≥ count return `null`; if patient and date match return it; else recurse |
+| `searchByID(int apptID, int idx)` | `Appointment` | **Recursive linear search** | Base case: idx ≥ count return `null`; if ID matches return appointment; else recurse |
 | `sortByDate()` | `void` | **Selection sort** | Outer loop sets `minIndex`; inner compares dates via `compareTo()`; swap minimum |
-| `sortByDate(String date)` | `void` | **Selection sort** | Selection sort appointments up to given date |
 | `sortByPatientThenDate()` | `void` | **Bubble sort** | Compare adjacent patient IDs; if equal compare dates; swap if out of order |
-| `loadFromFile(String filename)` | `boolean` | **File I/O** | Read each line; split by comma; instantiate matching subclass; add to `apptList` |
-| `saveToFile(String filename)` | `boolean` | **File I/O** | Loop `apptList`; format and write each record |
-| `viewDailySchedule(String date)` | `void` | Loop + print | Print header; loop and print `toString()` for matching date |
-| `viewUpcomingAppointments(int patientID)` | `void` | Loop + print | Loop; print appointments matching patient ID with status `"future"` |
-| `runCostSummary(String date)` | `double` | Loop + sum | Initialize total; loop; if date matches add `calculateCost()`; return total |
+| `loadFromFile(String filename)` | `boolean` | **File I/O** | Read count + comma-separated records; instantiate matching subclass |
+| `saveToFile(String filename)` | `boolean` | **File I/O** | Write count + common fields + subclass-specific fields per record |
+| `viewDailySchedule(Date date)` | `void` | Loop + print | Print header; loop and print `toString()` for matching date |
+| `viewUpcomingAppointments(int patientID)` | `void` | Loop + print | Print appointments matching patient ID with status `STATUS_SCHEDULED` |
+| `runCostSummary(Date date)` | `double` | Loop + sum | Initialize total; loop; if date matches add `calculateCost()`; return total |
+| `isRoomOccupied(Class<?> apptClass, int roomNum, Date date, double time, double duration)` | `boolean` | Linear search | Check whether a room of the given type is occupied at the given time |

@@ -12,7 +12,6 @@ package appointment;
 
 import shared.Date;
 import patient.Patient;
-import staff.Doctor;
 import staff.Nurse;
 import staff.Staff;
 import staff.Surgeon;
@@ -26,7 +25,26 @@ public class Surgery extends Appointment {
 
     //constants
     public static final int MAX_OR_ROOMS = 10;
-    public static final int SURGERY_COST_BASE = 3000; //base cost for surgery, can be modified based on type and anaesthesia
+    public static final int SURGERY_COST_BASE = 3000; // fallback base cost when surgery type is unknown
+
+    // Canonical surgery types — must match Surgeon.specialtyArea in data/staff.txt
+    public static final String[] SURGERY_TYPES = {
+        "General", "Orthopedic", "Cardiac", "Neuro", "Oncology", "Vascular"
+    };
+
+    // Parallel arrays indexed by SURGERY_TYPES
+    private static final double[] SURGERY_FEES = {
+        3500.00, 4200.00, 5500.00, 6000.00, 4800.00, 5200.00
+    };
+    private static final double[] SURGERY_HOURS = {
+        2.0, 2.5, 4.0, 3.5, 3.0, 2.5
+    };
+
+    // Anaesthesia surcharges (matches General / Regional / Local in data files)
+    public static final double ANAESTH_GENERAL_SURCHARGE = 500.00;
+    public static final double ANAESTH_REGIONAL_SURCHARGE = 350.00;
+    public static final double ANAESTH_LOCAL_SURCHARGE = 150.00;
+    public static final double ANAESTH_DOSE_RATE = 25.00; // dollars per mg of anaesthesia dose
 
     /**
      * Constructor for surgery appointment
@@ -63,6 +81,16 @@ public class Surgery extends Appointment {
      */
     public int getRoomNum() {
         return operatingRoomNum;
+    }
+
+    @Override
+    public String getTypeLabel() {
+        return "Surgery";
+    }
+
+    @Override
+    public String getLocationLabel() {
+        return "OR " + operatingRoomNum;
     }
 
     /**
@@ -111,6 +139,14 @@ public class Surgery extends Appointment {
      */
     public String getType() {
         return type;
+    }
+
+    /**
+     * Returns the pre-operative instructions for the surgery.
+     * @return the pre-operative instructions string, or empty string if none
+     */
+    public String getPreOpInstructions() {
+        return preOpInstructions != null ? preOpInstructions : "";
     }
 
     /**
@@ -181,9 +217,37 @@ public class Surgery extends Appointment {
      */
     @Override
     public double calculateCost() {
-        cost = SURGERY_COST_BASE; 
-        //COME UP WITH GENERAL TYPES OF SURGERIES AND ADD COSTS
-        return cost;
+        double procedureFee = SURGERY_COST_BASE;
+        if (type != null) {
+            for (int i = 0; i < SURGERY_TYPES.length; i++) {
+                if (SURGERY_TYPES[i].equalsIgnoreCase(type.trim())) {
+                    procedureFee = SURGERY_FEES[i];
+                    break;
+                }
+            }
+        }
+
+        double anaesthesiaFee = 0.0;
+        if (anaesthesiaType != null) {
+            switch (anaesthesiaType) {
+                case "General":
+                    anaesthesiaFee = ANAESTH_GENERAL_SURCHARGE;
+                    break;
+                case "Regional":
+                    anaesthesiaFee = ANAESTH_REGIONAL_SURCHARGE;
+                    break;
+                case "Local":
+                    anaesthesiaFee = ANAESTH_LOCAL_SURCHARGE;
+                    break;
+                default:
+                    anaesthesiaFee = 0.0;
+                    break;
+            }
+        }
+
+        double doseFee = anaesthesiaDose * ANAESTH_DOSE_RATE;
+        setCost(procedureFee + anaesthesiaFee + doseFee);
+        return getCost();
     }
 
     @Override
@@ -192,6 +256,20 @@ public class Surgery extends Appointment {
      * @return true if the booking is valid (room available and surgeon qualified), false otherwise
      */
     public boolean validateBooking() {
+        boolean validType = false;
+        if (type != null) {
+            for (int i = 0; i < SURGERY_TYPES.length; i++) {
+                if (SURGERY_TYPES[i].equalsIgnoreCase(type.trim())) {
+                    validType = true;
+                    break;
+                }
+            }
+        }
+        if (!validType) {
+            System.out.println("Validation Error: Invalid surgery type.");
+            return false;
+        }
+
         if (this.operatingRoomNum <= 0) {
             return false;
         }
@@ -201,13 +279,13 @@ public class Surgery extends Appointment {
             return false; // No surgeon assigned at all
         }
         Surgeon leadSurgeon = (Surgeon) team[0];
+        String specialtyArea = leadSurgeon.getSpecialtyArea();
 
-        if (leadSurgeon.getSpecialization().equals(this.type)) {
-            return true; // The surgeon is qualified for this surgery type
-        } else {
-            System.out.println("Validation Error: Surgeon specialty does not match Surgery type.");
-            return false;
+        if (specialtyArea != null && specialtyArea.equalsIgnoreCase(type.trim())) {
+            return true;
         }
+        System.out.println("Validation Error: Surgeon specialty does not match Surgery type.");
+        return false;
     }
 
     /**
@@ -235,7 +313,37 @@ public class Surgery extends Appointment {
      * @return the estimated duration
      */
     public double estimateDuration() {
-        //COME UP WITH GENERAL TYPES OF SURGERIES AND ADD DURATIONS
-        return getDuration();
+        double hours = SURGERY_HOURS[0];
+        if (type != null) {
+            for (int i = 0; i < SURGERY_TYPES.length; i++) {
+                if (SURGERY_TYPES[i].equalsIgnoreCase(type.trim())) {
+                    hours = SURGERY_HOURS[i];
+                    break;
+                }
+            }
+        }
+
+        if (anaesthesiaType != null) {
+            switch (anaesthesiaType) {
+                case "General":
+                    hours += 0.5;
+                    break;
+                case "Regional":
+                    hours += 0.25;
+                    break;
+                case "Local":
+                    hours -= 0.25;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (hours < 1.0) {
+            hours = 1.0;
+        }
+
+        setDuration(hours);
+        return hours;
     }
 }

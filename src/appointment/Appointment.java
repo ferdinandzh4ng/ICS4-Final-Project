@@ -314,10 +314,16 @@ public abstract class Appointment {
 
         // Format time
         int hours = (int) time;
-        String timeStr = hours + ":" + (toMinutes(time)-hours);
+        int minutes = toMinutes(time) - hours * 60;
+        String timeStr = String.format("%02d:%02d", hours, minutes);
+
+        String patientName = "Unknown";
+        if (patient != null) {
+            patientName = patient.getFirstName() + " " + patient.getLastName();
+        }
 
         //Return String of information
-        return "Appointment ID: " + apptID + "\nPatient: " + patient.getName()
+        return "Appointment ID: " + apptID + "\nPatient: " + patientName
             + "\nStaff: " + staffStr + "\nDate: " + date.toString() + "\nTime: " + timeStr + "\nDuration: " + duration + "\nCost: " + cost + "\nStatus: " + status;
     }
 
@@ -327,6 +333,18 @@ public abstract class Appointment {
     abstract public boolean validateBooking();
 
     abstract public int getRoomNum();
+
+    /**
+     * Returns a display label for this appointment type (e.g. "Routine Checkup").
+     * @return human-readable appointment type label
+     */
+    public abstract String getTypeLabel();
+
+    /**
+     * Returns a display label for this appointment's location (e.g. "Rm 3", "OR 2").
+     * @return human-readable location label
+     */
+    public abstract String getLocationLabel();
 
     // Helper methods
     /**
