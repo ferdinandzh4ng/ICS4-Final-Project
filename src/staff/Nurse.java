@@ -15,8 +15,6 @@ import appointment.Appointment;
 import patient.InPatient;
 import patient.Medication;
 import patient.Patient;
-import patient.InPatient;
-import patient.Medication;
 
 public class Nurse extends Staff {
 
@@ -183,8 +181,6 @@ public class Nurse extends Staff {
 
     /**
      * Administers medication after verifying it was prescribed for the patient.
-     * Linear search through the patient's medications array; delegates to
-     * logMedicationsAdministered on InPatient when found.
      *
      * @param p   patient receiving the medication
      * @param med medication name
@@ -194,27 +190,17 @@ public class Nurse extends Staff {
         if (p == null) {
             return;
         }
-<<<<<<< HEAD
         if (p.getIndexOfMedicationByName(med) == -1) {
-=======
-        Medication prescribed = findPrescribedMedication(p, med);
-        if (prescribed == null) {
->>>>>>> origin/main
             System.out.println("Warning: medication " + med + " is not prescribed for this patient.");
             return;
         }
         if (p instanceof InPatient) {
-<<<<<<< HEAD
-            Medication m = new Medication(med, dosage);
-            ((InPatient)p).logMedicationsAdministered(m);
-=======
-            ((InPatient) p).logMedicationsAdministered(prescribed);
->>>>>>> origin/main
+            ((InPatient)p).logMedicationsAdministered(new Medication(med, dosage));
         }
     }
 
     /**
-     * Records a patient's vitals through delegation to recordVitals on InPatient.
+     * Records a patient's vitals through delegation to the patient record.
      *
      * @param p         patient being monitored
      * @param heartRate heart rate reading
@@ -225,11 +211,7 @@ public class Nurse extends Staff {
             return;
         }
         if (p instanceof InPatient) {
-<<<<<<< HEAD
             ((InPatient)p).recordVitals(heartRate, bp);
-=======
-            ((InPatient) p).recordVitals(heartRate, bp);
->>>>>>> origin/main
         }
     }
 
@@ -322,23 +304,6 @@ public class Nurse extends Staff {
             copy[i] = patientsAssigned[i];
         }
         return copy;
-    }
-
-    /**
-     * Linear search through a patient's medications array for a matching name.
-     *
-     * @param p       patient whose prescriptions to search
-     * @param medName medication name to find
-     * @return matching Medication object, or null if not prescribed
-     */
-    private Medication findPrescribedMedication(Patient p, String medName) {
-        Medication[] meds = p.getMedications();
-        for (int i = 0; i < meds.length; i++) {
-            if (meds[i] != null && meds[i].getMedName().equals(medName)) {
-                return meds[i];
-            }
-        }
-        return null;
     }
 
     private void addPatientToAssigned(Patient p) {
