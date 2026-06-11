@@ -15,8 +15,10 @@ public class HospitalRunner {
 
         staffManager.loadFromFile("data/staff.txt");
         patientManager.loadPatientInfo("data/patients.txt");
-        patientManager.loadPatientAppts("data/patient_appointments.txt");
         apptManager.loadFromFile("data/appointments.txt");
+        patientManager.syncAppointmentsFromManager(apptManager);
+        staffManager.syncSchedulesFromAppointments(
+                apptManager.getAppointments(), apptManager.getNumAppointments());
 
         int nextApptID = 5000;
         Appointment[] loaded = apptManager.getAppointments();
@@ -108,7 +110,7 @@ public class HospitalRunner {
                         if (found == null) {
                             System.out.println("No staff member found with that name.");
                         } else {
-                            System.out.println(found.toString());
+                            System.out.println(staffManager.formatStaffDetails(found));
                         }
                     } else if (staffChoice == 3) {
                         staffManager.sortStaff();
@@ -326,8 +328,14 @@ public class HospitalRunner {
                     }
 
                     if (patientChoice >= 1 && patientChoice <= 3) {
-                        String type = patientChoice == 1 ? "InPatient"
-                                : patientChoice == 2 ? "OutPatient" : "EmergencyPatient";
+                        String type;
+                        if (patientChoice == 1) {
+                            type = "InPatient";
+                        } else if (patientChoice == 2) {
+                            type = "OutPatient";
+                        } else {
+                            type = "EmergencyPatient";
+                        }
                         System.out.println("--- Register " + type + " ---");
                         int id = -1;
                         while (id == -1) {
@@ -384,7 +392,12 @@ public class HospitalRunner {
                         Date registered = new Date(regStr);
                         System.out.print("Gender (M/F): ");
                         String genderStr = scanner.nextLine().trim();
-                        char gender = genderStr.isEmpty() ? ' ' : genderStr.charAt(0);
+                        char gender;
+                        if (genderStr.isEmpty()) {
+                            gender = ' ';
+                        } else {
+                            gender = genderStr.charAt(0);
+                        }
                         long emergencyPhone = -1;
                         while (emergencyPhone == -1) {
                             System.out.print("Emergency contact phone: ");
@@ -511,8 +524,14 @@ public class HospitalRunner {
                                     System.out.println("Error: please enter a valid integer.");
                                 }
                             }
-                            String followUp = followChoice == 1 ? "checkup"
-                                    : followChoice == 2 ? "surgery" : "none";
+                            String followUp;
+                            if (followChoice == 1) {
+                                followUp = "checkup";
+                            } else if (followChoice == 2) {
+                                followUp = "surgery";
+                            } else {
+                                followUp = "none";
+                            }
                             if (followUp.equals("none")) {
                                 System.out.println("Check-out cancelled.");
                             } else if (patientManager.checkOutPatient(id, followUp)) {
@@ -1057,19 +1076,7 @@ public class HospitalRunner {
                                 dayAppts[dayCount++] = appts[i];
                             }
                         }
-                        for (int i = 0; i < dayCount - 1; i++) {
-                            int minIdx = i;
-                            for (int j = i + 1; j < dayCount; j++) {
-                                if (dayAppts[j].getTime() < dayAppts[minIdx].getTime()) {
-                                    minIdx = j;
-                                }
-                            }
-                            if (minIdx != i) {
-                                Appointment temp = dayAppts[i];
-                                dayAppts[i] = dayAppts[minIdx];
-                                dayAppts[minIdx] = temp;
-                            }
-                        }
+                        ApptManager.sortByDateThenTime(dayAppts, dayCount);
                         if (dayCount == 0) {
                             System.out.println("No appointments scheduled for this date.");
                         } else {
@@ -1091,8 +1098,11 @@ public class HospitalRunner {
                                 if (team != null) {
                                     for (Staff s : team) {
                                         if (s != null) {
-                                            staffName = s instanceof Doctor
-                                                    ? "Dr. " + s.getName() : s.getName();
+                                            if (s instanceof Doctor) {
+                                                staffName = "Dr. " + s.getName();
+                                            } else {
+                                                staffName = s.getName();
+                                            }
                                             break;
                                         }
                                     }

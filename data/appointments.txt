@@ -1,4 +1,4 @@
-80
+79
 RoutineCheckup,5001,1001,20260601,8.0,Scheduled,1,0.5,100.0,D001
 RoutineCheckup,5002,1002,20260602,9.15,Scheduled,2,0.5,100.0,D002
 Surgery,5003,1003,20260603,10.3,Scheduled,3,2.5,3000.0,Cardiac,Local,2.0,Fast 8 hours,S003,N003
@@ -78,4 +78,3 @@ RoutineCheckup,5076,1036,20260620,13.45,Done,4,0.5,100.0,D006
 RoutineCheckup,5077,1037,20260621,14.0,Done,5,0.5,100.0,D007
 Surgery,5078,1038,20260622,15.15,Scheduled,6,2.5,3000.0,Vascular,Local,2.0,No food 6hrs,S006,N001
 Surgery,5079,1039,20260623,16.3,Done,7,1.5,3000.0,General,General,1.0,Fast 8 hours,S001,N002
-EmergencyVisit,5080,1040,20260624,17.45,Scheduled,8,1.75,800.0,5

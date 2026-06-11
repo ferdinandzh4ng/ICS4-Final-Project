@@ -60,6 +60,8 @@ public abstract class Patient {
         this.phoneNum = phoneNum;
         if (numOHIP < 0 || !isValidOHIP(numOHIP)) {
             this.numOHIP = 0;
+        } else {
+            this.numOHIP = numOHIP;
         }
         this.dateRegistered = dateRegistered;
         this.gender = gender;
@@ -626,22 +628,41 @@ public abstract class Patient {
     }
 
     /**
+     * Clears all past and upcoming appointment references for this patient.
+     */
+    public void clearAppointments() {
+        for (int i = 0; i < pastAppointments.length; i++) {
+            pastAppointments[i] = null;
+        }
+        for (int i = 0; i < upcomingAppointments.length; i++) {
+            upcomingAppointments[i] = null;
+        }
+    }
+
+    /**
      * Adds the specified appointment to the pastAppointments or upcomingAppointments array depending on the status of the appointment
      * @param appt the appointment to be added
      */
     public void addAppointment (Appointment appt) {
         String status = appt.getStatus();
-        if (status.equals("future") || status.equals(Appointment.STATUS_SCHEDULED)) {
-            for (int i = 0; i < upcomingAppointments.length; i++) {
-                if (upcomingAppointments[i] == null) {
-                    upcomingAppointments[i] = appt;
-                    return;
-                }
+        boolean isPast = status.equals("past") || status.equals(Appointment.STATUS_DONE);
+        if (!isPast && (status.equals("future") || status.equals(Appointment.STATUS_SCHEDULED))) {
+            Date apptDate = appt.getDate();
+            if (apptDate != null && apptDate.compareTo(PatientManager.CUR_DATE) < 0) {
+                isPast = true;
             }
-        } else if (status.equals("past") || status.equals(Appointment.STATUS_DONE)) {
+        }
+        if (isPast) {
             for (int i = 0; i < pastAppointments.length; i++) {
                 if (pastAppointments[i] == null) {
                     pastAppointments[i] = appt;
+                    return;
+                }
+            }
+        } else if (status.equals("future") || status.equals(Appointment.STATUS_SCHEDULED)) {
+            for (int i = 0; i < upcomingAppointments.length; i++) {
+                if (upcomingAppointments[i] == null) {
+                    upcomingAppointments[i] = appt;
                     return;
                 }
             }

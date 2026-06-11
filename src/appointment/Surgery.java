@@ -146,7 +146,11 @@ public class Surgery extends Appointment {
      * @return the pre-operative instructions string, or empty string if none
      */
     public String getPreOpInstructions() {
-        return preOpInstructions != null ? preOpInstructions : "";
+        if (preOpInstructions != null) {
+            return preOpInstructions;
+        } else {
+            return "";
+        }
     }
 
     /**
@@ -294,7 +298,13 @@ public class Surgery extends Appointment {
      * @param nurses the nurses to assign
      */
     public void assignStaff(Surgeon surgeon, Nurse[] nurses) {
-        int requiredSize = 1 + (nurses == null ? 0 : nurses.length);
+        int nurseCount;
+        if (nurses == null) {
+            nurseCount = 0;
+        } else {
+            nurseCount = nurses.length;
+        }
+        int requiredSize = 1 + nurseCount;
         Staff[] list = getStaffList();
         if (list == null || list.length < requiredSize) {
             list = new Staff[requiredSize];

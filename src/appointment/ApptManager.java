@@ -310,6 +310,15 @@ public class ApptManager {
                             apptID, patient, emergencyStaff, date, time, duration, cost,
                             status, roomNum, urgencyIdx
                         );
+
+                        Doctor erDoctor = staffManager.getTraumaDoctor(urgencyIdx, date, time);
+                        if (erDoctor != null) {
+                            emergencyAppt.assignStaff(erDoctor, urgencyIdx);
+                        }
+                        Nurse triageNurse = staffManager.getTriageNurse(date, time);
+                        if (triageNurse != null) {
+                            emergencyAppt.autoAssignNurse(triageNurse);
+                        }
                         
                         this.appointments[this.numAppointments] = emergencyAppt;
                         this.numAppointments++;
@@ -363,13 +372,22 @@ public class ApptManager {
                 // Subclass-specific fields
                 if (a instanceof RoutineCheckup) {
                     RoutineCheckup rc = (RoutineCheckup) a;
-                    String doctorID = rc.getMainDoctor() != null ? rc.getMainDoctor().getStaffID() : "";
+                    String doctorID;
+                    if (rc.getMainDoctor() != null) {
+                        doctorID = rc.getMainDoctor().getStaffID();
+                    } else {
+                        doctorID = "";
+                    }
                     line = line + "," + doctorID;
                 } else if (a instanceof Surgery) {
                     Surgery s = (Surgery) a;
                     Staff[] team = s.getStaffList();
-                    String surgeonID = (team != null && team.length > 0 && team[0] != null)
-                            ? team[0].getStaffID() : "";
+                    String surgeonID;
+                    if (team != null && team.length > 0 && team[0] != null) {
+                        surgeonID = team[0].getStaffID();
+                    } else {
+                        surgeonID = "";
+                    }
                     line = line + "," + s.getType() + "," + s.getAnaesthesiaType() + ","
                             + s.getAnaesthesiaDose() + "," + s.getPreOpInstructions() + "," + surgeonID;
                     if (team != null) {
@@ -431,22 +449,40 @@ public class ApptManager {
     }
 
     /**
+     * Selection sort — orders appointments by date, then time.
+     * Shared by staff schedule display and daily schedule views.
+     *
+     * @param arr   appointment array to sort in place
+     * @param count number of valid entries at the front of the array
+     */
+    public static void sortByDateThenTime(Appointment[] arr, int count) {
+        if (arr == null || count <= 1) {
+            return;
+        }
+        for (int i = 0; i < count - 1; i++) {
+            int minIdx = i;
+            for (int j = i + 1; j < count; j++) {
+                Date dateJ = arr[j].getDate();
+                Date dateMin = arr[minIdx].getDate();
+                int dateCmp = dateJ.compareTo(dateMin);
+                if (dateCmp < 0
+                        || (dateCmp == 0 && arr[j].getTime() < arr[minIdx].getTime())) {
+                    minIdx = j;
+                }
+            }
+            if (minIdx != i) {
+                Appointment temp = arr[i];
+                arr[i] = arr[minIdx];
+                arr[minIdx] = temp;
+            }
+        }
+    }
+
+    /**
      * Selection sort appointments by date
      */
     public void sortByDate() {
-        // Selection Sort
-        for (int i = 0; i < numAppointments - 1; i++) {
-            int minIdx = i;
-            for (int j = i + 1; j < numAppointments; j++) {
-                if (appointments[j].getDate().compareTo(appointments[minIdx].getDate()) < 0) {
-                    minIdx = j; // Found an earlier date
-                }
-            }
-            // Swap
-            Appointment temp = appointments[minIdx];
-            appointments[minIdx] = appointments[i];
-            appointments[i] = temp;
-        }
+        sortByDateThenTime(appointments, numAppointments);
     }
 
     /**
@@ -499,7 +535,9 @@ public class ApptManager {
     public void viewUpcomingAppointments(int patientID) {
         System.out.println("*** Upcoming Appointments for Patient " + patientID + " ***");
         for (int i = 0; i < numAppointments; i++) {
-            if (appointments[i].getPatient().getPatientID() == patientID && appointments[i].getStatus().equals(Appointment.STATUS_SCHEDULED)) {
+            if (appointments[i].getPatient().getPatientID() == patientID
+                    && appointments[i].getStatus().equals(Appointment.STATUS_SCHEDULED)
+                    && appointments[i].getDate().compareTo(PatientManager.CUR_DATE) >= 0) {
                 System.out.println(appointments[i].toString() + "\n");
             }
         }

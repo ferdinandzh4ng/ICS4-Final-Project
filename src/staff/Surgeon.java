@@ -140,7 +140,7 @@ public class Surgeon extends Staff {
         sb.append("OR ").append(operatingRoom)
                 .append(" | Specialty: ").append(specialtyArea).append("\n");
 
-        Appointment[] schedule = getScheduleSlots();
+        Appointment[] schedule = getSortedScheduleAppointments();
         boolean hasAppointments = false;
         for (int i = 0; i < schedule.length; i++) {
             if (schedule[i] == null) {

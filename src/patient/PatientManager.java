@@ -1,5 +1,6 @@
 package patient;
 
+import appointment.ApptManager;
 import appointment.Appointment;
 import appointment.EmergencyVisit;
 import appointment.RoutineCheckup;
@@ -359,6 +360,31 @@ public class PatientManager {
     }
 
     /**
+     * Replaces each patient's appointment lists with the canonical records from ApptManager.
+     *
+     * @param apptManager loaded appointment manager
+     */
+    public void syncAppointmentsFromManager(ApptManager apptManager) {
+        if (apptManager == null) {
+            return;
+        }
+
+        for (int i = 0; i < numPatients; i++) {
+            if (patients[i] != null) {
+                patients[i].clearAppointments();
+            }
+        }
+
+        Appointment[] appts = apptManager.getAppointments();
+        int count = apptManager.getNumAppointments();
+        for (int i = 0; i < count; i++) {
+            if (appts[i] != null && appts[i].getPatient() != null) {
+                appts[i].getPatient().addAppointment(appts[i]);
+            }
+        }
+    }
+
+    /**
      * Loads appointment records from the specified file and assigns them to matching patients.
      * Each record has varying lines depending on appointment type.
      * @param fileName the appointment file path
@@ -650,6 +676,9 @@ public class PatientManager {
         int year = Integer.parseInt(parts[0]);
         int month = Integer.parseInt(parts[1]);
         int day = Integer.parseInt(parts[2]);
+        if (year == 0 && month == 0 && day == 0) {
+            return null;
+        }
         return new Date(year, month, day);
     }
 
@@ -659,6 +688,9 @@ public class PatientManager {
      * @return the formatted date string
      */
     private String formatDate(Date date) {
+        if (date == null) {
+            return "0-0-0";
+        }
         String year = String.valueOf(date.getYear());
         String month = String.valueOf(date.getMonth());
         String day = String.valueOf(date.getDay());
