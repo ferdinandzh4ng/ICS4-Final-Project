@@ -6,7 +6,7 @@ Smith
 Cardiology
 123 Main St Toronto
 4165551001
-0
+1000001001
 2026-1-10
 F
 4165559001
@@ -21,7 +21,7 @@ Wilson
 General
 45 Oak Ave Mississauga
 4165551002
-0
+1000001002
 2026-2-11
 M
 4165559002
@@ -34,11 +34,11 @@ Davis
 ER
 78 Elm Rd Oakville
 4165551003
-0
+1000001003
 2026-3-12
 F
 4165559003
-874
+830
 2026-6-3
 0-0-0
 Severe headache
@@ -52,13 +52,13 @@ Martin
 Oncology
 200 King St Toronto
 4165551004
-0
+1000001004
 2026-4-13
 M
 4165559004
 2026-5-4
 0-0-0
-false
+true
 OutPatient
 1005
 Alex
@@ -67,7 +67,7 @@ Rivera
 General
 12 Bay St Toronto
 4165551005
-0
+1000001005
 2026-5-14
 F
 4165559005
@@ -80,11 +80,11 @@ Lee
 ER
 88 Lake Blvd Burlington
 4165551006
-0
+1000001006
 2026-1-15
 M
 4165559006
-985
+915
 2026-6-2
 2026-6-3
 Chest pain
@@ -98,13 +98,13 @@ Kim
 ICU
 33 Pine Cres Markham
 4165551007
-0
+1000001007
 2026-2-16
 F
 4165559007
 2026-5-7
 0-0-0
-false
+true
 OutPatient
 1008
 Olivia
@@ -113,7 +113,7 @@ Brown
 General
 501 Queen St Toronto
 4165551008
-0
+1000001008
 2026-3-17
 M
 4165559008
@@ -126,11 +126,11 @@ Garcia
 ER
 9 Hill Rd Vaughan
 4165551009
-0
+1000001009
 2026-4-18
 F
 4165559009
-1096
+1000
 2026-6-1
 0-0-0
 Abdominal pain
@@ -144,13 +144,13 @@ Thompson
 ICU
 14 Cedar Ln Richmond Hill
 4165551010
-0
+1000001010
 2026-5-19
 M
 4165559010
 2026-5-10
 0-0-0
-false
+true
 OutPatient
 1011
 Ethan
@@ -159,7 +159,7 @@ White
 Family Medicine
 77 River Dr Toronto
 4165551011
-0
+1000001011
 2026-1-20
 F
 4165559011
@@ -172,7 +172,7 @@ Johnson
 ER
 60 Maple Ave Toronto
 4165551012
-0
+1000001012
 2026-2-21
 M
 4165559012
@@ -190,7 +190,7 @@ Clark
 Neurology
 123 Main St Toronto
 4165551013
-0
+1000001013
 2026-3-22
 F
 4165559013
@@ -205,7 +205,7 @@ Lewis
 Oncology
 45 Oak Ave Mississauga
 4165551014
-0
+1000001014
 2026-4-23
 M
 4165559014
@@ -218,7 +218,7 @@ Walker
 ER
 78 Elm Rd Oakville
 4165551015
-0
+1000001015
 2026-5-24
 F
 4165559015
@@ -236,13 +236,13 @@ Hall
 Surgery
 200 King St Toronto
 4165551016
-0
+1000001016
 2026-1-25
 M
 4165559016
 2026-5-16
 0-0-0
-false
+true
 OutPatient
 1017
 Logan
@@ -251,7 +251,7 @@ Allen
 Pediatrics
 12 Bay St Toronto
 4165551017
-0
+1000001017
 2026-2-26
 F
 4165559017
@@ -264,7 +264,7 @@ Young
 ER
 88 Lake Blvd Burlington
 4165551018
-0
+1000001018
 2026-3-27
 M
 4165559018
@@ -282,13 +282,13 @@ King
 Surgery
 33 Pine Cres Markham
 4165551019
-0
+1000001019
 2026-4-28
 F
 4165559019
 2026-5-19
 0-0-0
-false
+true
 OutPatient
 1020
 Evelyn
@@ -297,7 +297,7 @@ Wright
 Pediatrics
 501 Queen St Toronto
 4165551020
-0
+1000001020
 2026-5-29
 M
 4165559020
@@ -310,7 +310,7 @@ Scott
 ER
 9 Hill Rd Vaughan
 4165551021
-0
+1000001021
 2026-1-10
 F
 4165559021
@@ -328,13 +328,13 @@ Green
 Cardiology
 14 Cedar Ln Richmond Hill
 4165551022
-0
+1000001022
 2026-2-11
 M
 4165559022
 2026-5-22
 0-0-0
-false
+true
 OutPatient
 1023
 William
@@ -343,7 +343,7 @@ Baker
 Neurology
 77 River Dr Toronto
 4165551023
-0
+1000001023
 2026-3-12
 F
 4165559023
@@ -356,7 +356,7 @@ Adams
 ER
 60 Maple Ave Toronto
 4165551024
-0
+1000001024
 2026-4-13
 M
 4165559024
@@ -374,7 +374,7 @@ Nelson
 Cardiology
 123 Main St Toronto
 4165551025
-0
+1000001025
 2026-5-14
 F
 4165559025
@@ -389,7 +389,7 @@ Carter
 General
 45 Oak Ave Mississauga
 4165551026
-0
+1000001026
 2026-1-15
 M
 4165559026
@@ -402,11 +402,11 @@ Mitchell
 ER
 78 Elm Rd Oakville
 4165551027
-0
+1000001027
 2026-2-16
 F
 4165559027
-1762
+1045
 2026-6-3
 0-0-0
 Broken arm
@@ -420,13 +420,13 @@ Perez
 Oncology
 200 King St Toronto
 4165551028
-0
+1000001028
 2026-3-17
 M
 4165559028
 2026-5-3
 0-0-0
-false
+true
 OutPatient
 1029
 Sebastian
@@ -435,7 +435,7 @@ Roberts
 General
 12 Bay St Toronto
 4165551029
-0
+1000001029
 2026-4-18
 F
 4165559029
@@ -448,11 +448,11 @@ Turner
 ER
 88 Lake Blvd Burlington
 4165551030
-0
+1000001030
 2026-5-19
 M
 4165559030
-1873
+1130
 2026-6-2
 0-0-0
 Shortness of breath
@@ -466,13 +466,13 @@ Phillips
 ICU
 33 Pine Cres Markham
 4165551031
-0
+1000001031
 2026-1-20
 F
 4165559031
 2026-5-6
 0-0-0
-false
+true
 OutPatient
 1032
 Scarlett
@@ -481,7 +481,7 @@ Campbell
 General
 501 Queen St Toronto
 4165551032
-0
+1000001032
 2026-2-21
 M
 4165559032
@@ -494,11 +494,11 @@ Parker
 ER
 9 Hill Rd Vaughan
 4165551033
-0
+1000001033
 2026-3-22
 F
 4165559033
-1984
+1200
 2026-6-1
 0-0-0
 Severe headache
@@ -512,13 +512,13 @@ Evans
 ICU
 14 Cedar Ln Richmond Hill
 4165551034
-0
+1000001034
 2026-4-23
 M
 4165559034
 2026-5-9
 0-0-0
-false
+true
 OutPatient
 1035
 Samuel
@@ -527,7 +527,7 @@ Edwards
 Family Medicine
 77 River Dr Toronto
 4165551035
-0
+1000001035
 2026-5-24
 F
 4165559035
@@ -540,11 +540,11 @@ Collins
 ER
 60 Maple Ave Toronto
 4165551036
-0
+1000001036
 2026-1-25
 M
 4165559036
-2095
+1245
 2026-6-4
 2026-6-5
 Chest pain
@@ -558,7 +558,7 @@ Stewart
 Neurology
 123 Main St Toronto
 4165551037
-0
+1000001037
 2026-2-26
 F
 4165559037
@@ -573,7 +573,7 @@ Morris
 Oncology
 45 Oak Ave Mississauga
 4165551038
-0
+1000001038
 2026-3-27
 M
 4165559038
@@ -586,7 +586,7 @@ Rogers
 ER
 78 Elm Rd Oakville
 4165551039
-0
+1000001039
 2026-4-28
 F
 4165559039
@@ -604,10 +604,10 @@ Cook
 Surgery
 200 King St Toronto
 4165551040
-0
+1000001040
 2026-5-29
 M
 4165559040
 2026-5-15
 0-0-0
-false
+true

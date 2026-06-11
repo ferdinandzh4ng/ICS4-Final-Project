@@ -146,7 +146,28 @@ public class InPatient extends Patient {
      */
     @Override
     public String toString () {
-        return super.toString() + "\nDay In: " + dayIn + "\nDay Out: " + dayOut + "\nHospital Bed Number: " + hospitalBed;
+        String dayInStr;
+        if (dayIn == null || dayIn.getYear() == 0) {
+            dayInStr = "N/A";
+        } else {
+            dayInStr = dayIn.toString();
+        }
+        String dayOutStr;
+        if (dayOut == null || dayOut.getYear() == 0) {
+            dayOutStr = "N/A";
+        } else {
+            dayOutStr = dayOut.toString();
+        }
+        String bedStr;
+        if (hospitalBed) {
+            bedStr = "Yes";
+        } else {
+            bedStr = "No";
+        }
+        return super.toString()
+                + "\nDay In: " + dayInStr
+                + "\nDay Out: " + dayOutStr
+                + "\nHospital Bed Assigned: " + bedStr;
     }
 
     /**
@@ -158,14 +179,23 @@ public class InPatient extends Patient {
         if (dayIn == null) {
             return 0;
         }
-        Date endDate = dayOut != null ? dayOut : PatientManager.CUR_DATE;
+        Date endDate;
+        if (dayOut != null) {
+            endDate = dayOut;
+        } else {
+            endDate = PatientManager.CUR_DATE;
+        }
         int days = 0;
         Date current = dayIn;
         while (current.compareTo(endDate) < 0) {
             days++;
             current = current.addDays(1);
         }
-        return days < 1 ? 1 : days;
+        if (days < 1) {
+            return 1;
+        } else {
+            return days;
+        }
     }
 
     /**
@@ -186,7 +216,11 @@ public class InPatient extends Patient {
 
     @Override
     public String getAdmittedDateDisplay() {
-        return dayIn != null ? dayIn.toISODateString() : "N/A";
+        if (dayIn != null) {
+            return dayIn.toISODateString();
+        } else {
+            return "N/A";
+        }
     }
 
     @Override

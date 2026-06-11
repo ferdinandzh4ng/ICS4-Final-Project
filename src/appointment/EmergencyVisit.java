@@ -113,7 +113,12 @@ public class EmergencyVisit extends Appointment {
      * @param nurses the array of trauma nurses to assign
      */
     public void urgentAssignStaff(Doctor d, Nurse[] nurses) {
-        int nurseCount = nurses == null ? 0 : nurses.length;
+        int nurseCount;
+        if (nurses == null) {
+            nurseCount = 0;
+        } else {
+            nurseCount = nurses.length;
+        }
         Staff[] list = new Staff[1 + nurseCount];
         list[0] = d;
         if (nurses != null) {
