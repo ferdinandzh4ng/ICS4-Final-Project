@@ -3,7 +3,9 @@
  * Name: Ida Luo
  * Date: June 6, 2026
  * Class: ICS4U1
- * Description: This class represents an emergency visit appointment in the hospital management system. It extends the abstract Appointment class and includes specific fields and methods related to emergency visits, such as emergency room number, urgency index, and triage functionality. The class also includes functionality to assign an emergency room based on availability and urgency.
+ * Description: This class represents an emergency visit appointment in the hospital management system. 
+ * It extends the abstract Appointment class and includes specific fields and methods related to emergency visits. 
+ * The class also includes functionality to assign an emergency room based on availability and urgency.
 */
 
 package appointment;

@@ -160,7 +160,7 @@ public class Doctor extends Staff {
     }
 
     /**
-     * Records a diagnosis on the patient record.
+     * Records a diagnosis on the patient record via addDiagnoses on the patient.
      *
      * @param p          patient to diagnose
      * @param diagnosis  diagnosis text to add
@@ -169,7 +169,7 @@ public class Doctor extends Staff {
         if (p == null) {
             return;
         }
-        p.addDiagnosis(diagnosis);
+        p.addDiagnoses(diagnosis);
     }
 
     /**
@@ -191,7 +191,7 @@ public class Doctor extends Staff {
     }
 
     /**
-     * Refers an assigned patient to a surgeon and updates assignments.
+     * Refers an assigned patient to a surgeon and updates assignments via setAssignedStaff on the patient.
      *
      * @param p patient to refer
      * @param s surgeon receiving the referral
