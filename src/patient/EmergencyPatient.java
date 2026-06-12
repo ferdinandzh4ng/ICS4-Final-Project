@@ -226,6 +226,12 @@ public class EmergencyPatient extends Patient {
     public boolean checkOut(String followUp) {
         dayOut = PatientManager.CUR_DATE;
         status = "Discharged";
+
+        Appointment todayAppt = getApptByDateUpcoming(PatientManager.CUR_DATE);
+        if (todayAppt != null) {
+            addToHistory(todayAppt);
+        }
+
         calculateBill();
 
         if (followUp.equals("checkup")) {
@@ -233,6 +239,8 @@ public class EmergencyPatient extends Patient {
             return true;
         } else if (followUp.equals("surgery")) {
             scheduleNextSurgery();
+            return true;
+        } else if (followUp.equals("none")) {
             return true;
         } else {
             return false;
@@ -244,54 +252,45 @@ public class EmergencyPatient extends Patient {
      */
     @Override
     public void scheduleNextRoutineCheckup() {
-        Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
-        if (completed == null) {
-            return;
+        Appointment todayAppt = getApptByDatePast(PatientManager.CUR_DATE);
+        Doctor doctor = null;
+        if (todayAppt != null) {
+            doctor = getFollowUpDoctor(todayAppt);
         }
-        Doctor mainDoctorPlaceholder = getFollowUpDoctor(completed);
-        Appointment newAppt = new RoutineCheckup(
-            completed.getApptID() + 1,
-            completed.getPatient(),
-            completed.getStaffList(),
-            PatientManager.CUR_DATE.addDays(1),
-            completed.getTime(),
-            completed.getDuration(),
-            completed.getCost(),
+        RoutineCheckup newAppt = new RoutineCheckup(
+            (int)(Math.random() * 1000) + 9000,
+            this,
+            doctor != null ? new Staff[]{doctor} : null,
+            PatientManager.CUR_DATE.addDays(7),
+            9.0,
+            0.5,
+            0.0,
             Appointment.STATUS_SCHEDULED,
             1,
-            mainDoctorPlaceholder);
-        boolean validated = false;
-        int dayCounter = 2;
-
-        while (!validated) {
-            if (newAppt.validateBooking()) {
-                validated = true;
-            } else {
-                newAppt.setDate(PatientManager.CUR_DATE.addDays(dayCounter));
-                dayCounter++;
-            }
-        }
-
+            doctor
+        );
         addUpcomingAppointment(newAppt);
     }
 
     /**
-     * Shedules a surgery appointment
+     * Schedules a surgery appointment
      */
     @Override
-    public void scheduleNextSurgery () {
-        Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
-        if (completed == null) {
-            return;
-        }
-        Appointment newAppt = new Surgery(
-            completed.getApptID() + 1,
-            completed.getPatient(),
-            completed.getStaffList(),
-            PatientManager.CUR_DATE.addDays(1),
-            completed.getTime(),
-            completed.getDuration(),
-            completed.getCost(),
+    public void scheduleNextSurgery() {
+        staff.Surgeon placeholderSurgeon = new staff.Surgeon(
+            "TBD", "TBD", 0, "General",
+            new String[0], new Appointment[0],
+            1, 0, "General", 0.0
+        );
+        Staff[] surgeryStaff = new Staff[]{placeholderSurgeon};
+        Surgery newAppt = new Surgery(
+            (int)(Math.random() * 1000) + 9000,
+            this,
+            surgeryStaff,
+            PatientManager.CUR_DATE.addDays(7),
+            9.0,
+            2.0,
+            0.0,
             Appointment.STATUS_SCHEDULED,
             1,
             "none",
@@ -299,22 +298,13 @@ public class EmergencyPatient extends Patient {
             "General",
             null
         );
-        boolean validated = false;
-        int dayCounter = 2;
-
-        while (!validated) {
-            if (newAppt.validateBooking()) {
-                validated = true;
-            } else {
-                newAppt.setDate(PatientManager.CUR_DATE.addDays(dayCounter));
-                dayCounter++;
-            }
-        }
-
         addUpcomingAppointment(newAppt);
     }
-
-    @Override
+    
+    /**
+     * Returns the admitted date display
+     * @return String the admitted date display
+     */
     public String getAdmittedDateDisplay() {
         if (dayIn != null) {
             return dayIn.toISODateString();

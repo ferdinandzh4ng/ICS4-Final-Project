@@ -18,7 +18,7 @@ import java.io.*;
 public class StaffManager {
 
     private static final int OFF_DAYS_CAPACITY = 10;
-    private static final int SCHEDULE_CAPACITY = 20;
+    private static final int SCHEDULE_CAPACITY = 100;
 
     private Staff[] staffArray;
     private int staffCount;

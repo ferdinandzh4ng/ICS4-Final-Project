@@ -282,6 +282,9 @@ public class Surgery extends Appointment {
         if (team == null || team.length == 0 || team[0] == null) {
             return false; // No surgeon assigned at all
         }
+        if (!(team[0] instanceof Surgeon)) {
+            return false;
+        }
         Surgeon leadSurgeon = (Surgeon) team[0];
         String specialtyArea = leadSurgeon.getSpecialtyArea();
 

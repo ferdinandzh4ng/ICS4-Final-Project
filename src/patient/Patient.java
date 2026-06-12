@@ -866,12 +866,101 @@ public abstract class Patient {
      * @return String the string representation of the patient
      */
     @Override
-    public String toString () {
-        return "Patient ID: " + patientID + "\nName: " + firstName + " " + lastName + "\nDate of Birth: " + dateOfBirth.toString() +
-                "\nWard: " + ward + "\nAddress: " + address + "\nPhone Number: " + phoneNum + "\nOHIP Number: " + numOHIP +
-                "\nDate Registered: " + dateRegistered.toString() + "\nGender: " + gender + "\nEmergency Contact Phone Number: " + 
-                emergencyContactPhoneNumber;
-                // + "\nAssigned Staff: " + assignedStaff.getName();
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\nPatient ID: ").append(patientID).append("\n");
+        sb.append("Name: ").append(firstName).append(" ").append(lastName).append("\n");
+        sb.append("Date of Birth: ").append(dateOfBirth.toString()).append("\n");
+        sb.append("Ward: ").append(ward).append("\n");
+        sb.append("Address: ").append(address).append("\n");
+        sb.append("Phone Number: ").append(phoneNum).append("\n");
+        sb.append("OHIP Number: ").append(numOHIP).append("\n");
+        sb.append("Date Registered: ").append(dateRegistered.toString()).append("\n");
+        sb.append("Gender: ").append(gender).append("\n");
+        sb.append("Emergency Contact Phone Number: ").append(emergencyContactPhoneNumber).append("\n");
+
+        sb.append("Diagnoses: ");
+        boolean hasDiagnosis = false;
+        for (int i = 0; i < diagnosis.length; i++) {
+            if (diagnosis[i] != null) {
+                if (hasDiagnosis) {
+                    sb.append(", ");
+                }
+                sb.append(diagnosis[i]);
+                hasDiagnosis = true;
+            }
+        }
+        if (!hasDiagnosis) {
+            sb.append("None");
+        }
+        sb.append("\n");
+
+        sb.append("Medications: ");
+        boolean hasMed = false;
+        for (int i = 0; i < medications.length; i++) {
+            if (medications[i] != null) {
+                if (hasMed) {
+                    sb.append(", ");
+                }
+                sb.append(medications[i].getMedName())
+                .append(" (").append(medications[i].getDosage()).append(")");
+                hasMed = true;
+            }
+        }
+        if (!hasMed) {
+            sb.append("None");
+        }
+        sb.append("\n");
+
+        sb.append("Allergies: ");
+        boolean hasAllergy = false;
+        for (int i = 0; i < allergies.length; i++) {
+            if (allergies[i] != null) {
+                if (hasAllergy) {
+                    sb.append(", ");
+                }
+                sb.append(allergies[i]);
+                hasAllergy = true;
+            }
+        }
+        if (!hasAllergy) {
+            sb.append("None");
+        }
+        sb.append("\n");
+
+        sb.append("Medical History: ");
+        boolean hasMedHist = false;
+        for (int i = 0; i < medicalHistory.length; i++) {
+            if (medicalHistory[i] != null) {
+                if (hasMedHist) {
+                    sb.append(", ");
+                }
+                sb.append(medicalHistory[i]);
+                hasMedHist = true;
+            }
+        }
+        if (!hasMedHist) {
+            sb.append("None");
+        }
+        sb.append("\n");
+
+        sb.append("Family History: ");
+        boolean hasFamHist = false;
+        for (int i = 0; i < familyHistory.length; i++) {
+            if (familyHistory[i] != null) {
+                if (hasFamHist) {
+                    sb.append(", ");
+                }
+                sb.append(familyHistory[i]);
+                hasFamHist = true;
+            }
+        }
+        if (!hasFamHist) {
+            sb.append("None");
+        }
+        sb.append("\n");
+
+        return sb.toString();
     }
 
     /**
