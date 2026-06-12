@@ -1,0 +1,214 @@
+20
+Surgeon
+S003
+Dr. David Singh
+22
+Cardiac Surgery
+NONE
+3
+510
+Cardiac
+5500.0
+:
+Surgeon
+S001
+Dr. Robert Kim
+20
+General Surgery
+NONE
+1
+450
+General
+3500.0
+:
+Surgeon
+S005
+Dr. Henry Clarke
+19
+Oncologic Surgery
+2026-07-05
+5
+390
+Oncology
+4800.0
+:
+Doctor
+D004
+Dr. Alex Wong
+18
+Cardiology
+NONE
+ON456789
+200.0
+20
+:
+Doctor
+D006
+Dr. James O'Neill
+16
+Neurology
+NONE
+ON678901
+190.0
+18
+:
+Surgeon
+S002
+Dr. Maria Lopez
+16
+Orthopedic Surgery
+2026-06-25
+2
+320
+Orthopedic
+4200.0
+:
+Doctor
+D001
+Dr. Jane Yuen
+15
+General Practice
+NONE
+ON123456
+150.0
+25
+:
+Surgeon
+S004
+Dr. Anna Patel
+14
+Neurosurgery
+NONE
+4
+280
+Neuro
+6000.0
+:
+Doctor
+D005
+Dr. Priya Sharma
+14
+Oncology
+2026-07-01
+ON567890
+175.0
+22
+:
+Surgeon
+S006
+Dr. Yuki Tanaka
+13
+Vascular Surgery
+NONE
+6
+210
+Vascular
+5200.0
+:
+Doctor
+D002
+Dr. Tom Brown
+12
+ER
+NONE
+ON234567
+0.0
+40
+:
+Nurse
+N007
+Maria Santos
+11
+ICU Nursing
+NONE
+ICU
+Rotating
+44.0
+42
+:
+Doctor
+D003
+Dr. Emily Chen
+10
+Pediatrics
+2026-06-15
+ON345678
+125.0
+30
+:
+Doctor
+D007
+Dr. Sarah Kim
+9
+Family Medicine
+2026-06-20
+ON789012
+110.0
+35
+:
+Nurse
+N004
+James Lee
+9
+Surgical Nursing
+NONE
+Surgery
+Night
+45.0
+38
+:
+Nurse
+N001
+Sarah Miller
+8
+Critical Care
+NONE
+Cardiology
+Day
+42.5
+36
+:
+Nurse
+N005
+Rachel Adams
+7
+Oncology Nursing
+NONE
+Oncology
+Day
+40.0
+36
+:
+Nurse
+N002
+Mike Johnson
+6
+Emergency Nursing
+2026-06-10
+ER
+Rotating
+38.0
+40
+:
+Nurse
+N003
+Lisa Park
+5
+Pediatric Nursing
+NONE
+Pediatrics
+Day
+35.0
+32
+:
+Nurse
+N006
+Kevin Tran
+4
+Neurology Nursing
+2026-06-18
+Neurology
+Night
+37.5
+34
+:
