@@ -12,6 +12,7 @@
 package staff;
 
 import appointment.Appointment;
+import appointment.ApptManager;
 import patient.Patient;
 import shared.Date;
 
@@ -251,6 +252,28 @@ public abstract class Staff {
      */
     protected Appointment[] getScheduleSlots() {
         return schedule;
+    }
+
+    /**
+     * Returns non-null schedule appointments sorted by date, then time.
+     * Selection sort — curriculum-aligned pattern used elsewhere in the project.
+     *
+     * @return compact array of scheduled appointments in chronological order
+     */
+    protected Appointment[] getSortedScheduleAppointments() {
+        Appointment[] slots = getScheduleSlots();
+        Appointment[] sorted = new Appointment[slots.length];
+        int count = 0;
+
+        for (int i = 0; i < slots.length; i++) {
+            if (slots[i] != null) {
+                sorted[count] = slots[i];
+                count++;
+            }
+        }
+
+        ApptManager.sortByDateThenTime(sorted, count);
+        return sorted;
     }
 
     /**

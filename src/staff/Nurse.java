@@ -115,7 +115,7 @@ public class Nurse extends Staff {
         StringBuilder sb = new StringBuilder();
         sb.append("Ward: ").append(ward).append(" | Shift: ").append(shiftType).append("\n");
 
-        Appointment[] schedule = getScheduleSlots();
+        Appointment[] schedule = getSortedScheduleAppointments();
         boolean hasShifts = false;
         for (int i = 0; i < schedule.length; i++) {
             if (schedule[i] == null) {

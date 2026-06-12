@@ -316,14 +316,23 @@ public class EmergencyPatient extends Patient {
 
     @Override
     public String getAdmittedDateDisplay() {
-        return dayIn != null ? dayIn.toISODateString() : "N/A";
+        if (dayIn != null) {
+            return dayIn.toISODateString();
+        } else {
+            return "N/A";
+        }
     }
 
     @Override
     public double calculateBill() {
         double total = calculateTotalCost();
         if (dayIn != null) {
-            Date endDate = dayOut != null ? dayOut : PatientManager.CUR_DATE;
+            Date endDate;
+            if (dayOut != null && dayOut.getYear() != 0) {
+                endDate = dayOut;
+            } else {
+                endDate = PatientManager.CUR_DATE;
+            }
             int days = 0;
             Date current = dayIn;
             while (current.compareTo(endDate) < 0) {
@@ -347,6 +356,14 @@ public class EmergencyPatient extends Patient {
      */
     @Override
     public String toString () {
-        return super.toString() + "\nArrival Time: " + arrivalTime + "\nDay In: " + dayIn + "\nDay Out: " + dayOut + "\nPresenting Complaint: " + presentingComplaint + "\nArrival Type: " + arrivalType + "\nStatus: " + status;
+        String dayOutStr;
+        if (dayOut == null || dayOut.getYear() == 0) {
+            dayOutStr = "N/A";
+        } else {
+            dayOutStr = dayOut.toString();
+        }
+        return super.toString() + "\nArrival Time: " + arrivalTime + "\nDay In: " + dayIn
+                + "\nDay Out: " + dayOutStr + "\nPresenting Complaint: " + presentingComplaint
+                + "\nArrival Type: " + arrivalType + "\nStatus: " + status;
     }
 }

@@ -275,6 +275,50 @@ public class StaffManager {
     }
 
     /**
+     * Populates each staff member's schedule from loaded appointment records.
+     *
+     * @param appts appointment array from the appointment manager
+     * @param count number of appointments in the array
+     */
+    public void syncSchedulesFromAppointments(Appointment[] appts, int count) {
+        if (appts == null || count <= 0) {
+            return;
+        }
+        for (int i = 0; i < count; i++) {
+            if (appts[i] == null) {
+                continue;
+            }
+            Staff[] team = appts[i].getStaffList();
+            if (team == null) {
+                continue;
+            }
+            for (int j = 0; j < team.length; j++) {
+                if (team[j] != null) {
+                    team[j].addAppointment(appts[i]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns a readable one-line summary for a staff member.
+     *
+     * @param s staff member to describe
+     * @return formatted summary string
+     */
+    public String formatStaffDetails(Staff s) {
+        if (s == null) {
+            return "";
+        }
+        String line = s.getName() + " (" + s.getStaffID() + ") — "
+                + s.getSpecialization() + ", " + s.getExperience() + " years";
+        if (s instanceof Doctor) {
+            line += ", License: " + ((Doctor) s).getLicenseNumber();
+        }
+        return line;
+    }
+
+    /**
      * Computes total payroll by summing each staff member's pay.
      * Loop — polymorphic total via Staff.calculatePay().
      *

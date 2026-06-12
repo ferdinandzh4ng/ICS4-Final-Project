@@ -45,7 +45,11 @@ public abstract class Appointment {
     public Appointment(int apptID, Patient patient, Staff[] staffList, Date date, double time, double duration, double cost, String status) {
         this.apptID = apptID;
         this.patient = patient;
-        this.staffList = staffList == null ? null : Arrays.copyOf(staffList, staffList.length);
+        if (staffList == null) {
+            this.staffList = null;
+        } else {
+            this.staffList = Arrays.copyOf(staffList, staffList.length);
+        }
         this.date = date;
         this.time = time;
         this.duration = duration;
@@ -91,7 +95,11 @@ public abstract class Appointment {
      * @return a copy of the staff list
      */
     public Staff[] getStaffList() {
-        return staffList == null ? null : Arrays.copyOf(staffList, staffList.length);
+        if (staffList == null) {
+            return null;
+        } else {
+            return Arrays.copyOf(staffList, staffList.length);
+        }
     }
 
     /**
@@ -293,7 +301,11 @@ public abstract class Appointment {
      * @param staffTeam staff array to assign
      */
     public void assignStaff(Staff[] staffTeam) {
-        this.staffList = staffTeam == null ? null : Arrays.copyOf(staffTeam, staffTeam.length);
+        if (staffTeam == null) {
+            this.staffList = null;
+        } else {
+            this.staffList = Arrays.copyOf(staffTeam, staffTeam.length);
+        }
     }
 
     @Override

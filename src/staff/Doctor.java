@@ -106,7 +106,7 @@ public class Doctor extends Staff {
     @Override
     public String getSchedule() {
         StringBuilder sb = new StringBuilder();
-        Appointment[] schedule = getScheduleSlots();
+        Appointment[] schedule = getSortedScheduleAppointments();
         Date lastDate = null;
 
         for (int i = 0; i < schedule.length; i++) {
