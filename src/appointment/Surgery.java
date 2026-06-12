@@ -1,7 +1,7 @@
 /**
  * File: Surgery.java
  * Name: Ida Luo
- * Date: June 7, 2026
+ * Date: June 12, 2026
  * Class: ICS4U1
  * Description: This class represents a surgery appointment in the hospital management system. 
  * It extends the abstract Appointment class and includes specific fields and methods related to surgeries. 
@@ -84,11 +84,19 @@ public class Surgery extends Appointment {
     }
 
     @Override
+    /**
+     * Returns the type of a emergency visit as a String
+     * @return String describing the type of appointment
+     */
     public String getTypeLabel() {
         return "Surgery";
     }
 
     @Override
+    /**
+     * Returns the location of a surgery as a String
+     * @return String describing the room number of an appoinment
+     */
     public String getLocationLabel() {
         return "OR " + operatingRoomNum;
     }
