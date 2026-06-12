@@ -406,7 +406,7 @@ public class ApptManager {
         if (idx >= numAppointments) {
             return null;
         }
-        if (appointments[idx].getDate().compareTo(date) == 0
+        if (appointments[idx].getDate().equals(date) 
                 && appointments[idx].getPatient().getPatientID() == patientID) {
             return appointments[idx];
         }
