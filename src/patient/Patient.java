@@ -21,7 +21,7 @@ public abstract class Patient {
     private String ward; // ward the patient is assigned to
     private String address; // home address of the patient
     private long phoneNum; // phone number of the patient
-    private int numOHIP; // OHIP number of the patient
+    private String numOHIP; // OHIP number of the patient
     private Date dateRegistered; // date the patient was registered in the hospital
     private char gender; // gender of the patient
     private long emergencyContactPhoneNumber; // phone number of the patient's emergency contact
@@ -50,7 +50,7 @@ public abstract class Patient {
      * @param assignedStaff to be assigned to the patient
      */
     public Patient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum,
-                    int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
+                    String numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
         this.patientID = patientID;
         this.firstName = firstName;
         this.lastName = lastName; 
@@ -58,8 +58,8 @@ public abstract class Patient {
         this.ward = ward;
         this.address = address;
         this.phoneNum = phoneNum;
-        if (numOHIP < 0 || !isValidOHIP(numOHIP)) {
-            this.numOHIP = 0;
+        if (!isValidOHIP(numOHIP)) {
+            this.numOHIP = "0";
         } else {
             this.numOHIP = numOHIP;
         }
@@ -144,7 +144,7 @@ public abstract class Patient {
      * Returns the OHIP number of the patient
      * @return the OHIP number
      */
-    public int getNumOHIP() {
+    public String getNumOHIP() {
         return numOHIP;
     }
 
@@ -272,7 +272,7 @@ public abstract class Patient {
      * Sets the OHIP number of the patient
      * @param numOHIP the OHIP number to be assigned to the patient
      */
-    public void setNumOHIP(int numOHIP) {
+    public void setNumOHIP(String numOHIP) {
         this.numOHIP = numOHIP;
     }
 
@@ -788,10 +788,10 @@ public abstract class Patient {
      * @param numOHIP the OHIP number to be validated
      * @return boolean if the OHIP number is valid
      */
-    public static boolean isValidOHIP (int numOHIP) {
-        String numOHIPStr = Integer.toString(numOHIP);
-        
-        return numOHIPStr.length() == 10;
+    public static boolean isValidOHIP(String numOHIP) {
+        if (numOHIP == null) { return false; }
+        if (numOHIP.equals("0")) { return true; }
+        return numOHIP.matches("\\d{10}");
     }
 
     /**

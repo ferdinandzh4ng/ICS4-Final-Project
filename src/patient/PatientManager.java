@@ -111,7 +111,7 @@ public class PatientManager {
      * @param hospitalBed whether a hospital bed is assigned
      * @return boolean if the patient is successfully registered
      */
-    public boolean registerInPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, Date dayIn, Date dayOut, boolean hospitalBed) {
+    public boolean registerInPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, String numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, Date dayIn, Date dayOut, boolean hospitalBed) {
         if (numPatients >= maxPatients || !Patient.isValidOHIP(numOHIP)) {
             return false;
         }
@@ -138,7 +138,7 @@ public class PatientManager {
      * @param appointmentTimingMonths the number of months until the next appointment
      * @return boolean if the patient is successfully registered
      */
-    public boolean registerOutPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, int appointmentTimingMonths) {
+    public boolean registerOutPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, String numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, int appointmentTimingMonths) {
         if (numPatients >= maxPatients || !Patient.isValidOHIP(numOHIP)) {
             return false;
         }
@@ -170,7 +170,7 @@ public class PatientManager {
      * @param status the current status of the patient
      * @return boolean if the patient is successfully registered
      */
-    public boolean registerEmergencyPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, int arrivalTime, Date dayIn, Date dayOut, String presentingComplaint, String arrivalType, String status) {
+    public boolean registerEmergencyPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, String numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, int arrivalTime, Date dayIn, Date dayOut, String presentingComplaint, String arrivalType, String status) {
         if (numPatients >= maxPatients || !Patient.isValidOHIP(numOHIP)) {
             return false;
         }
@@ -330,7 +330,7 @@ public class PatientManager {
                 writer.write(patient.getWard()); writer.newLine();
                 writer.write(patient.getAddress()); writer.newLine();
                 writer.write(Long.toString(patient.getPhoneNum())); writer.newLine();
-                writer.write(Integer.toString(patient.getNumOHIP())); writer.newLine();
+                writer.write(patient.getNumOHIP());; writer.newLine();
                 writer.write(formatDate(patient.getDateRegistered())); writer.newLine();
                 writer.write(Character.toString(patient.getGender())); writer.newLine();
                 writer.write(Long.toString(patient.getEmergencyContactPhoneNumber())); writer.newLine();
@@ -521,7 +521,7 @@ public class PatientManager {
         String ward = patientLines[5];
         String address = patientLines[6];
         long phoneNum = Long.parseLong(patientLines[7]);
-        int numOHIP = Integer.parseInt(patientLines[8]);
+        String numOHIP = patientLines[8];
         Date dateRegistered = parseDate(patientLines[9]);
         char gender = patientLines[10].isEmpty() ? ' ' : patientLines[10].charAt(0);
         long emergencyContactPhoneNumber = Long.parseLong(patientLines[11]);

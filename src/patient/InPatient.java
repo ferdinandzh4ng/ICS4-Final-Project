@@ -26,32 +26,7 @@ public class InPatient extends Patient {
     private String[] medicationsAdministered; // An array to store the medications administered to the patient during their stay
 
     /**
-     * Constructor for the InPatient class
-     * @param patientID to be assigned to the patient
-     * @param firstName to be assigned to the patient
-     * @param lastName to be assigned to the patient
-     * @param dateOfBirth to be assigned to the patient
-     * @param ward to be assigned to the patient
-     * @param address to be assigned to the patient
-     * @param phoneNum to be assigned to the patient
-     * @param numOHIP to be assigned to the patient
-     * @param dateRegistered to be assigned to the patient
-     * @param gender to be assigned to the patient
-     * @param emergencyContactPhoneNumber to be assigned to the patient
-     * @param assignedStaff to be assigned to the patient
-     * @param dayIn the date of admission to the hospital
-     */
-    public InPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
-        super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
-        this.dayIn = null;
-        this.dayOut = null;
-        this.hospitalBed = false;
-        vitalsLog = new String[100]; // Assuming a maximum of 100 entries for vital signs
-        medicationsAdministered = new String[100]; // Assuming a maximum of 100 entries
-    }
-
-    /**
-     * Overloaded constructor for the InPatient class with all fields
+     * Constructor for the InPatient class with all fields
      * @param patientID to be assigned to the patient
      * @param firstName to be assigned to the patient
      * @param lastName to be assigned to the patient
@@ -68,7 +43,7 @@ public class InPatient extends Patient {
      * @param dayOut the date of discharge from the hospital
      * @param hospitalBed whether a hospital bed is assigned
      */
-    public InPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, Date dayIn, Date dayOut, boolean hospitalBed) {
+    public InPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, String numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, Date dayIn, Date dayOut, boolean hospitalBed) {
         super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
         this.dayIn = dayIn;
         this.dayOut = dayOut;

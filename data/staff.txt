@@ -124,7 +124,7 @@ NONE
 ICU
 Rotating
 44.0
-120
+144
 :
 Doctor
 D003
@@ -155,7 +155,7 @@ NONE
 Surgery
 Night
 45.0
-155
+191
 :
 Nurse
 N001
@@ -166,7 +166,7 @@ NONE
 Cardiology
 Day
 42.5
-140
+172
 :
 Nurse
 N005
@@ -177,7 +177,7 @@ NONE
 Oncology
 Day
 40.0
-127
+155
 :
 Nurse
 N002
@@ -188,7 +188,7 @@ Emergency Nursing
 ER
 Rotating
 38.0
-346
+442
 :
 Nurse
 N003
@@ -199,7 +199,7 @@ NONE
 Pediatrics
 Day
 35.0
-149
+185
 :
 Nurse
 N006
@@ -210,5 +210,5 @@ Neurology Nursing
 Neurology
 Night
 37.5
-112
+136
 :

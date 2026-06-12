@@ -422,13 +422,13 @@ public class HospitalRunner {
                                 System.out.println("Error: please enter a valid number.");
                             }
                         }
-                        int ohip = -1;
-                        while (ohip == -1) {
-                            System.out.print("OHIP number (10 digits): ");
-                            try {
-                                ohip = Integer.parseInt(scanner.nextLine().trim());
-                            } catch (NumberFormatException e) {
-                                System.out.println("Error: please enter a valid integer.");
+                        String ohip = "";
+                        while (ohip.isEmpty()) {
+                            System.out.print("OHIP number (10 digits, or 0 for none): ");
+                            ohip = scanner.nextLine().trim();
+                            if (!ohip.equals("0") && !ohip.matches("\\d{10}")) {
+                                System.out.println("Error: OHIP must be exactly 10 digits or 0.");
+                                ohip = "";
                             }
                         }
                         System.out.print("Date registered (YYYY-MM-DD): ");

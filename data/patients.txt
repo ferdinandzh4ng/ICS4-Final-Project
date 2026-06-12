@@ -1274,3 +1274,25 @@ Date: 2026-5-15, Medication: Methylprednisolone, Dosage: 40mg IV daily
 Date: 2026-5-15, Medication: Metronidazole, Dosage: 500mg IV every 8 hours
 Date: 2026-5-22, Medication: Morphine, Dosage: 2mg IV PRN
 ---
+InPatient
+1234
+klsdjf
+asldjfk
+1009-1-1
+skldjf
+alksdjf
+12309
+0123456789
+1039-2-29
+F
+1230945
+2009-1-1
+0-0-0
+false
+---
+---
+---
+---
+---
+---
+---

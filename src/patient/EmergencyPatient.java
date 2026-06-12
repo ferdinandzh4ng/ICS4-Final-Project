@@ -26,32 +26,7 @@ public class EmergencyPatient extends Patient {
     private String status; // the current status of the patient (e.g., waiting, being treated, discharged, etc.)
 
     /**
-     * Constructor for creating an EmergencyPatient object.
-     * @param patientID The unique identifier for the patient.
-     * @param firstName The first name of the patient.
-     * @param lastName The last name of the patient.
-     * @param dateOfBirth The date of birth of the patient.
-     * @param ward The ward to which the patient is assigned.
-     * @param address The address of the patient.
-     * @param phoneNum The phone number of the patient.
-     * @param numOHIP The OHIP number of the patient.
-     * @param dateRegistered The date when the patient was registered.
-     * @param gender The gender of the patient.
-     * @param emergencyContactPhoneNumber The phone number of the emergency contact.
-     * @param assignedStaff The staff member assigned to the patient.
-     */
-    public EmergencyPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
-        super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
-        arrivalTime = -1;
-        dayIn = null;
-        dayOut = null;
-        presentingComplaint = "Unknown";
-        arrivalType = "Unknown";
-        status = "Not checked-in";
-    }
-
-    /**
-     * Overloaded constructor for creating an EmergencyPatient object with all fields.
+     * Constructor for creating an EmergencyPatient object with all fields.
      * @param patientID The unique identifier for the patient.
      * @param firstName The first name of the patient.
      * @param lastName The last name of the patient.
@@ -71,7 +46,7 @@ public class EmergencyPatient extends Patient {
      * @param arrivalType The mode of arrival.
      * @param status The current status of the patient.
      */
-    public EmergencyPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, int arrivalTime, Date dayIn, Date dayOut, String presentingComplaint, String arrivalType, String status) {
+    public EmergencyPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, String numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, int arrivalTime, Date dayIn, Date dayOut, String presentingComplaint, String arrivalType, String status) {
         super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
         this.arrivalTime = arrivalTime;
         this.dayIn = dayIn;
