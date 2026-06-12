@@ -907,9 +907,10 @@ public class PatientManager {
      */
     public boolean addMedication(int patientID, String medName, String dosage) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
-        patient.addMedication(medName, dosage);
-        return true;
+        if (patient == null) { 
+            return false; 
+        }
+        return patient.addMedication(medName, dosage);
     }
 
     /**

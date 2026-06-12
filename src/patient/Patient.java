@@ -335,14 +335,16 @@ public abstract class Patient {
      * Adds the name and dosage of the prescribed medication into medications
      * @param medName the name of the medciation
      * @param dosage the dosage of the medication
+     * @return boolean if medication can safely be added
      */
-    public void addMedication (String medName, String dosage) {
+    public boolean addMedication (String medName, String dosage) {
         for (int i = 0; i < medications.length; i++) {
-            if (medications[i] == null) {
+            if (medications[i] == null && !checkAllergyConflict(medName)) {
                 medications[i] = new Medication(medName, dosage);
-                return;
+                return true;
             }
         }
+        return false;
     }
 
     /**

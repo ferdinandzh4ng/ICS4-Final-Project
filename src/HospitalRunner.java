@@ -798,7 +798,7 @@ public class HospitalRunner {
                                 if (patientManager.addMedication(medPatientID, medName, dosage)) {
                                     System.out.println("Medication added.");
                                 } else {
-                                    System.out.println("Error: patient not found.");
+                                    System.out.println("Error: patient not found or medication allergy.");
                                 }
 
                             } else if (medChoice == 5) {
