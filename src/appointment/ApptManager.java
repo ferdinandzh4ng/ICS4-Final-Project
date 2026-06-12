@@ -111,7 +111,7 @@ public class ApptManager {
      */
     public boolean cancelAppointment(int apptID) {
         // Find appointment
-        Appointment target = searchByID(apptID, 0);
+        Appointment target = searchByID(apptID);
         if (target == null) {
             return false;
         }
@@ -147,7 +147,7 @@ public class ApptManager {
      * @return true if successfully rescheduled, otherwise false
      */
     public boolean rescheduleAppointment(int apptID, Date newDate, double newTime) {
-        Appointment target = searchByID(apptID, 0);
+        Appointment target = searchByID(apptID);
         if (target == null) return false;
 
         Date oldDate = target.getDate();
@@ -414,38 +414,60 @@ public class ApptManager {
     }
 
     /**
-     * Recursive linear search to find an appointment matching a patient ID and date.
+     * Linear search to find an appointment matching a patient ID and date.
      * @param patientID target patient ID
      * @param date target date
-     * @param idx current search index (start at 0)
+     * @param idx starting search index (use 0 for the full array)
      * @return Appointment matching patient and date, null if not found
      */
     public Appointment searchByPatientAndDate(int patientID, Date date, int idx) {
-        if (idx >= numAppointments) {
-            return null;
+        for (int i = idx; i < numAppointments; i++) {
+            if (appointments[i].getDate().equals(date)
+                    && appointments[i].getPatient().getPatientID() == patientID) {
+                return appointments[i];
+            }
         }
-        if (appointments[idx].getDate().equals(date) 
-                && appointments[idx].getPatient().getPatientID() == patientID) {
-            return appointments[idx];
-        }
-        return searchByPatientAndDate(patientID, date, idx + 1);
+        return null;
     }
     
 
     /**
-     * Recursive linear search to find an appointment by its ID.
+     * Wrapper for recursive binary search to find an appointment by its ID.
+     * Sorts the appointment list by ID before searching.
      * @param apptID ID of target appointment
-     * @param idx current search index (start at 0)
      * @return Appointment that matches the target ID, null if not found
      */
-    public Appointment searchByID(int apptID, int idx) {
-        if (idx >= numAppointments) {
+    public Appointment searchByID(int apptID) {
+        if (numAppointments == 0) {
             return null;
         }
-        if (appointments[idx].getApptID() == apptID) {
-            return appointments[idx];
+
+        sortByApptID();
+        return searchByIDRecursive(apptID, 0, numAppointments - 1);
+    }
+
+    /**
+     * Recursive binary search helper for appointment IDs.
+     * @param apptID ID of target appointment
+     * @param low lower index of the current search range
+     * @param high upper index of the current search range
+     * @return Appointment matching the target ID, null if not found
+     */
+    private Appointment searchByIDRecursive(int apptID, int low, int high) {
+        if (low > high) {
+            return null;
         }
-        return searchByID(apptID, idx + 1);
+
+        int mid = (low + high) / 2;
+        int midID = appointments[mid].getApptID();
+
+        if (midID == apptID) {
+            return appointments[mid];
+        } else if (apptID < midID) {
+            return searchByIDRecursive(apptID, low, mid - 1);
+        } else {
+            return searchByIDRecursive(apptID, mid + 1, high);
+        }
     }
 
     /**
@@ -512,6 +534,26 @@ public class ApptManager {
                     appointments[j + 1] = temp;
                 }
             }
+        }
+    }
+
+    /**
+     * Selection orts all active appointments numerically by their unique appointment ID.
+     */
+    public void sortByApptID() {
+        for (int i = 0; i < numAppointments - 1; i++) {
+            int minIdx = i;
+            
+            for (int j = i + 1; j < numAppointments; j++) {
+                if (appointments[j].getApptID() < appointments[minIdx].getApptID()) {
+                    minIdx = j;
+                }
+            }
+            
+            // Swap the found minimum element with the first element of the unsorted portion
+            Appointment temp = appointments[minIdx];
+            appointments[minIdx] = appointments[i];
+            appointments[i] = temp;
         }
     }
 
