@@ -810,19 +810,6 @@ public class PatientManager {
     }
 
     /**
-     * Updates a patient by their ID
-     * @param patientID the ID of the patient to update
-     * @param updated the updated Patient information stored in a Patient object
-     * @return boolean if the patient is successfully updated
-     */
-    public boolean updatePatient(int patientID, Patient updated) {
-        int index = searchPatientIndexByID(patientID);
-        if (index == -1) { return false; }
-        patients[index] = updated;
-        return true;
-    }
-
-    /**
      * Adds a diagnosis to a patient
      * @param patientID the ID of the patient
      * @param diagnosis the diagnosis to add
