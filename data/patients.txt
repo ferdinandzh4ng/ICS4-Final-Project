@@ -13,36 +13,56 @@ F
 2026-5-1
 2026-6-1
 false
-InPatient
-1022
-Abigail
-Green
-1986-10-22
-Cardiology
-14 Cedar Ln Richmond Hill
-4165551022
+Congestive heart failure
+Hypertension
+---
+Furosemide:40mg daily
+Lisinopril:10mg daily
+Metoprolol:25mg twice daily
+---
+Penicillin
+---
+Myocardial infarction 2018
+Hypertension diagnosed 2010
+---
+Father: coronary artery disease
+Mother: hypertension
+---
+Date: 2026-5-1, Heart Rate: 88.0, Blood Pressure: 148.0
+Date: 2026-5-10, Heart Rate: 82.0, Blood Pressure: 138.0
+Date: 2026-5-20, Heart Rate: 78.0, Blood Pressure: 132.0
+---
+Date: 2026-5-1, Medication: Furosemide, Dosage: 40mg daily
+Date: 2026-5-1, Medication: Lisinopril, Dosage: 10mg daily
+Date: 2026-5-10, Medication: Metoprolol, Dosage: 25mg twice daily
+---
+OutPatient
+1002
+Tom
+Wilson
+1966-2-2
+General
+45 Oak Ave Mississauga
+4165551002
 0
 2026-2-11
 M
-4165559022
-2026-5-22
-0-0-0
-false
-InPatient
-1025
-Benjamin
-Nelson
-1989-1-25
-Cardiology
-123 Main St Toronto
-4165551025
-0
-2026-5-14
-F
-4165559025
-2026-5-25
-2026-6-1
-false
+4165559002
+2
+Hyperlipidemia
+Obesity
+---
+Rosuvastatin:20mg nightly
+Orlistat:120mg with meals
+---
+Latex
+---
+Hyperlipidemia diagnosed 2014
+Obesity BMI 34
+---
+Father: coronary artery disease
+Brother: hyperlipidemia
+---
 EmergencyPatient
 1003
 Emily
@@ -61,6 +81,85 @@ F
 Severe headache
 Ambulance
 Stable
+Hypertensive urgency
+Migraine
+---
+Labetalol:200mg twice daily
+Sumatriptan:50mg PRN
+---
+NSAIDs
+---
+Chronic migraines diagnosed 2015
+Hypertension diagnosed 2018
+---
+Mother: migraines
+Father: hypertension
+---
+InPatient
+1004
+Chris
+Martin
+1968-4-4
+Oncology
+200 King St Toronto
+4165551004
+0
+2026-4-13
+M
+4165559004
+2026-5-4
+0-0-0
+false
+Non-small cell lung cancer stage III
+COPD
+---
+Carboplatin:AUC5 IV day 1
+Paclitaxel:175mg/m2 IV day 1
+Tiotropium:18mcg inhaled daily
+---
+Penicillin
+---
+COPD diagnosed 2015
+Smoking history 30 pack-years
+NSCLC diagnosed 2025
+---
+Father: lung cancer
+Brother: COPD
+---
+Date: 2026-5-4, Heart Rate: 82.0, Blood Pressure: 126.0
+Date: 2026-5-11, Heart Rate: 88.0, Blood Pressure: 118.0
+Date: 2026-5-18, Heart Rate: 84.0, Blood Pressure: 122.0
+---
+Date: 2026-5-4, Medication: Carboplatin, Dosage: AUC5 IV day 1
+Date: 2026-5-4, Medication: Paclitaxel, Dosage: 175mg/m2 IV day 1
+Date: 2026-5-11, Medication: Tiotropium, Dosage: 18mcg inhaled daily
+---
+OutPatient
+1005
+Alex
+Rivera
+1969-5-5
+General
+12 Bay St Toronto
+4165551005
+0
+2026-5-14
+F
+4165559005
+5
+GERD
+Iron deficiency anaemia
+---
+Pantoprazole:40mg daily
+Ferrous sulfate:300mg twice daily
+---
+Aspirin
+---
+GERD diagnosed 2020
+Iron deficiency anaemia diagnosed 2024
+---
+Mother: GERD
+---
 EmergencyPatient
 1006
 Sophia
@@ -79,6 +178,86 @@ M
 Chest pain
 Walk-in
 Awaiting triage
+Acute coronary syndrome
+Hypertension
+---
+Aspirin:325mg stat
+Clopidogrel:75mg daily
+Atorvastatin:80mg daily
+---
+None
+---
+Hypertension diagnosed 2016
+---
+Father: heart attack age 60
+---
+InPatient
+1007
+Noah
+Kim
+1971-7-7
+ICU
+33 Pine Cres Markham
+4165551007
+0
+2026-2-16
+F
+4165559007
+2026-5-7
+0-0-0
+false
+Septic shock
+Acute respiratory failure
+Pneumonia
+---
+Piperacillin-tazobactam:4.5g IV every 6 hours
+Norepinephrine:0.1mcg/kg/min IV
+Vancomycin:1g IV every 12 hours
+---
+Penicillin
+---
+COPD diagnosed 2018
+Hypertension diagnosed 2015
+---
+Father: COPD
+Mother: hypertension
+---
+Date: 2026-5-7, Heart Rate: 118.0, Blood Pressure: 82.0
+Date: 2026-5-14, Heart Rate: 104.0, Blood Pressure: 95.0
+Date: 2026-5-21, Heart Rate: 92.0, Blood Pressure: 108.0
+Date: 2026-5-28, Heart Rate: 88.0, Blood Pressure: 118.0
+---
+Date: 2026-5-7, Medication: Piperacillin-tazobactam, Dosage: 4.5g IV every 6 hours
+Date: 2026-5-7, Medication: Norepinephrine, Dosage: 0.1mcg/kg/min IV
+Date: 2026-5-14, Medication: Vancomycin, Dosage: 1g IV every 12 hours
+---
+OutPatient
+1008
+Olivia
+Brown
+1972-8-8
+General
+501 Queen St Toronto
+4165551008
+0
+2026-3-17
+M
+4165559008
+8
+Hypothyroidism
+Depression
+---
+Levothyroxine:75mcg daily
+Sertraline:50mg daily
+---
+None
+---
+Hypothyroidism diagnosed 2016
+Depression diagnosed 2021
+---
+Mother: hypothyroidism
+Sister: depression
+---
 EmergencyPatient
 1009
 Liam
@@ -97,6 +276,83 @@ F
 Abdominal pain
 Ambulance
 Critical
+Acute appendicitis
+Dehydration
+---
+Morphine:4mg IV PRN
+Ondansetron:4mg IV
+IV Normal Saline:1L
+---
+Latex
+---
+Appendectomy pending
+IBS diagnosed 2020
+---
+No significant family history
+---
+InPatient
+1010
+Ava
+Thompson
+1974-10-10
+ICU
+14 Cedar Ln Richmond Hill
+4165551010
+0
+2026-5-19
+M
+4165559010
+2026-5-10
+0-0-0
+false
+Traumatic brain injury
+Subdural haematoma
+---
+Mannitol:1g/kg IV PRN
+Levetiracetam:500mg IV twice daily
+Dexamethasone:4mg IV every 6 hours
+---
+Codeine
+---
+No significant past medical history
+---
+No significant family history
+---
+Date: 2026-5-10, Heart Rate: 58.0, Blood Pressure: 168.0
+Date: 2026-5-17, Heart Rate: 64.0, Blood Pressure: 152.0
+Date: 2026-5-24, Heart Rate: 70.0, Blood Pressure: 138.0
+---
+Date: 2026-5-10, Medication: Mannitol, Dosage: 1g/kg IV PRN
+Date: 2026-5-10, Medication: Levetiracetam, Dosage: 500mg IV twice daily
+Date: 2026-5-17, Medication: Dexamethasone, Dosage: 4mg IV every 6 hours
+---
+OutPatient
+1011
+Ethan
+White
+1975-11-11
+Family Medicine
+77 River Dr Toronto
+4165551011
+0
+2026-1-20
+F
+4165559011
+11
+Type 2 diabetes
+Hypertension
+---
+Metformin:1000mg twice daily
+Ramipril:5mg daily
+---
+None
+---
+Type 2 diabetes diagnosed 2017
+Hypertension diagnosed 2019
+---
+Father: type 2 diabetes
+Mother: hypertension
+---
 EmergencyPatient
 1012
 Mia
@@ -115,6 +371,85 @@ M
 Broken arm
 Walk-in
 In Treatment
+Closed fracture right radius
+Soft tissue contusion
+---
+Ibuprofen:400mg every 6 hours
+Acetaminophen:500mg every 6 hours
+---
+None
+---
+Osteoporosis diagnosed 2024
+---
+Mother: osteoporosis
+---
+InPatient
+1013
+Lucas
+Clark
+1977-1-13
+Neurology
+123 Main St Toronto
+4165551013
+0
+2026-3-22
+F
+4165559013
+2026-5-13
+2026-6-1
+false
+Ischaemic stroke
+Hypertension
+Atrial fibrillation
+---
+Alteplase:0.9mg/kg IV stat
+Aspirin:325mg daily
+Apixaban:5mg twice daily
+---
+Codeine
+---
+Hypertension diagnosed 2012
+Atrial fibrillation diagnosed 2020
+---
+Father: stroke age 65
+Mother: atrial fibrillation
+---
+Date: 2026-5-13, Heart Rate: 96.0, Blood Pressure: 172.0
+Date: 2026-5-20, Heart Rate: 82.0, Blood Pressure: 148.0
+Date: 2026-5-27, Heart Rate: 78.0, Blood Pressure: 136.0
+---
+Date: 2026-5-13, Medication: Alteplase, Dosage: 0.9mg/kg IV stat
+Date: 2026-5-13, Medication: Aspirin, Dosage: 325mg daily
+Date: 2026-5-20, Medication: Apixaban, Dosage: 5mg twice daily
+---
+OutPatient
+1014
+Charlotte
+Lewis
+1978-2-14
+Oncology
+45 Oak Ave Mississauga
+4165551014
+0
+2026-4-23
+M
+4165559014
+2
+Breast cancer stage II
+Lymphoedema
+---
+Tamoxifen:20mg daily
+Letrozole:2.5mg daily
+---
+Sulfa drugs
+---
+Breast cancer diagnosed 2024
+Lumpectomy 2025
+Lymphoedema post-surgery 2025
+---
+Mother: breast cancer
+Aunt: ovarian cancer
+---
 EmergencyPatient
 1015
 Mason
@@ -133,6 +468,84 @@ F
 Shortness of breath
 Ambulance
 Discharged
+Acute asthma exacerbation
+---
+Salbutamol:2.5mg nebulized
+Ipratropium:0.5mg nebulized
+Prednisone:40mg daily
+---
+Aspirin
+---
+Asthma diagnosed 2001
+---
+Father: asthma
+Sister: eczema
+---
+InPatient
+1016
+Amelia
+Hall
+1980-4-16
+Surgery
+200 King St Toronto
+4165551016
+0
+2026-1-25
+M
+4165559016
+2026-5-16
+0-0-0
+false
+Cholecystitis
+Cholelithiasis
+Hypertension
+---
+Cefazolin:1g IV pre-op
+Morphine:4mg IV PRN
+Amlodipine:5mg daily
+---
+None
+---
+Cholelithiasis diagnosed 2023
+Hypertension diagnosed 2017
+---
+Mother: gallbladder disease
+Father: hypertension
+---
+Date: 2026-5-16, Heart Rate: 86.0, Blood Pressure: 142.0
+Date: 2026-5-21, Heart Rate: 78.0, Blood Pressure: 132.0
+Date: 2026-5-28, Heart Rate: 74.0, Blood Pressure: 128.0
+---
+Date: 2026-5-16, Medication: Cefazolin, Dosage: 1g IV pre-op
+Date: 2026-5-16, Medication: Morphine, Dosage: 4mg IV PRN
+Date: 2026-5-21, Medication: Amlodipine, Dosage: 5mg daily
+---
+OutPatient
+1017
+Logan
+Allen
+1981-5-17
+Pediatrics
+12 Bay St Toronto
+4165551017
+0
+2026-2-26
+F
+4165559017
+5
+Attention deficit hyperactivity disorder
+Mild anxiety
+---
+Methylphenidate:10mg twice daily
+Melatonin:3mg at bedtime
+---
+None
+---
+ADHD diagnosed 2015
+Mild anxiety diagnosed 2022
+---
+Father: ADHD
+---
 EmergencyPatient
 1018
 Harper
@@ -151,6 +564,82 @@ M
 Severe headache
 Walk-in
 Stable
+Tension headache
+Anxiety disorder
+---
+Acetaminophen:1000mg every 6 hours
+Lorazepam:0.5mg PRN
+---
+None
+---
+Anxiety disorder diagnosed 2018
+Recurrent tension headaches
+---
+Mother: anxiety disorder
+---
+InPatient
+1019
+Elijah
+King
+1983-7-19
+Surgery
+33 Pine Cres Markham
+4165551019
+0
+2026-4-28
+F
+4165559019
+2026-5-19
+0-0-0
+false
+Inguinal hernia
+Obesity
+---
+Cefazolin:2g IV pre-op
+Acetaminophen:1000mg every 6 hours
+Enoxaparin:40mg SC daily
+---
+Codeine
+---
+Inguinal hernia diagnosed 2025
+Obesity BMI 38
+---
+Father: inguinal hernia
+---
+Date: 2026-5-19, Heart Rate: 80.0, Blood Pressure: 138.0
+Date: 2026-5-24, Heart Rate: 76.0, Blood Pressure: 130.0
+---
+Date: 2026-5-19, Medication: Cefazolin, Dosage: 2g IV pre-op
+Date: 2026-5-19, Medication: Enoxaparin, Dosage: 40mg SC daily
+Date: 2026-5-24, Medication: Acetaminophen, Dosage: 1000mg every 6 hours
+---
+OutPatient
+1020
+Evelyn
+Wright
+1984-8-20
+Pediatrics
+501 Queen St Toronto
+4165551020
+0
+2026-5-29
+M
+4165559020
+8
+Juvenile idiopathic arthritis
+Vitamin D deficiency
+---
+Naproxen:250mg twice daily
+Methotrexate:10mg weekly
+Vitamin D3:2000IU daily
+---
+Penicillin
+---
+JIA diagnosed 2017
+Vitamin D deficiency diagnosed 2022
+---
+Mother: rheumatoid arthritis
+---
 EmergencyPatient
 1021
 Oliver
@@ -169,6 +658,80 @@ F
 Chest pain
 Ambulance
 Awaiting triage
+Costochondritis
+GERD
+---
+Naproxen:500mg twice daily
+Omeprazole:20mg daily
+---
+Penicillin
+---
+GERD diagnosed 2022
+---
+No significant family history
+---
+InPatient
+1022
+Abigail
+Green
+1986-10-22
+Cardiology
+14 Cedar Ln Richmond Hill
+4165551022
+0
+2026-2-11
+M
+4165559022
+2026-5-22
+0-0-0
+false
+Atrial fibrillation
+Hyperlipidemia
+---
+Apixaban:5mg twice daily
+Atorvastatin:40mg nightly
+Diltiazem:120mg daily
+---
+Sulfa drugs
+---
+Atrial fibrillation diagnosed 2023
+Hyperlipidemia diagnosed 2020
+---
+Father: atrial fibrillation
+Sister: hyperlipidemia
+---
+Date: 2026-5-22, Heart Rate: 102.0, Blood Pressure: 135.0
+Date: 2026-5-28, Heart Rate: 94.0, Blood Pressure: 128.0
+---
+Date: 2026-5-22, Medication: Apixaban, Dosage: 5mg twice daily
+Date: 2026-5-22, Medication: Diltiazem, Dosage: 120mg daily
+---
+OutPatient
+1023
+William
+Baker
+1987-11-23
+Neurology
+77 River Dr Toronto
+4165551023
+0
+2026-3-12
+F
+4165559023
+11
+Epilepsy
+Generalized anxiety disorder
+---
+Lamotrigine:100mg twice daily
+Sertraline:50mg daily
+---
+Carbamazepine
+---
+Epilepsy diagnosed 2016
+GAD diagnosed 2018
+---
+Mother: epilepsy
+---
 EmergencyPatient
 1024
 Elizabeth
@@ -187,6 +750,81 @@ M
 Abdominal pain
 Walk-in
 Critical
+Ruptured ovarian cyst
+Acute anaemia
+---
+Morphine:4mg IV PRN
+IV Normal Saline:1L
+Ferrous sulfate:300mg daily
+---
+Codeine
+---
+Polycystic ovary syndrome diagnosed 2012
+---
+Mother: ovarian cysts
+---
+InPatient
+1025
+Benjamin
+Nelson
+1989-1-25
+Cardiology
+123 Main St Toronto
+4165551025
+0
+2026-5-14
+F
+4165559025
+2026-5-25
+2026-6-1
+false
+Unstable angina
+Type 2 diabetes
+---
+Aspirin:81mg daily
+Nitroglycerin:0.4mg sublingual PRN
+Metformin:500mg twice daily
+---
+Codeine
+---
+Type 2 diabetes diagnosed 2019
+Hypertension diagnosed 2021
+---
+Father: myocardial infarction age 55
+Mother: type 2 diabetes
+---
+Date: 2026-5-25, Heart Rate: 95.0, Blood Pressure: 155.0
+Date: 2026-5-29, Heart Rate: 88.0, Blood Pressure: 142.0
+---
+Date: 2026-5-25, Medication: Aspirin, Dosage: 81mg daily
+Date: 2026-5-25, Medication: Metformin, Dosage: 500mg twice daily
+---
+OutPatient
+1026
+Sofia
+Carter
+1990-2-26
+General
+45 Oak Ave Mississauga
+4165551026
+0
+2026-1-15
+M
+4165559026
+2
+Irritable bowel syndrome
+Vitamin D deficiency
+---
+Mebeverine:135mg three times daily
+Vitamin D3:1000IU daily
+---
+None
+---
+IBS diagnosed 2022
+Vitamin D deficiency diagnosed 2024
+---
+No significant family history
+---
 EmergencyPatient
 1027
 Henry
@@ -205,6 +843,80 @@ F
 Broken arm
 Ambulance
 In Treatment
+Closed fracture left ulna
+Ligament sprain
+---
+Acetaminophen:500mg every 6 hours
+Ibuprofen:400mg every 8 hours
+---
+None
+---
+Previous fracture right wrist 2019
+---
+No significant family history
+---
+InPatient
+1028
+Avery
+Perez
+1992-4-28
+Oncology
+200 King St Toronto
+4165551028
+0
+2026-3-17
+M
+4165559028
+2026-5-3
+0-0-0
+false
+Hodgkin lymphoma stage II
+Chemotherapy-induced neutropenia
+---
+Doxorubicin:25mg/m2 IV
+Bleomycin:10 units/m2 IV
+G-CSF:300mcg SC daily
+---
+None
+---
+Hodgkin lymphoma diagnosed 2025
+---
+No significant family history
+---
+Date: 2026-5-3, Heart Rate: 96.0, Blood Pressure: 112.0
+Date: 2026-5-10, Heart Rate: 104.0, Blood Pressure: 106.0
+Date: 2026-5-17, Heart Rate: 92.0, Blood Pressure: 114.0
+---
+Date: 2026-5-3, Medication: Doxorubicin, Dosage: 25mg/m2 IV
+Date: 2026-5-3, Medication: Bleomycin, Dosage: 10 units/m2 IV
+Date: 2026-5-10, Medication: G-CSF, Dosage: 300mcg SC daily
+---
+OutPatient
+1029
+Sebastian
+Roberts
+1993-5-1
+General
+12 Bay St Toronto
+4165551029
+0
+2026-4-18
+F
+4165559029
+5
+Anxiety disorder
+Insomnia
+---
+Escitalopram:10mg daily
+Melatonin:5mg at bedtime
+---
+None
+---
+Anxiety disorder diagnosed 2020
+Insomnia diagnosed 2021
+---
+Father: anxiety disorder
+---
 EmergencyPatient
 1030
 Ella
@@ -223,6 +935,82 @@ M
 Shortness of breath
 Walk-in
 Discharged
+Pneumonia
+Mild hypoxia
+---
+Amoxicillin-clavulanate:875mg twice daily
+Salbutamol:100mcg inhaler PRN
+---
+Sulfa drugs
+---
+Recurrent respiratory infections
+---
+Father: COPD
+---
+InPatient
+1031
+Jack
+Phillips
+1995-7-3
+ICU
+33 Pine Cres Markham
+4165551031
+0
+2026-1-20
+F
+4165559031
+2026-5-6
+0-0-0
+false
+Acute liver failure
+Hepatic encephalopathy
+---
+Lactulose:30mL every 6 hours
+Rifaximin:550mg twice daily
+N-acetylcysteine:150mg/kg IV
+---
+None
+---
+Alcohol use disorder diagnosed 2022
+---
+Father: alcohol use disorder
+Uncle: liver cirrhosis
+---
+Date: 2026-5-6, Heart Rate: 112.0, Blood Pressure: 88.0
+Date: 2026-5-13, Heart Rate: 98.0, Blood Pressure: 96.0
+Date: 2026-5-20, Heart Rate: 90.0, Blood Pressure: 104.0
+---
+Date: 2026-5-6, Medication: Lactulose, Dosage: 30mL every 6 hours
+Date: 2026-5-6, Medication: N-acetylcysteine, Dosage: 150mg/kg IV
+Date: 2026-5-13, Medication: Rifaximin, Dosage: 550mg twice daily
+---
+OutPatient
+1032
+Scarlett
+Campbell
+1996-8-4
+General
+501 Queen St Toronto
+4165551032
+0
+2026-2-21
+M
+4165559032
+8
+Polycystic ovary syndrome
+Acne vulgaris
+---
+Metformin:500mg daily
+Spironolactone:50mg daily
+Clindamycin topical:1% twice daily
+---
+Tetracycline
+---
+PCOS diagnosed 2019
+Acne vulgaris diagnosed 2018
+---
+Mother: PCOS
+---
 EmergencyPatient
 1033
 Owen
@@ -241,6 +1029,84 @@ F
 Severe headache
 Ambulance
 Stable
+Migraine with aura
+---
+Sumatriptan:100mg stat
+Metoclopramide:10mg IV
+Ketorolac:30mg IV
+---
+None
+---
+Migraines diagnosed 2021
+---
+Mother: migraines
+---
+InPatient
+1034
+Grace
+Evans
+1998-10-6
+ICU
+14 Cedar Ln Richmond Hill
+4165551034
+0
+2026-4-23
+M
+4165559034
+2026-5-9
+0-0-0
+false
+Diabetic ketoacidosis
+Type 1 diabetes
+---
+Insulin regular:0.1 units/kg/hr IV infusion
+IV Normal Saline:1L/hr
+Potassium chloride:20mEq/L IV
+---
+Sulfa drugs
+---
+Type 1 diabetes diagnosed 2008
+---
+Mother: type 1 diabetes
+Aunt: type 1 diabetes
+---
+Date: 2026-5-9, Heart Rate: 124.0, Blood Pressure: 92.0
+Date: 2026-5-13, Heart Rate: 108.0, Blood Pressure: 104.0
+Date: 2026-5-17, Heart Rate: 90.0, Blood Pressure: 118.0
+---
+Date: 2026-5-9, Medication: Insulin regular, Dosage: 0.1 units/kg/hr IV infusion
+Date: 2026-5-9, Medication: Potassium chloride, Dosage: 20mEq/L IV
+Date: 2026-5-13, Medication: IV Normal Saline, Dosage: 1L/hr
+---
+OutPatient
+1035
+Samuel
+Edwards
+1999-11-7
+Family Medicine
+77 River Dr Toronto
+4165551035
+0
+2026-5-24
+F
+4165559035
+11
+Seasonal allergic rhinitis
+Mild asthma
+---
+Cetirizine:10mg daily
+Fluticasone nasal spray:50mcg daily
+Salbutamol inhaler:100mcg PRN
+---
+Tree pollen
+Cat dander
+---
+Asthma diagnosed 2008
+Allergic rhinitis diagnosed 2010
+---
+Mother: asthma
+Father: seasonal allergies
+---
 EmergencyPatient
 1036
 Chloe
@@ -259,6 +1125,85 @@ M
 Chest pain
 Walk-in
 Awaiting triage
+NSTEMI
+Type 2 diabetes
+Hypertension
+---
+Aspirin:325mg stat
+Heparin:5000 units IV
+Metformin:1000mg twice daily
+---
+Penicillin
+Sulfa drugs
+---
+Type 2 diabetes diagnosed 2005
+Hypertension diagnosed 2008
+---
+Father: MI age 58
+Mother: type 2 diabetes
+---
+InPatient
+1037
+Daniel
+Stewart
+1966-1-9
+Neurology
+123 Main St Toronto
+4165551037
+0
+2026-2-26
+F
+4165559037
+2026-5-12
+2026-6-1
+false
+Parkinson's disease
+Orthostatic hypotension
+---
+Levodopa-carbidopa:100/25mg three times daily
+Midodrine:5mg three times daily
+---
+None
+---
+Parkinson's disease diagnosed 2020
+Orthostatic hypotension diagnosed 2023
+---
+Father: Parkinson's disease
+---
+Date: 2026-5-12, Heart Rate: 72.0, Blood Pressure: 104.0
+Date: 2026-5-19, Heart Rate: 70.0, Blood Pressure: 110.0
+Date: 2026-5-26, Heart Rate: 68.0, Blood Pressure: 116.0
+---
+Date: 2026-5-12, Medication: Levodopa-carbidopa, Dosage: 100/25mg three times daily
+Date: 2026-5-12, Medication: Midodrine, Dosage: 5mg three times daily
+---
+OutPatient
+1038
+Victoria
+Morris
+1967-2-10
+Oncology
+45 Oak Ave Mississauga
+4165551038
+0
+2026-3-27
+M
+4165559038
+2
+Colorectal cancer stage I
+Iron deficiency anaemia
+---
+Capecitabine:1250mg/m2 twice daily
+Ferrous sulfate:300mg daily
+---
+NSAIDs
+---
+Colorectal cancer diagnosed 2025
+Hemicolectomy 2025
+---
+Father: colorectal cancer
+Grandfather: colorectal cancer
+---
 EmergencyPatient
 1039
 Matthew
@@ -277,325 +1222,20 @@ F
 Abdominal pain
 Ambulance
 Critical
-OutPatient
-1011
-Ethan
-White
-1975-11-11
-Family Medicine
-77 River Dr Toronto
-4165551011
-0
-2026-1-20
-F
-4165559011
-11
-OutPatient
-1035
-Samuel
-Edwards
-1999-11-7
-Family Medicine
-77 River Dr Toronto
-4165551035
-0
-2026-5-24
-F
-4165559035
-11
-OutPatient
-1002
-Tom
-Wilson
-1966-2-2
-General
-45 Oak Ave Mississauga
-4165551002
-0
-2026-2-11
-M
-4165559002
-2
-OutPatient
-1005
-Alex
-Rivera
-1969-5-5
-General
-12 Bay St Toronto
-4165551005
-0
-2026-5-14
-F
-4165559005
-5
-OutPatient
-1008
-Olivia
-Brown
-1972-8-8
-General
-501 Queen St Toronto
-4165551008
-0
-2026-3-17
-M
-4165559008
-8
-OutPatient
-1026
-Sofia
-Carter
-1990-2-26
-General
-45 Oak Ave Mississauga
-4165551026
-0
-2026-1-15
-M
-4165559026
-2
-OutPatient
-1029
-Sebastian
-Roberts
-1993-5-1
-General
-12 Bay St Toronto
-4165551029
-0
-2026-4-18
-F
-4165559029
-5
-OutPatient
-1032
-Scarlett
-Campbell
-1996-8-4
-General
-501 Queen St Toronto
-4165551032
-0
-2026-2-21
-M
-4165559032
-8
-InPatient
-1007
-Noah
-Kim
-1971-7-7
-ICU
-33 Pine Cres Markham
-4165551007
-0
-2026-2-16
-F
-4165559007
-2026-5-7
-0-0-0
-false
-InPatient
-1010
-Ava
-Thompson
-1974-10-10
-ICU
-14 Cedar Ln Richmond Hill
-4165551010
-0
-2026-5-19
-M
-4165559010
-2026-5-10
-0-0-0
-false
-InPatient
-1031
-Jack
-Phillips
-1995-7-3
-ICU
-33 Pine Cres Markham
-4165551031
-0
-2026-1-20
-F
-4165559031
-2026-5-6
-0-0-0
-false
-InPatient
-1034
-Grace
-Evans
-1998-10-6
-ICU
-14 Cedar Ln Richmond Hill
-4165551034
-0
-2026-4-23
-M
-4165559034
-2026-5-9
-0-0-0
-false
-InPatient
-1013
-Lucas
-Clark
-1977-1-13
-Neurology
-123 Main St Toronto
-4165551013
-0
-2026-3-22
-F
-4165559013
-2026-5-13
-2026-6-1
-false
-OutPatient
-1023
-William
-Baker
-1987-11-23
-Neurology
-77 River Dr Toronto
-4165551023
-0
-2026-3-12
-F
-4165559023
-11
-InPatient
-1037
-Daniel
-Stewart
-1966-1-9
-Neurology
-123 Main St Toronto
-4165551037
-0
-2026-2-26
-F
-4165559037
-2026-5-12
-2026-6-1
-false
-InPatient
-1004
-Chris
-Martin
-1968-4-4
-Oncology
-200 King St Toronto
-4165551004
-0
-2026-4-13
-M
-4165559004
-2026-5-4
-0-0-0
-false
-OutPatient
-1014
-Charlotte
-Lewis
-1978-2-14
-Oncology
-45 Oak Ave Mississauga
-4165551014
-0
-2026-4-23
-M
-4165559014
-2
-InPatient
-1028
-Avery
-Perez
-1992-4-28
-Oncology
-200 King St Toronto
-4165551028
-0
-2026-3-17
-M
-4165559028
-2026-5-3
-0-0-0
-false
-OutPatient
-1038
-Victoria
-Morris
-1967-2-10
-Oncology
-45 Oak Ave Mississauga
-4165551038
-0
-2026-3-27
-M
-4165559038
-2
-OutPatient
-1017
-Logan
-Allen
-1981-5-17
-Pediatrics
-12 Bay St Toronto
-4165551017
-0
-2026-2-26
-F
-4165559017
-5
-OutPatient
-1020
-Evelyn
-Wright
-1984-8-20
-Pediatrics
-501 Queen St Toronto
-4165551020
-0
-2026-5-29
-M
-4165559020
-8
-InPatient
-1016
-Amelia
-Hall
-1980-4-16
-Surgery
-200 King St Toronto
-4165551016
-0
-2026-1-25
-M
-4165559016
-2026-5-16
-0-0-0
-false
-InPatient
-1019
-Elijah
-King
-1983-7-19
-Surgery
-33 Pine Cres Markham
-4165551019
-0
-2026-4-28
-F
-4165559019
-2026-5-19
-0-0-0
-false
+Acute pancreatitis
+Cholelithiasis
+---
+Morphine:4mg IV PRN
+Ondansetron:4mg IV
+IV Normal Saline:2L
+---
+NSAIDs
+---
+Cholelithiasis diagnosed 2024
+Alcohol use disorder (in remission)
+---
+Father: gallbladder disease
+---
 InPatient
 1040
 Lily
@@ -611,3 +1251,48 @@ M
 2026-5-15
 0-0-0
 false
+Bowel obstruction
+Crohn's disease
+---
+Methylprednisolone:40mg IV daily
+Metronidazole:500mg IV every 8 hours
+Morphine:2mg IV PRN
+---
+Penicillin
+NSAIDs
+---
+Crohn's disease diagnosed 2010
+Previous bowel resection 2018
+---
+Sister: Crohn's disease
+---
+Date: 2026-5-15, Heart Rate: 100.0, Blood Pressure: 108.0
+Date: 2026-5-22, Heart Rate: 90.0, Blood Pressure: 116.0
+Date: 2026-5-29, Heart Rate: 82.0, Blood Pressure: 122.0
+---
+Date: 2026-5-15, Medication: Methylprednisolone, Dosage: 40mg IV daily
+Date: 2026-5-15, Medication: Metronidazole, Dosage: 500mg IV every 8 hours
+Date: 2026-5-22, Medication: Morphine, Dosage: 2mg IV PRN
+---
+InPatient
+1234
+klsdjf
+asldjfk
+1009-1-1
+skldjf
+alksdjf
+12309
+0123456789
+1039-2-29
+F
+1230945
+2009-1-1
+0-0-0
+false
+---
+---
+---
+---
+---
+---
+---

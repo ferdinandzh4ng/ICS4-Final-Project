@@ -21,7 +21,7 @@ public abstract class Patient {
     private String ward; // ward the patient is assigned to
     private String address; // home address of the patient
     private long phoneNum; // phone number of the patient
-    private int numOHIP; // OHIP number of the patient
+    private String numOHIP; // OHIP number of the patient
     private Date dateRegistered; // date the patient was registered in the hospital
     private char gender; // gender of the patient
     private long emergencyContactPhoneNumber; // phone number of the patient's emergency contact
@@ -50,7 +50,7 @@ public abstract class Patient {
      * @param assignedStaff to be assigned to the patient
      */
     public Patient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum,
-                    int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
+                    String numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
         this.patientID = patientID;
         this.firstName = firstName;
         this.lastName = lastName; 
@@ -58,8 +58,8 @@ public abstract class Patient {
         this.ward = ward;
         this.address = address;
         this.phoneNum = phoneNum;
-        if (numOHIP < 0 || !isValidOHIP(numOHIP)) {
-            this.numOHIP = 0;
+        if (!isValidOHIP(numOHIP)) {
+            this.numOHIP = "0";
         } else {
             this.numOHIP = numOHIP;
         }
@@ -144,7 +144,7 @@ public abstract class Patient {
      * Returns the OHIP number of the patient
      * @return the OHIP number
      */
-    public int getNumOHIP() {
+    public String getNumOHIP() {
         return numOHIP;
     }
 
@@ -272,7 +272,7 @@ public abstract class Patient {
      * Sets the OHIP number of the patient
      * @param numOHIP the OHIP number to be assigned to the patient
      */
-    public void setNumOHIP(int numOHIP) {
+    public void setNumOHIP(String numOHIP) {
         this.numOHIP = numOHIP;
     }
 
@@ -335,14 +335,16 @@ public abstract class Patient {
      * Adds the name and dosage of the prescribed medication into medications
      * @param medName the name of the medciation
      * @param dosage the dosage of the medication
+     * @return boolean if medication can safely be added
      */
-    public void addMedication (String medName, String dosage) {
+    public boolean addMedication (String medName, String dosage) {
         for (int i = 0; i < medications.length; i++) {
-            if (medications[i] == null) {
+            if (medications[i] == null && !checkAllergyConflict(medName)) {
                 medications[i] = new Medication(medName, dosage);
-                return;
+                return true;
             }
         }
+        return false;
     }
 
     /**
@@ -786,10 +788,10 @@ public abstract class Patient {
      * @param numOHIP the OHIP number to be validated
      * @return boolean if the OHIP number is valid
      */
-    public static boolean isValidOHIP (int numOHIP) {
-        String numOHIPStr = Integer.toString(numOHIP);
-        
-        return numOHIPStr.length() == 10;
+    public static boolean isValidOHIP(String numOHIP) {
+        if (numOHIP == null) { return false; }
+        if (numOHIP.equals("0")) { return true; }
+        return numOHIP.matches("\\d{10}");
     }
 
     /**
@@ -866,12 +868,101 @@ public abstract class Patient {
      * @return String the string representation of the patient
      */
     @Override
-    public String toString () {
-        return "Patient ID: " + patientID + "\nName: " + firstName + " " + lastName + "\nDate of Birth: " + dateOfBirth.toString() +
-                "\nWard: " + ward + "\nAddress: " + address + "\nPhone Number: " + phoneNum + "\nOHIP Number: " + numOHIP +
-                "\nDate Registered: " + dateRegistered.toString() + "\nGender: " + gender + "\nEmergency Contact Phone Number: " + 
-                emergencyContactPhoneNumber;
-                // + "\nAssigned Staff: " + assignedStaff.getName();
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\nPatient ID: ").append(patientID).append("\n");
+        sb.append("Name: ").append(firstName).append(" ").append(lastName).append("\n");
+        sb.append("Date of Birth: ").append(dateOfBirth.toString()).append("\n");
+        sb.append("Ward: ").append(ward).append("\n");
+        sb.append("Address: ").append(address).append("\n");
+        sb.append("Phone Number: ").append(phoneNum).append("\n");
+        sb.append("OHIP Number: ").append(numOHIP).append("\n");
+        sb.append("Date Registered: ").append(dateRegistered.toString()).append("\n");
+        sb.append("Gender: ").append(gender).append("\n");
+        sb.append("Emergency Contact Phone Number: ").append(emergencyContactPhoneNumber).append("\n");
+
+        sb.append("Diagnoses: ");
+        boolean hasDiagnosis = false;
+        for (int i = 0; i < diagnosis.length; i++) {
+            if (diagnosis[i] != null) {
+                if (hasDiagnosis) {
+                    sb.append(", ");
+                }
+                sb.append(diagnosis[i]);
+                hasDiagnosis = true;
+            }
+        }
+        if (!hasDiagnosis) {
+            sb.append("None");
+        }
+        sb.append("\n");
+
+        sb.append("Medications: ");
+        boolean hasMed = false;
+        for (int i = 0; i < medications.length; i++) {
+            if (medications[i] != null) {
+                if (hasMed) {
+                    sb.append(", ");
+                }
+                sb.append(medications[i].getMedName())
+                .append(" (").append(medications[i].getDosage()).append(")");
+                hasMed = true;
+            }
+        }
+        if (!hasMed) {
+            sb.append("None");
+        }
+        sb.append("\n");
+
+        sb.append("Allergies: ");
+        boolean hasAllergy = false;
+        for (int i = 0; i < allergies.length; i++) {
+            if (allergies[i] != null) {
+                if (hasAllergy) {
+                    sb.append(", ");
+                }
+                sb.append(allergies[i]);
+                hasAllergy = true;
+            }
+        }
+        if (!hasAllergy) {
+            sb.append("None");
+        }
+        sb.append("\n");
+
+        sb.append("Medical History: ");
+        boolean hasMedHist = false;
+        for (int i = 0; i < medicalHistory.length; i++) {
+            if (medicalHistory[i] != null) {
+                if (hasMedHist) {
+                    sb.append(", ");
+                }
+                sb.append(medicalHistory[i]);
+                hasMedHist = true;
+            }
+        }
+        if (!hasMedHist) {
+            sb.append("None");
+        }
+        sb.append("\n");
+
+        sb.append("Family History: ");
+        boolean hasFamHist = false;
+        for (int i = 0; i < familyHistory.length; i++) {
+            if (familyHistory[i] != null) {
+                if (hasFamHist) {
+                    sb.append(", ");
+                }
+                sb.append(familyHistory[i]);
+                hasFamHist = true;
+            }
+        }
+        if (!hasFamHist) {
+            sb.append("None");
+        }
+        sb.append("\n");
+
+        return sb.toString();
     }
 
     /**

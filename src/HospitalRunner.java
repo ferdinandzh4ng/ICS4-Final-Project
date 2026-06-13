@@ -5,6 +5,14 @@ import staff.*;
 
 import java.util.Scanner;
 
+/**
+ * File: HospitalRunner.java
+ * Name: Caroline Chan
+ * Class: ICS4U1
+ * Date: June 2, 2026
+ * Description: This class runs the hospital management system,
+ *              providing menus to manage patients, appointments, and staff.
+ */
 public class HospitalRunner {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -14,7 +22,10 @@ public class HospitalRunner {
         ApptManager apptManager = new ApptManager(200, staffManager, patientManager);
 
         staffManager.loadFromFile("data/staff.txt");
-        patientManager.loadPatientInfo("data/patients.txt");
+        boolean patientsLoaded = patientManager.loadPatientInfo("data/patients.txt");
+        if (!patientsLoaded) {
+            System.out.println("Warning: could not load patients.txt — file may be corrupt or missing.");
+        }
         apptManager.loadFromFile("data/appointments.txt");
         patientManager.syncAppointmentsFromManager(apptManager);
         staffManager.syncSchedulesFromAppointments(
@@ -51,7 +62,7 @@ public class HospitalRunner {
             }
 
             if (choice == 1) {
-                // ── Staff Management submenu ──
+                // ── Staff Management submenu ──────────────────────────────────────────────
                 boolean staffBack = false;
                 while (!staffBack) {
                     System.out.println();
@@ -103,6 +114,7 @@ public class HospitalRunner {
                             }
                             System.out.println(line);
                         }
+
                     } else if (staffChoice == 2) {
                         System.out.print("Staff name: ");
                         String name = scanner.nextLine().trim();
@@ -112,40 +124,40 @@ public class HospitalRunner {
                         } else {
                             System.out.println(staffManager.formatStaffDetails(found));
                         }
+
                     } else if (staffChoice == 3) {
                         staffManager.sortStaff();
                         System.out.println("--- Staff Sorted by Name ---");
                         System.out.printf("%-20s %-12s %-18s %-12s%n",
                                 "Name", "Staff ID", "Specialization", "Type");
-
                         Staff[] staff = staffManager.getStaffArray();
                         for (int i = 0; i < staff.length; i++) {
                             Staff s = staff[i];
                             if (s == null) {
                                 continue;
                             }
-
                             String typeName = s.getClass().getSimpleName();
                             System.out.printf("%-20s %-12s %-18s %-12s%n",
                                     s.getName(), s.getStaffID(), s.getSpecialization(), typeName);
                         }
+
                     } else if (staffChoice == 4) {
                         staffManager.sortStaffByExp();
                         System.out.println("--- Staff Sorted by Experience ---");
                         System.out.printf("%-20s %-12s %-18s %-12s %-12s%n",
                                 "Name", "Staff ID", "Specialization", "Experience", "Type");
-
                         Staff[] staff = staffManager.getStaffArray();
                         for (int i = 0; i < staff.length; i++) {
                             Staff s = staff[i];
                             if (s == null) {
                                 continue;
                             }
-
                             String typeName = s.getClass().getSimpleName();
                             System.out.printf("%-20s %-12s %-18s %-12d %-12s%n",
-                                    s.getName(), s.getStaffID(), s.getSpecialization(), s.getExperience(), typeName);
+                                    s.getName(), s.getStaffID(), s.getSpecialization(),
+                                    s.getExperience(), typeName);
                         }
+
                     } else if (staffChoice == 5) {
                         Staff[] staff = staffManager.getStaffArray();
                         if (staff.length == 0) {
@@ -156,6 +168,7 @@ public class HospitalRunner {
                                         + s.getSpecialization());
                             }
                         }
+
                     } else if (staffChoice == 6) {
                         System.out.print("Staff name: ");
                         String name = scanner.nextLine().trim();
@@ -165,8 +178,10 @@ public class HospitalRunner {
                         } else {
                             System.out.println(staffManager.checkShifts(found));
                         }
+
                     } else if (staffChoice == 7) {
                         System.out.printf("Total payroll: $%.2f%n", staffManager.runPayroll());
+
                     } else if (staffChoice == 8) {
                         System.out.println("--- Add Staff ---");
                         System.out.println("[1] Doctor  [2] Nurse  [3] Surgeon");
@@ -199,7 +214,7 @@ public class HospitalRunner {
                         System.out.print("Specialization: ");
                         String staffSpec = scanner.nextLine().trim();
                         String[] offDays = new String[10];
-                        Appointment[] schedule = new Appointment[20];
+                        Appointment[] schedule = new Appointment[200];
 
                         if (roleChoice == 1) {
                             System.out.print("License number: ");
@@ -224,6 +239,7 @@ public class HospitalRunner {
                             }
                             staffManager.addStaff(new Doctor(staffID, staffName, experience,
                                     staffSpec, offDays, schedule, license, fee, maxPatients));
+
                         } else if (roleChoice == 2) {
                             System.out.print("Ward: ");
                             String ward = scanner.nextLine().trim();
@@ -250,6 +266,7 @@ public class HospitalRunner {
                             staffManager.addStaff(new Nurse(staffID, staffName, experience,
                                     staffSpec, offDays, schedule, ward, shiftType,
                                     hourlyRate, hoursWorked));
+
                         } else {
                             int operatingRoom = -1;
                             while (operatingRoom == -1) {
@@ -319,13 +336,14 @@ public class HospitalRunner {
 
                     } else if (staffChoice == 11) {
                         staffBack = true;
+
                     } else {
                         System.out.println("Error: invalid choice.");
                     }
                 }
 
             } else if (choice == 2) {
-                // ── Patient Management submenu ──
+                // ── Patient Management submenu ────────────────────────────────────────────
                 boolean patientBack = false;
                 while (!patientBack) {
                     System.out.println();
@@ -334,16 +352,17 @@ public class HospitalRunner {
                     System.out.println("[2] Register OutPatient");
                     System.out.println("[3] Register Emergency Patient");
                     System.out.println("[4] Search by Patient ID");
-                    System.out.println("[5] Sort Patients by Ward");
-                    System.out.println("[6] Sort Patients by Date Registered");
-                    System.out.println("[7] Sort Patients by Patient ID");
-                    System.out.println("[8] List All Patients");
-                    System.out.println("[9] Check In Patient");
-                    System.out.println("[10] Check Out Patient");
-                    System.out.println("[11] View Patient Appointments");
-                    System.out.println("[12] Delete Patient");
-                    System.out.println("[13] Medical Records");
-                    System.out.println("[14] Back");
+                    System.out.println("[5] Search by Patient Name");
+                    System.out.println("[6] Sort Patients by Ward then Patient ID");
+                    System.out.println("[7] Sort Patients by Date Registered");
+                    System.out.println("[8] Sort Patients by Patient ID");
+                    System.out.println("[9] List All Patients");
+                    System.out.println("[10] Check In Patient");
+                    System.out.println("[11] Check Out Patient");
+                    System.out.println("[12] View Patient Appointments");
+                    System.out.println("[13] Delete Patient");
+                    System.out.println("[14] Medical Records");
+                    System.out.println("[15] Back");
 
                     int patientChoice = -1;
                     while (patientChoice == -1) {
@@ -356,6 +375,7 @@ public class HospitalRunner {
                     }
 
                     if (patientChoice >= 1 && patientChoice <= 3) {
+                        // ── Shared base fields ──
                         String type;
                         if (patientChoice == 1) {
                             type = "InPatient";
@@ -402,13 +422,13 @@ public class HospitalRunner {
                                 System.out.println("Error: please enter a valid number.");
                             }
                         }
-                        int ohip = -1;
-                        while (ohip == -1) {
-                            System.out.print("OHIP number (10 digits): ");
-                            try {
-                                ohip = Integer.parseInt(scanner.nextLine().trim());
-                            } catch (NumberFormatException e) {
-                                System.out.println("Error: please enter a valid integer.");
+                        String ohip = "";
+                        while (ohip.isEmpty()) {
+                            System.out.print("OHIP number (10 digits, or 0 for none): ");
+                            ohip = scanner.nextLine().trim();
+                            if (!ohip.equals("0") && !ohip.matches("\\d{10}")) {
+                                System.out.println("Error: OHIP must be exactly 10 digits or 0.");
+                                ohip = "";
                             }
                         }
                         System.out.print("Date registered (YYYY-MM-DD): ");
@@ -439,21 +459,87 @@ public class HospitalRunner {
                                 System.out.println("Error: please enter a valid number.");
                             }
                         }
+
+                        // ── Type-specific fields ──
                         boolean ok;
                         if (type.equals("InPatient")) {
+                            System.out.print("Day in (YYYY-MM-DD, or 0-0-0 if not yet admitted): ");
+                            String dayInStr = scanner.nextLine().trim();
+                            Date dayIn;
+                            if (dayInStr.equals("0-0-0")) {
+                                dayIn = null;
+                            } else {
+                                dayIn = new Date(dayInStr);
+                            }
+                            System.out.print("Day out (YYYY-MM-DD, or 0-0-0 if not yet discharged): ");
+                            String dayOutStr = scanner.nextLine().trim();
+                            Date dayOut;
+                            if (dayOutStr.equals("0-0-0")) {
+                                dayOut = null;
+                            } else {
+                                dayOut = new Date(dayOutStr);
+                            }
+                            System.out.print("Hospital bed assigned (true/false): ");
+                            boolean hospitalBed = Boolean.parseBoolean(scanner.nextLine().trim());
                             ok = patientManager.registerInPatient(id, first, last, dob, ward,
-                                    address, phone, ohip, registered, gender, emergencyPhone, null);
+                                    address, phone, ohip, registered, gender, emergencyPhone, null,
+                                    dayIn, dayOut, hospitalBed);
+
                         } else if (type.equals("OutPatient")) {
+                            int apptTiming = -1;
+                            while (apptTiming == -1) {
+                                System.out.print("Months until next appointment: ");
+                                try {
+                                    apptTiming = Integer.parseInt(scanner.nextLine().trim());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Error: please enter a valid integer.");
+                                }
+                            }
                             ok = patientManager.registerOutPatient(id, first, last, dob, ward,
-                                    address, phone, ohip, registered, gender, emergencyPhone, null);
+                                    address, phone, ohip, registered, gender, emergencyPhone, null,
+                                    apptTiming);
+
                         } else {
+                            int arrivalTime = -1;
+                            while (arrivalTime == -1) {
+                                System.out.print("Arrival time (HHMM, e.g. 1430): ");
+                                try {
+                                    arrivalTime = Integer.parseInt(scanner.nextLine().trim());
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Error: please enter a valid integer.");
+                                }
+                            }
+                            System.out.print("Day in (YYYY-MM-DD, or 0-0-0 if not yet admitted): ");
+                            String dayInStr = scanner.nextLine().trim();
+                            Date dayIn;
+                            if (dayInStr.equals("0-0-0")) {
+                                dayIn = null;
+                            } else {
+                                dayIn = new Date(dayInStr);
+                            }
+                            System.out.print("Day out (YYYY-MM-DD, or 0-0-0 if not yet discharged): ");
+                            String dayOutStr = scanner.nextLine().trim();
+                            Date dayOut;
+                            if (dayOutStr.equals("0-0-0")) {
+                                dayOut = null;
+                            } else {
+                                dayOut = new Date(dayOutStr);
+                            }
+                            System.out.print("Presenting complaint: ");
+                            String complaint = scanner.nextLine().trim();
+                            System.out.print("Arrival type (Ambulance/Walk-in): ");
+                            String arrivalType = scanner.nextLine().trim();
+                            System.out.print("Status (Awaiting triage/Stable/Critical/In Treatment/Discharged): ");
+                            String status = scanner.nextLine().trim();
                             ok = patientManager.registerEmergencyPatient(id, first, last, dob, ward,
-                                    address, phone, ohip, registered, gender, emergencyPhone, null);
+                                    address, phone, ohip, registered, gender, emergencyPhone, null,
+                                    arrivalTime, dayIn, dayOut, complaint, arrivalType, status);
                         }
+
                         if (ok) {
                             System.out.println("Patient registered successfully.");
                         } else {
-                            System.out.println("Error: could not register patient.");
+                            System.out.println("Error: could not register patient (check OHIP or capacity).");
                         }
 
                     } else if (patientChoice == 4) {
@@ -474,9 +560,21 @@ public class HospitalRunner {
                         }
 
                     } else if (patientChoice == 5) {
+                        System.out.print("First name: ");
+                        String firstName = scanner.nextLine().trim();
+                        System.out.print("Last name: ");
+                        String lastName = scanner.nextLine().trim();
+                        Patient p = patientManager.searchPatientByName(firstName, lastName);
+                        if (p == null) {
+                            System.out.println("No patient found with that name.");
+                        } else {
+                            System.out.println(p.toString());
+                        }
+
+                    } else if (patientChoice == 6) {
                         patientManager.sortByWardThenPatientID();
                         System.out.println("--- Patients Sorted by Ward ---");
-                        System.out.printf("%-12s %-15s %-6s %-12s %-12s%n",
+                        System.out.printf("%-12s %-20s %-6s %-16s %-12s%n",
                                 "Ward", "Name", "ID", "Type", "Admitted");
                         Patient[] patients = patientManager.getPatients();
                         for (int i = 0; i < patientManager.getNumPatients(); i++) {
@@ -485,20 +583,25 @@ public class HospitalRunner {
                                 continue;
                             }
                             String admitted = p.getAdmittedDateDisplay();
-                            System.out.printf("%-12s %-15s %04d   %-12s %-12s%n",
+                            System.out.printf("%-12s %-20s %04d   %-16s %-12s%n",
                                     p.getWard(), p.getLastName() + ", " + p.getFirstName(),
                                     p.getPatientID(), p.getClass().getSimpleName(), admitted);
                         }
 
-                    } else if (patientChoice == 6) {
-                        patientManager.sortByDateEntered();
-                        System.out.println("Patients sorted by date registered.");
                     } else if (patientChoice == 7) {
-                        patientManager.sortByPatientID();
-                        System.out.println("Patients sorted by patient ID.");
-                    } else if (patientChoice == 8) {
+                        patientManager.sortByDateEntered();
+                        System.out.println("Patients sorted by date registered.\n");
                         System.out.println(patientManager.listAllPatients());
+
+                    } else if (patientChoice == 8) {
+                        patientManager.sortByPatientID();
+                        System.out.println("Patients sorted by patient ID.\n");
+                        System.out.println(patientManager.listAllPatients());
+
                     } else if (patientChoice == 9) {
+                        System.out.println(patientManager.listAllPatients());
+
+                    } else if (patientChoice == 10) {
                         int id = -1;
                         while (id == -1) {
                             System.out.print("Patient ID: ");
@@ -514,7 +617,7 @@ public class HospitalRunner {
                             System.out.println("Error: check-in failed.");
                         }
 
-                    } else if (patientChoice == 10) {
+                    } else if (patientChoice == 11) {
                         int id = -1;
                         while (id == -1) {
                             System.out.print("Patient ID: ");
@@ -535,7 +638,8 @@ public class HospitalRunner {
                                 InPatient ip = (InPatient) p;
                                 System.out.println("Days admitted: " + ip.getDaysAdmitted());
                                 System.out.printf("Room fee (%d days x $%.2f)     = $%.2f%n",
-                                        ip.getDaysAdmitted(), InPatient.DAILY_ROOM_RATE, ip.getRoomFee());
+                                        ip.getDaysAdmitted(), InPatient.DAILY_ROOM_RATE,
+                                        ip.getRoomFee());
                                 System.out.printf("Appointment fees                = $%.2f%n",
                                         ip.getAppointmentFees());
                                 System.out.println("----------------------------------------");
@@ -560,9 +664,7 @@ public class HospitalRunner {
                             } else {
                                 followUp = "none";
                             }
-                            if (followUp.equals("none")) {
-                                System.out.println("Check-out cancelled.");
-                            } else if (patientManager.checkOutPatient(id, followUp)) {
+                            if (patientManager.checkOutPatient(id, followUp)) {
                                 System.out.println("Checked out successfully.");
                                 if (p instanceof InPatient) {
                                     InPatient ip = (InPatient) p;
@@ -571,7 +673,7 @@ public class HospitalRunner {
                                                 + ip.getDayOut().toISODateString());
                                     }
                                     for (Appointment a : p.getUpcomingAppointments()) {
-                                        if (a != null) {
+                                        if (a != null && a.getDate().compareTo(PatientManager.CUR_DATE) > 0) {
                                             System.out.println("Next appointment: "
                                                     + a.getDate().toISODateString());
                                             break;
@@ -582,8 +684,7 @@ public class HospitalRunner {
                                 System.out.println("Error: check-out failed.");
                             }
                         }
-
-                    } else if (patientChoice == 11) {
+                    } else if (patientChoice == 12) {
                         int id = -1;
                         while (id == -1) {
                             System.out.print("Patient ID: ");
@@ -600,7 +701,7 @@ public class HospitalRunner {
                             System.out.println(listing);
                         }
 
-                    } else if (patientChoice == 12) {
+                    } else if (patientChoice == 13) {
                         int id = -1;
                         while (id == -1) {
                             System.out.print("Patient ID: ");
@@ -616,7 +717,7 @@ public class HospitalRunner {
                             System.out.println("Error: patient not found.");
                         }
 
-                    } else if (patientChoice == 13) {
+                    } else if (patientChoice == 14) {
                         boolean medBack = false;
                         while (!medBack) {
                             System.out.println();
@@ -630,9 +731,13 @@ public class HospitalRunner {
                             System.out.println("[7] Add Allergy");
                             System.out.println("[8] Delete Allergy");
                             System.out.println("[9] Update Allergy");
-                            System.out.println("[10] Record Vitals (InPatient)");
-                            System.out.println("[11] Log Medication Administered (InPatient)");
-                            System.out.println("[12] Back");
+                            System.out.println("[10] Add Medical History");
+                            System.out.println("[11] Delete Medical History");
+                            System.out.println("[12] Add Family History");
+                            System.out.println("[13] Delete Family History");
+                            System.out.println("[14] Record Vitals (InPatient)");
+                            System.out.println("[15] Log Medication Administered (InPatient)");
+                            System.out.println("[16] Back");
 
                             int medChoice = -1;
                             while (medChoice == -1) {
@@ -645,7 +750,7 @@ public class HospitalRunner {
                             }
 
                             int medPatientID = -1;
-                            if (medChoice >= 1 && medChoice <= 11) {
+                            if (medChoice >= 1 && medChoice <= 15) {
                                 while (medPatientID == -1) {
                                     System.out.print("Patient ID: ");
                                     try {
@@ -664,6 +769,7 @@ public class HospitalRunner {
                                 } else {
                                     System.out.println("Error: patient not found.");
                                 }
+
                             } else if (medChoice == 2) {
                                 System.out.print("Diagnosis to delete: ");
                                 String diagnosis = scanner.nextLine().trim();
@@ -672,17 +778,18 @@ public class HospitalRunner {
                                 } else {
                                     System.out.println("Error: diagnosis not found or patient not found.");
                                 }
+
                             } else if (medChoice == 3) {
                                 System.out.print("Original diagnosis: ");
                                 String orgDiagnosis = scanner.nextLine().trim();
                                 System.out.print("New diagnosis: ");
                                 String newDiagnosis = scanner.nextLine().trim();
-                                if (patientManager.updateDiagnosis(medPatientID, orgDiagnosis,
-                                        newDiagnosis)) {
+                                if (patientManager.updateDiagnosis(medPatientID, orgDiagnosis, newDiagnosis)) {
                                     System.out.println("Diagnosis updated.");
                                 } else {
                                     System.out.println("Error: could not update diagnosis.");
                                 }
+
                             } else if (medChoice == 4) {
                                 System.out.print("Medication name: ");
                                 String medName = scanner.nextLine().trim();
@@ -691,8 +798,9 @@ public class HospitalRunner {
                                 if (patientManager.addMedication(medPatientID, medName, dosage)) {
                                     System.out.println("Medication added.");
                                 } else {
-                                    System.out.println("Error: patient not found.");
+                                    System.out.println("Error: patient not found or medication allergy.");
                                 }
+
                             } else if (medChoice == 5) {
                                 System.out.print("Medication name to delete: ");
                                 String medName = scanner.nextLine().trim();
@@ -701,6 +809,7 @@ public class HospitalRunner {
                                 } else {
                                     System.out.println("Error: medication not found or patient not found.");
                                 }
+
                             } else if (medChoice == 6) {
                                 System.out.print("Original medication name: ");
                                 String orgMed = scanner.nextLine().trim();
@@ -708,12 +817,12 @@ public class HospitalRunner {
                                 String newMed = scanner.nextLine().trim();
                                 System.out.print("New dosage: ");
                                 String newDosage = scanner.nextLine().trim();
-                                if (patientManager.updateMedication(medPatientID, orgMed, newMed,
-                                        newDosage)) {
+                                if (patientManager.updateMedication(medPatientID, orgMed, newMed, newDosage)) {
                                     System.out.println("Medication updated.");
                                 } else {
                                     System.out.println("Error: could not update medication.");
                                 }
+
                             } else if (medChoice == 7) {
                                 System.out.print("Allergy: ");
                                 String allergy = scanner.nextLine().trim();
@@ -722,6 +831,7 @@ public class HospitalRunner {
                                 } else {
                                     System.out.println("Error: patient not found.");
                                 }
+
                             } else if (medChoice == 8) {
                                 System.out.print("Allergy to delete: ");
                                 String allergy = scanner.nextLine().trim();
@@ -730,6 +840,7 @@ public class HospitalRunner {
                                 } else {
                                     System.out.println("Error: allergy not found or patient not found.");
                                 }
+
                             } else if (medChoice == 9) {
                                 System.out.print("Original allergy: ");
                                 String orgAllergy = scanner.nextLine().trim();
@@ -740,7 +851,44 @@ public class HospitalRunner {
                                 } else {
                                     System.out.println("Error: could not update allergy.");
                                 }
+
                             } else if (medChoice == 10) {
+                                System.out.print("Medical history entry: ");
+                                String medHistory = scanner.nextLine().trim();
+                                if (patientManager.addMedicalHistory(medPatientID, medHistory)) {
+                                    System.out.println("Medical history added.");
+                                } else {
+                                    System.out.println("Error: patient not found.");
+                                }
+
+                            } else if (medChoice == 11) {
+                                System.out.print("Medical history entry to delete: ");
+                                String medHistory = scanner.nextLine().trim();
+                                if (patientManager.deleteMedicalHistory(medPatientID, medHistory)) {
+                                    System.out.println("Medical history deleted.");
+                                } else {
+                                    System.out.println("Error: entry not found or patient not found.");
+                                }
+
+                            } else if (medChoice == 12) {
+                                System.out.print("Family history entry: ");
+                                String famHistory = scanner.nextLine().trim();
+                                if (patientManager.addFamilyHistory(medPatientID, famHistory)) {
+                                    System.out.println("Family history added.");
+                                } else {
+                                    System.out.println("Error: patient not found.");
+                                }
+
+                            } else if (medChoice == 13) {
+                                System.out.print("Family history entry to delete: ");
+                                String famHistory = scanner.nextLine().trim();
+                                if (patientManager.deleteFamilyHistory(medPatientID, famHistory)) {
+                                    System.out.println("Family history deleted.");
+                                } else {
+                                    System.out.println("Error: entry not found or patient not found.");
+                                }
+
+                            } else if (medChoice == 14) {
                                 double heartRate = -1;
                                 while (heartRate == -1) {
                                     System.out.print("Heart rate: ");
@@ -759,13 +907,13 @@ public class HospitalRunner {
                                         System.out.println("Error: please enter a valid number.");
                                     }
                                 }
-                                if (patientManager.recordVitalsForPatient(medPatientID, heartRate,
-                                        bloodPressure)) {
+                                if (patientManager.recordVitalsForPatient(medPatientID, heartRate, bloodPressure)) {
                                     System.out.println("Vitals recorded.");
                                 } else {
                                     System.out.println("Error: patient not found or not an InPatient.");
                                 }
-                            } else if (medChoice == 11) {
+
+                            } else if (medChoice == 15) {
                                 System.out.print("Medication name: ");
                                 String medName = scanner.nextLine().trim();
                                 System.out.print("Dosage: ");
@@ -776,14 +924,15 @@ public class HospitalRunner {
                                 } else {
                                     System.out.println("Error: patient not found or not an InPatient.");
                                 }
-                            } else if (medChoice == 12) {
+
+                            } else if (medChoice == 16) {
                                 medBack = true;
+
                             } else {
                                 System.out.println("Error: invalid choice.");
                             }
                         }
-
-                    } else if (patientChoice == 14) {
+                    } else if (patientChoice == 15) {
                         patientBack = true;
                     } else {
                         System.out.println("Error: invalid choice.");
@@ -791,7 +940,7 @@ public class HospitalRunner {
                 }
 
             } else if (choice == 3) {
-                // ── Appointment Management submenu ──
+                // ── Appointment Management submenu ────────────────────────────────────────
                 boolean apptBack = false;
                 while (!apptBack) {
                     System.out.println();
@@ -828,7 +977,6 @@ public class HospitalRunner {
                                 System.out.println("Error: please enter a valid integer.");
                             }
                         }
-
                         int patientID = -1;
                         while (patientID == -1) {
                             System.out.print("Patient ID: ");
@@ -892,8 +1040,8 @@ public class HospitalRunner {
                             String timeFormatted = String.format("%02d:%02d", hours, minutes);
                             System.out.println("Appointment booked successfully.");
                             System.out.println("Appointment ID   : " + appt.getApptID());
-                            System.out.println("Patient          : " + patient.getFirstName() + " "
-                                    + patient.getLastName() + " (ID: " + patientID + ")");
+                            System.out.println("Patient          : " + patient.getFirstName()
+                                    + " " + patient.getLastName() + " (ID: " + patientID + ")");
                             System.out.println("Staff            : Dr. " + doctor.getName()
                                     + " (Doctor)");
                             System.out.println("Date / Time      : " + date.toISODateString()
@@ -1180,14 +1328,15 @@ public class HospitalRunner {
                             String patientName = a.getPatient().getFirstName() + " " + a.getPatient().getLastName();
                             String typeName = a.getClass().getSimpleName();
                             System.out.printf("%-12s %-20s %-15d %-18s %-12s%n",
-                                    a.getDate(), patientName, a.getApptID(), typeName, a.getStatus());
+                                    a.getDate(), patientName, a.getApptID(),
+                                    typeName, a.getStatus());
                         }
+
                     } else if (apptChoice == 8) {
                         apptManager.sortByPatientThenDate();
                         System.out.println("--- Appointments Sorted by Patient then Date ---");
                         System.out.printf("%-20s %-12s %-15s %-18s %-12s%n",
-                            "Patient Name", "Date", "Appointment ID", "Type", "Status");
-
+                                "Patient Name", "Date", "Appointment ID", "Type", "Status");
                         Appointment[] appts = apptManager.getAppointments();
                         for (int i = 0; i < apptManager.getNumAppointments(); i++) {
                             Appointment a = appts[i];
@@ -1197,12 +1346,14 @@ public class HospitalRunner {
 
                             String patientName = a.getPatient().getFirstName() + " " + a.getPatient().getLastName();
                             String typeName = a.getClass().getSimpleName();
-
                             System.out.printf("%-20s %-12s %-15d %-18s %-12s%n",
-                                patientName, a.getDate(), a.getApptID(), typeName, a.getStatus());
+                                    patientName, a.getDate(), a.getApptID(),
+                                    typeName, a.getStatus());
                         }
+
                     } else if (apptChoice == 9) {
                         apptBack = true;
+
                     } else {
                         System.out.println("Error: invalid choice.");
                     }
@@ -1210,21 +1361,27 @@ public class HospitalRunner {
 
             } else if (choice == 4) {
                 staffManager.saveToFile("data/staff.txt");
-                patientManager.savePatientInfo("data/patients.txt");
-                patientManager.savePatientAppts("data/patient_appointments.txt");
+                if (patientsLoaded) {
+                    patientManager.savePatientInfo("data/patients.txt");
+                } else {
+                    System.out.println("Warning: skipping patient save — data was not loaded successfully.");
+                }
                 apptManager.saveToFile("data/appointments.txt");
                 System.out.println("All data saved.");
 
             } else if (choice == 5) {
                 staffManager.saveToFile("data/staff.txt");
-                patientManager.savePatientInfo("data/patients.txt");
-                patientManager.savePatientAppts("data/patient_appointments.txt");
+                if (patientsLoaded) {
+                    patientManager.savePatientInfo("data/patients.txt");
+                } else {
+                    System.out.println("Warning: skipping patient save — data was not loaded successfully.");
+                }
                 apptManager.saveToFile("data/appointments.txt");
                 System.out.println("Goodbye.");
                 running = false;
 
             } else {
-                System.out.println("Error: invalid choice. Please enter 1–5.");
+                System.out.println("Error: invalid choice. Please enter 1-5.");
             }
         }
 

@@ -14,19 +14,25 @@ import shared.Date;
 import staff.Staff;
 
 /**
- * File: Patient.java
+ * File: PatientManager.java
  * Name: Caroline Chan
  * Class: ICS4U1
  * Date: June 2, 2026
- * Description: This class manages the patients in a hopsital.
+ * Description: This class manages the patients in a hospital.
  */
 
 public class PatientManager {
-    private Patient[] patients; // Array to store patient records
-    private int numPatients; // Number of patients currently stored
-    private int maxPatients; // Maximum capacity of the patients array
-    public final static Date CUR_DATE = new Date (2026, 06, 04);
-    public final static int CUR_TIME = 1200;
+    private Patient[] patients;
+    private int numPatients;
+    private int maxPatients;
+    public final static Date CUR_DATE;
+    public final static int CUR_TIME;
+
+    static {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        CUR_DATE = new Date(now.getYear(), now.getMonthValue(), now.getDayOfMonth());
+        CUR_TIME = now.getHour() * 100 + now.getMinute();
+    }
 
     /**
      * Constructor for the PatientManager class
@@ -100,14 +106,16 @@ public class PatientManager {
      * @param gender the gender of the patient
      * @param emergencyContactPhoneNumber the phone number of the emergency contact
      * @param assignedStaff the staff member assigned to the patient
+     * @param dayIn the date of admission to the hospital
+     * @param dayOut the date of discharge from the hospital
+     * @param hospitalBed whether a hospital bed is assigned
      * @return boolean if the patient is successfully registered
      */
-    public boolean registerInPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
+    public boolean registerInPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, String numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, Date dayIn, Date dayOut, boolean hospitalBed) {
         if (numPatients >= maxPatients || !Patient.isValidOHIP(numOHIP)) {
             return false;
         }
-
-        Patient newPatient = new InPatient(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
+        Patient newPatient = new InPatient(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff, dayIn, dayOut, hospitalBed);
         patients[numPatients] = newPatient;
         numPatients++;
         return true;
@@ -127,14 +135,14 @@ public class PatientManager {
      * @param gender the gender of the patient
      * @param emergencyContactPhoneNumber the phone number of the emergency contact
      * @param assignedStaff the staff member assigned to the patient
+     * @param appointmentTimingMonths the number of months until the next appointment
      * @return boolean if the patient is successfully registered
      */
-    public boolean registerOutPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
+    public boolean registerOutPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, String numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, int appointmentTimingMonths) {
         if (numPatients >= maxPatients || !Patient.isValidOHIP(numOHIP)) {
             return false;
         }
-
-        Patient newPatient = new OutPatient(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
+        Patient newPatient = new OutPatient(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff, appointmentTimingMonths);
         patients[numPatients] = newPatient;
         numPatients++;
         return true;
@@ -154,14 +162,19 @@ public class PatientManager {
      * @param gender the gender of the patient
      * @param emergencyContactPhoneNumber the phone number of the emergency contact
      * @param assignedStaff the staff member assigned to the patient
+     * @param arrivalTime the time of arrival at the hospital
+     * @param dayIn the date of admission to the hospital
+     * @param dayOut the date of discharge from the hospital
+     * @param presentingComplaint the main reason for the visit
+     * @param arrivalType the mode of arrival
+     * @param status the current status of the patient
      * @return boolean if the patient is successfully registered
      */
-    public boolean registerEmergencyPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
+    public boolean registerEmergencyPatient(int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, String numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, int arrivalTime, Date dayIn, Date dayOut, String presentingComplaint, String arrivalType, String status) {
         if (numPatients >= maxPatients || !Patient.isValidOHIP(numOHIP)) {
             return false;
         }
-
-        Patient newPatient = new EmergencyPatient(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
+        Patient newPatient = new EmergencyPatient(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff, arrivalTime, dayIn, dayOut, presentingComplaint, arrivalType, status);
         patients[numPatients] = newPatient;
         numPatients++;
         return true;
@@ -169,7 +182,10 @@ public class PatientManager {
 
     /**
      * Loads patient records from the specified file.
-     * Each record has 12 base lines, plus type-specific lines.
+     * Each record has 12 base lines, plus type-specific lines,
+     * followed by sentinel-terminated blocks for diagnoses, medications,
+     * allergies, medical history, family history, and (InPatient only)
+     * vitals log and medications administered.
      * @param fileName the patient file path
      * @return true if load succeeds, false otherwise
      */
@@ -193,23 +209,17 @@ public class PatientManager {
                     }
                     patientLines[i] = nextLine.trim();
                 }
-                
+
                 String type = patientLines[0];
                 Patient patient = null;
-                
+
                 if (type.equals("InPatient")) {
                     String dayInStr = reader.readLine();
-                    if (dayInStr == null) {
-                        return false;
-                    }
+                    if (dayInStr == null) { return false; }
                     String dayOutStr = reader.readLine();
-                    if (dayOutStr == null) {
-                        return false;
-                    }
+                    if (dayOutStr == null) { return false; }
                     String hospitalBedStr = reader.readLine();
-                    if (hospitalBedStr == null) {
-                        return false;
-                    }
+                    if (hospitalBedStr == null) { return false; }
                     Date dayIn = parseDate(dayInStr.trim());
                     Date dayOut = parseDate(dayOutStr.trim());
                     boolean hospitalBed = Boolean.parseBoolean(hospitalBedStr.trim());
@@ -217,45 +227,78 @@ public class PatientManager {
                     patient = parsePatientLines(patientLines, type, typeData);
                 } else if (type.equals("OutPatient")) {
                     String appointmentTimingStr = reader.readLine();
-                    if (appointmentTimingStr == null) {
-                        return false;
-                    }
+                    if (appointmentTimingStr == null) { return false; }
                     int appointmentTiming = Integer.parseInt(appointmentTimingStr.trim());
                     Object[] typeData = {appointmentTiming};
                     patient = parsePatientLines(patientLines, type, typeData);
                 } else if (type.equals("EmergencyPatient")) {
                     String arrivalTimeStr = reader.readLine();
-                    if (arrivalTimeStr == null) {
-                        return false;
-                    }
+                    if (arrivalTimeStr == null) { return false; }
                     String dayInStr = reader.readLine();
-                    if (dayInStr == null) {
-                        return false;
-                    }
+                    if (dayInStr == null) { return false; }
                     String dayOutStr = reader.readLine();
-                    if (dayOutStr == null) {
-                        return false;
-                    }
+                    if (dayOutStr == null) { return false; }
                     String presentingComplaintStr = reader.readLine();
-                    if (presentingComplaintStr == null) {
-                        return false;
-                    }
+                    if (presentingComplaintStr == null) { return false; }
                     String arrivalTypeStr = reader.readLine();
-                    if (arrivalTypeStr == null) {
-                        return false;
-                    }
+                    if (arrivalTypeStr == null) { return false; }
                     String statusStr = reader.readLine();
-                    if (statusStr == null) {
-                        return false;
-                    }
+                    if (statusStr == null) { return false; }
                     int arrivalTime = Integer.parseInt(arrivalTimeStr.trim());
                     Date dayIn = parseDate(dayInStr.trim());
                     Date dayOut = parseDate(dayOutStr.trim());
                     Object[] typeData = {arrivalTime, dayIn, dayOut, presentingComplaintStr.trim(), arrivalTypeStr.trim(), statusStr.trim()};
                     patient = parsePatientLines(patientLines, type, typeData);
                 }
-                
+
+                // Read sentinel-terminated medical record blocks (all patient types)
+                String[] loadedDiagnoses  = readUntilSentinel(reader, 20);
+                String[] loadedMedLines   = readUntilSentinel(reader, 20);
+                String[] loadedAllergies  = readUntilSentinel(reader, 20);
+                String[] loadedMedHistory = readUntilSentinel(reader, 20);
+                String[] loadedFamHistory = readUntilSentinel(reader, 20);
+
                 if (patient != null && numPatients < maxPatients) {
+                    for (String d : loadedDiagnoses) {
+                        if (d != null) { patient.addDiagnoses(d); }
+                    }
+                    for (String m : loadedMedLines) {
+                        if (m != null) {
+                            int colon = m.indexOf(':');
+                            if (colon != -1) {
+                                patient.addMedication(m.substring(0, colon), m.substring(colon + 1));
+                            }
+                        }
+                    }
+                    for (String a : loadedAllergies) {
+                        if (a != null) { patient.addAllergy(a); }
+                    }
+                    for (String h : loadedMedHistory) {
+                        if (h != null) { patient.addMedicalHistory(h); }
+                    }
+                    for (String f : loadedFamHistory) {
+                        if (f != null) { patient.addFamilyHistory(f); }
+                    }
+
+                    // InPatient-only: vitals log and medications administered
+                    if (patient instanceof InPatient) {
+                        InPatient ip = (InPatient) patient;
+                        String[] loadedVitals    = readUntilSentinel(reader, 100);
+                        String[] loadedMedsAdmin = readUntilSentinel(reader, 100);
+                        String[] vitalsLog       = ip.getVitalsLog();
+                        String[] medsAdmin       = ip.getMedicationsAdministered();
+                        for (int j = 0; j < loadedVitals.length; j++) {
+                            if (loadedVitals[j] != null && j < vitalsLog.length) {
+                                vitalsLog[j] = loadedVitals[j];
+                            }
+                        }
+                        for (int j = 0; j < loadedMedsAdmin.length; j++) {
+                            if (loadedMedsAdmin[j] != null && j < medsAdmin.length) {
+                                medsAdmin[j] = loadedMedsAdmin[j];
+                            }
+                        }
+                    }
+
                     patients[numPatients++] = patient;
                 }
             }
@@ -267,7 +310,10 @@ public class PatientManager {
 
     /**
      * Saves patient records to the specified file.
-     * Each record has 12 base lines, plus type-specific lines.
+     * Each record has 12 base lines, plus type-specific lines,
+     * followed by sentinel-terminated blocks for diagnoses, medications,
+     * allergies, medical history, family history, and (InPatient only)
+     * vitals log and medications administered.
      * @param fileName the patient file path
      * @return true if save succeeds, false otherwise
      */
@@ -275,82 +321,100 @@ public class PatientManager {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             for (int i = 0; i < numPatients; i++) {
                 Patient patient = patients[i];
-                if (patient == null) {
-                    continue;
-                }
-                String type = patient.getClass().getSimpleName();
-                writer.write(type);
-                writer.newLine();
-                String patientIDStr = Integer.toString(patient.getPatientID());
-                writer.write(patientIDStr);
-                writer.newLine();
-                String firstName = patient.getFirstName();
-                writer.write(firstName);
-                writer.newLine();
-                String lastName = patient.getLastName();
-                writer.write(lastName);
-                writer.newLine();
-                String dob = formatDate(patient.getDateOfBirth());
-                writer.write(dob);
-                writer.newLine();
-                String ward = patient.getWard();
-                writer.write(ward);
-                writer.newLine();
-                String address = patient.getAddress();
-                writer.write(address);
-                writer.newLine();
-                String phoneNum = Long.toString(patient.getPhoneNum());
-                writer.write(phoneNum);
-                writer.newLine();
-                String numOHIP = Integer.toString(patient.getNumOHIP());
-                writer.write(numOHIP);
-                writer.newLine();
-                String dateReg = formatDate(patient.getDateRegistered());
-                writer.write(dateReg);
-                writer.newLine();
-                String gender = Character.toString(patient.getGender());
-                writer.write(gender);
-                writer.newLine();
-                String emergencyPhone = Long.toString(patient.getEmergencyContactPhoneNumber());
-                writer.write(emergencyPhone);
-                writer.newLine();
+                if (patient == null) { continue; }
+                writer.write(patient.getClass().getSimpleName()); writer.newLine();
+                writer.write(Integer.toString(patient.getPatientID())); writer.newLine();
+                writer.write(patient.getFirstName()); writer.newLine();
+                writer.write(patient.getLastName()); writer.newLine();
+                writer.write(formatDate(patient.getDateOfBirth())); writer.newLine();
+                writer.write(patient.getWard()); writer.newLine();
+                writer.write(patient.getAddress()); writer.newLine();
+                writer.write(Long.toString(patient.getPhoneNum())); writer.newLine();
+                writer.write(patient.getNumOHIP());; writer.newLine();
+                writer.write(formatDate(patient.getDateRegistered())); writer.newLine();
+                writer.write(Character.toString(patient.getGender())); writer.newLine();
+                writer.write(Long.toString(patient.getEmergencyContactPhoneNumber())); writer.newLine();
 
                 if (patient instanceof InPatient) {
-                    InPatient inPatient = (InPatient) patient;
-                    String dayInStr = formatDate(inPatient.getDayIn());
-                    writer.write(dayInStr);
-                    writer.newLine();
-                    String dayOutStr = formatDate(inPatient.getDayOut());
-                    writer.write(dayOutStr);
-                    writer.newLine();
-                    String hospitalBedStr = Boolean.toString(inPatient.getHospitalBed());
-                    writer.write(hospitalBedStr);
-                    writer.newLine();
+                    InPatient ip = (InPatient) patient;
+                    writer.write(formatDate(ip.getDayIn())); writer.newLine();
+                    writer.write(formatDate(ip.getDayOut())); writer.newLine();
+                    writer.write(Boolean.toString(ip.getHospitalBed())); writer.newLine();
                 } else if (patient instanceof OutPatient) {
-                    OutPatient outPatient = (OutPatient) patient;
-                    String appointmentTimingStr = Integer.toString(outPatient.getAppointmentTimingMonths());
-                    writer.write(appointmentTimingStr);
-                    writer.newLine();
+                    OutPatient op = (OutPatient) patient;
+                    writer.write(Integer.toString(op.getAppointmentTimingMonths())); writer.newLine();
                 } else if (patient instanceof EmergencyPatient) {
-                    EmergencyPatient emergencyPatient = (EmergencyPatient) patient;
-                    String arrivalTimeStr = Integer.toString(emergencyPatient.getArrivalTime());
-                    writer.write(arrivalTimeStr);
-                    writer.newLine();
-                    String dayInStr = formatDate(emergencyPatient.getDayIn());
-                    writer.write(dayInStr);
-                    writer.newLine();
-                    String dayOutStr = formatDate(emergencyPatient.getDayOut());
-                    writer.write(dayOutStr);
-                    writer.newLine();
-                    String presentingComplaintStr = emergencyPatient.getPresentingComplaint();
-                    writer.write(presentingComplaintStr);
-                    writer.newLine();
-                    String arrivalTypeStr = emergencyPatient.getArrivalType();
-                    writer.write(arrivalTypeStr);
-                    writer.newLine();
-                    String statusStr = emergencyPatient.getStatus();
-                    writer.write(statusStr);
-                    writer.newLine();
+                    EmergencyPatient ep = (EmergencyPatient) patient;
+                    writer.write(Integer.toString(ep.getArrivalTime())); writer.newLine();
+                    writer.write(formatDate(ep.getDayIn())); writer.newLine();
+                    writer.write(formatDate(ep.getDayOut())); writer.newLine();
+                    writer.write(ep.getPresentingComplaint()); writer.newLine();
+                    writer.write(ep.getArrivalType()); writer.newLine();
+                    writer.write(ep.getStatus()); writer.newLine();
+                }
+
+                // Diagnoses
+                String[] diagnoses = patient.getDiagnosis();
+                if (diagnoses != null) {
+                    for (String d : diagnoses) {
+                        if (d != null) { writer.write(d); writer.newLine(); }
+                    }
+                }
+                writer.write("---"); writer.newLine();
+
+                // Medications (name:dosage)
+                Medication[] medications = patient.getMedications();
+                if (medications != null) {
+                    for (Medication m : medications) {
+                        if (m != null) { writer.write(m.getMedName() + ":" + m.getDosage()); writer.newLine(); }
+                    }
+                }
+                writer.write("---"); writer.newLine();
+
+                // Allergies
+                String[] allergies = patient.getAllergies();
+                if (allergies != null) {
+                    for (String a : allergies) {
+                        if (a != null) { writer.write(a); writer.newLine(); }
+                    }
+                }
+                writer.write("---"); writer.newLine();
+
+                // Medical history
+                String[] medHistory = patient.getMedicalHistory();
+                if (medHistory != null) {
+                    for (String h : medHistory) {
+                        if (h != null) { writer.write(h); writer.newLine(); }
+                    }
+                }
+                writer.write("---"); writer.newLine();
+
+                // Family history
+                String[] famHistory = patient.getFamilyHistory();
+                if (famHistory != null) {
+                    for (String f : famHistory) {
+                        if (f != null) { writer.write(f); writer.newLine(); }
+                    }
+                }
+                writer.write("---"); writer.newLine();
+
+                // InPatient-only: vitals log and medications administered
+                if (patient instanceof InPatient) {
+                    InPatient ip = (InPatient) patient;
+                    String[] vitals = ip.getVitalsLog();
+                    if (vitals != null) {
+                        for (String v : vitals) {
+                            if (v != null) { writer.write(v); writer.newLine(); }
+                        }
+                    }
+                    writer.write("---"); writer.newLine();
+                    String[] medsAdmin = ip.getMedicationsAdministered();
+                    if (medsAdmin != null) {
+                        for (String ma : medsAdmin) {
+                            if (ma != null) { writer.write(ma); writer.newLine(); }
+                        }
+                    }
+                    writer.write("---"); writer.newLine();
                 }
             }
             return true;
@@ -361,20 +425,13 @@ public class PatientManager {
 
     /**
      * Replaces each patient's appointment lists with the canonical records from ApptManager.
-     *
      * @param apptManager loaded appointment manager
      */
     public void syncAppointmentsFromManager(ApptManager apptManager) {
-        if (apptManager == null) {
-            return;
-        }
-
+        if (apptManager == null) { return; }
         for (int i = 0; i < numPatients; i++) {
-            if (patients[i] != null) {
-                patients[i].clearAppointments();
-            }
+            if (patients[i] != null) { patients[i].clearAppointments(); }
         }
-
         Appointment[] appts = apptManager.getAppointments();
         int count = apptManager.getNumAppointments();
         for (int i = 0; i < count; i++) {
@@ -386,7 +443,6 @@ public class PatientManager {
 
     /**
      * Loads appointment records from the specified file and assigns them to matching patients.
-     * Each record has varying lines depending on appointment type.
      * @param fileName the appointment file path
      * @return true if load succeeds, false otherwise
      */
@@ -395,24 +451,19 @@ public class PatientManager {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) {
-                    continue;
-                }
+                if (line.isEmpty() || line.startsWith("#")) { continue; }
                 int patientID = Integer.parseInt(line);
+                String apptType = reader.readLine();
+                if (apptType == null) { continue; }
+                apptType = apptType.trim();
                 int patientIndex = searchPatientIndexByID(patientID);
                 if (patientIndex == -1) {
+                    skipAppointmentRecord(apptType, reader);
                     continue;
                 }
                 Patient patient = patients[patientIndex];
-                String apptType = reader.readLine();
-                if (apptType == null) {
-                    continue;
-                }
-                apptType = apptType.trim();
                 Appointment appt = parseAppointmentLines(apptType, patient, reader);
-                if (appt != null) {
-                    patient.addAppointment(appt);
-                }
+                if (appt != null) { patient.addAppointment(appt); }
             }
             return true;
         } catch (IOException e) {
@@ -421,55 +472,48 @@ public class PatientManager {
     }
 
     /**
-     * Saves all patients' upcoming and past appointment records to the specified file.
-     * Each record has varying lines depending on appointment type.
-     * @param fileName the appointment file path
-     * @return true if save succeeds, false otherwise
+     * Reads lines from the reader into a String array until a "---" sentinel or EOF.
+     * @param reader  the BufferedReader to read from
+     * @param maxSize the maximum number of entries to store
+     * @return array of read strings (trailing slots are null)
      */
-    public boolean savePatientAppts(String fileName) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
-            for (int i = 0; i < numPatients; i++) {
-                Patient patient = patients[i];
-                if (patient == null) {
-                    continue;
-                }
+    private String[] readUntilSentinel(BufferedReader reader, int maxSize) throws IOException {
+        String[] result = new String[maxSize];
+        int count = 0;
+        String line;
+        while ((line = reader.readLine()) != null) {
+            line = line.trim();
+            if (line.equals("---")) { break; }
+            if (count < maxSize) { result[count++] = line; }
+        }
+        return result;
+    }
 
-                Appointment[] upcoming = patient.getUpcomingAppointments();
-                if (upcoming != null) {
-                    for (Appointment appt : upcoming) {
-                        if (appt != null) {
-                            serializeAppointmentLines(patient.getPatientID(), appt, writer);
-                        }
-                    }
-                }
-
-                Appointment[] past = patient.getPastAppointments();
-                if (past != null) {
-                    for (Appointment appt : past) {
-                        if (appt != null) {
-                            serializeAppointmentLines(patient.getPatientID(), appt, writer);
-                        }
-                    }
-                }
-            }
-            return true;
-        } catch (IOException e) {
-            return false;
+    /**
+     * Consumes the remaining lines of an appointment record whose patient was not found.
+     * @param apptType the appointment type string already read
+     * @param reader   the BufferedReader to drain
+     */
+    private void skipAppointmentRecord(String apptType, BufferedReader reader) throws IOException {
+        for (int i = 0; i < 6; i++) { reader.readLine(); }
+        if (apptType.equals("RoutineCheckup")) {
+            reader.readLine();
+        } else if (apptType.equals("Surgery")) {
+            reader.readLine(); reader.readLine(); reader.readLine(); reader.readLine(); reader.readLine();
+        } else if (apptType.equals("EmergencyVisit")) {
+            reader.readLine(); reader.readLine();
         }
     }
 
     /**
-     * Parses patient record lines from the patient file and creates patient with type-specific fields.
+     * Parses patient record lines from the patient file.
      * @param patientLines array of 12 lines representing a patient record
      * @param type the type of patient
-     * @param typeSpecificData additional data for type-specific fields (varies by type)
+     * @param typeSpecificData additional data for type-specific fields
      * @return a Patient instance if parsing succeeds, null otherwise
      */
     private Patient parsePatientLines(String[] patientLines, String type, Object[] typeSpecificData) {
-        if (patientLines.length < 12) {
-            return null;
-        }
-
+        if (patientLines.length < 12) { return null; }
         int patientID = Integer.parseInt(patientLines[1]);
         String firstName = patientLines[2];
         String lastName = patientLines[3];
@@ -477,14 +521,9 @@ public class PatientManager {
         String ward = patientLines[5];
         String address = patientLines[6];
         long phoneNum = Long.parseLong(patientLines[7]);
-        int numOHIP = Integer.parseInt(patientLines[8]);
+        String numOHIP = patientLines[8];
         Date dateRegistered = parseDate(patientLines[9]);
-        char gender;
-        if (patientLines[10].isEmpty()) {
-            gender = ' ';
-        } else {
-            gender = patientLines[10].charAt(0);
-        }
+        char gender = patientLines[10].isEmpty() ? ' ' : patientLines[10].charAt(0);
         long emergencyContactPhoneNumber = Long.parseLong(patientLines[11]);
 
         switch (type) {
@@ -517,86 +556,55 @@ public class PatientManager {
      * @return an Appointment instance if parsing succeeds, null otherwise
      */
     private Appointment parseAppointmentLines(String apptType, Patient patient, BufferedReader reader) throws IOException {
-        if (patient == null) {
-            return null;
-        }
-
+        if (patient == null) { return null; }
         String apptIDStr = reader.readLine();
-        if (apptIDStr == null) {
-            return null;
-        }
+        if (apptIDStr == null) { return null; }
         int apptID = Integer.parseInt(apptIDStr.trim());
         String dateStr = reader.readLine();
-        if (dateStr == null) {
-            return null;
-        }
+        if (dateStr == null) { return null; }
         Date date = parseDate(dateStr.trim());
         String timeStr = reader.readLine();
-        if (timeStr == null) {
-            return null;
-        }
+        if (timeStr == null) { return null; }
         double time = Double.parseDouble(timeStr.trim());
         String durationStr = reader.readLine();
-        if (durationStr == null) {
-            return null;
-        }
+        if (durationStr == null) { return null; }
         double duration = Double.parseDouble(durationStr.trim());
         String costStr = reader.readLine();
-        if (costStr == null) {
-            return null;
-        }
+        if (costStr == null) { return null; }
         double cost = Double.parseDouble(costStr.trim());
         String status = reader.readLine();
-        if (status == null) {
-            return null;
-        }
+        if (status == null) { return null; }
         status = status.trim();
 
         switch (apptType) {
             case "RoutineCheckup":
                 String clinicRoomStr = reader.readLine();
-                if (clinicRoomStr == null) {
-                    return null;
-                }
+                if (clinicRoomStr == null) { return null; }
                 int clinicRoomNum = Integer.parseInt(clinicRoomStr.trim());
                 return new RoutineCheckup(apptID, patient, null, date, time, duration, cost, status, clinicRoomNum, null);
             case "Surgery":
                 String operatingRoomStr = reader.readLine();
-                if (operatingRoomStr == null) {
-                    return null;
-                }
+                if (operatingRoomStr == null) { return null; }
                 int operatingRoomNum = Integer.parseInt(operatingRoomStr.trim());
                 String anaesthesiaType = reader.readLine();
-                if (anaesthesiaType == null) {
-                    return null;
-                }
+                if (anaesthesiaType == null) { return null; }
                 anaesthesiaType = anaesthesiaType.trim();
                 String anaesthesiaDoseStr = reader.readLine();
-                if (anaesthesiaDoseStr == null) {
-                    return null;
-                }
+                if (anaesthesiaDoseStr == null) { return null; }
                 double anaesthesiaDose = Double.parseDouble(anaesthesiaDoseStr.trim());
                 String surgeryType = reader.readLine();
-                if (surgeryType == null) {
-                    return null;
-                }
+                if (surgeryType == null) { return null; }
                 surgeryType = surgeryType.trim();
                 String preOpInstructions = reader.readLine();
-                if (preOpInstructions == null) {
-                    return null;
-                }
+                if (preOpInstructions == null) { return null; }
                 preOpInstructions = preOpInstructions.trim();
                 return new Surgery(apptID, patient, null, date, time, duration, cost, status, operatingRoomNum, anaesthesiaType, anaesthesiaDose, surgeryType, preOpInstructions);
             case "EmergencyVisit":
                 String emergencyRoomStr = reader.readLine();
-                if (emergencyRoomStr == null) {
-                    return null;
-                }
+                if (emergencyRoomStr == null) { return null; }
                 int emergencyRoomNum = Integer.parseInt(emergencyRoomStr.trim());
                 String urgencyIdxStr = reader.readLine();
-                if (urgencyIdxStr == null) {
-                    return null;
-                }
+                if (urgencyIdxStr == null) { return null; }
                 int urgencyIdx = Integer.parseInt(urgencyIdxStr.trim());
                 return new EmergencyVisit(apptID, patient, null, date, time, duration, cost, status, emergencyRoomNum, urgencyIdx);
             default:
@@ -605,61 +613,27 @@ public class PatientManager {
     }
 
     private void serializeAppointmentLines(int patientID, Appointment appt, BufferedWriter writer) throws IOException {
-        String patientIDStr = Integer.toString(patientID);
-        writer.write(patientIDStr);
-        writer.newLine();
-        String apptType = appt.getClass().getSimpleName();
-        writer.write(apptType);
-        writer.newLine();
-        String apptIDStr = Integer.toString(appt.getApptID());
-        writer.write(apptIDStr);
-        writer.newLine();
-        String dateStr = formatDate(appt.getDate());
-        writer.write(dateStr);
-        writer.newLine();
-        String timeStr = Double.toString(appt.getTime());
-        writer.write(timeStr);
-        writer.newLine();
-        String durationStr = Double.toString(appt.getDuration());
-        writer.write(durationStr);
-        writer.newLine();
-        String costStr = Double.toString(appt.getCost());
-        writer.write(costStr);
-        writer.newLine();
-        String statusStr = appt.getStatus();
-        writer.write(statusStr);
-        writer.newLine();
-
+        writer.write(Integer.toString(patientID)); writer.newLine();
+        writer.write(appt.getClass().getSimpleName()); writer.newLine();
+        writer.write(Integer.toString(appt.getApptID())); writer.newLine();
+        writer.write(formatDate(appt.getDate())); writer.newLine();
+        writer.write(Double.toString(appt.getTime())); writer.newLine();
+        writer.write(Double.toString(appt.getDuration())); writer.newLine();
+        writer.write(Double.toString(appt.getCost())); writer.newLine();
+        writer.write(appt.getStatus()); writer.newLine();
         if (appt instanceof RoutineCheckup) {
-            RoutineCheckup routine = (RoutineCheckup) appt;
-            String roomNumStr = Integer.toString(routine.getRoomNum());
-            writer.write(roomNumStr);
-            writer.newLine();
+            writer.write(Integer.toString(((RoutineCheckup) appt).getRoomNum())); writer.newLine();
         } else if (appt instanceof Surgery) {
             Surgery surgery = (Surgery) appt;
-            String roomNumStr = Integer.toString(surgery.getRoomNum());
-            writer.write(roomNumStr);
-            writer.newLine();
-            String anaesthTypeStr = surgery.getAnaesthesiaType();
-            writer.write(anaesthTypeStr);
-            writer.newLine();
-            String anaesthDoseStr = Double.toString(surgery.getAnaesthesiaDose());
-            writer.write(anaesthDoseStr);
-            writer.newLine();
-            String typeStr = surgery.getType();
-            writer.write(typeStr);
-            writer.newLine();
-            String preOpStr = "";
-            writer.write(preOpStr);
-            writer.newLine();
+            writer.write(Integer.toString(surgery.getRoomNum())); writer.newLine();
+            writer.write(surgery.getAnaesthesiaType()); writer.newLine();
+            writer.write(Double.toString(surgery.getAnaesthesiaDose())); writer.newLine();
+            writer.write(surgery.getType()); writer.newLine();
+            writer.write(""); writer.newLine();
         } else if (appt instanceof EmergencyVisit) {
-            EmergencyVisit emergency = (EmergencyVisit) appt;
-            String roomNumStr = Integer.toString(emergency.getRoomNum());
-            writer.write(roomNumStr);
-            writer.newLine();
-            String urgencyIdxStr = Integer.toString(emergency.getUrgencyIdx());
-            writer.write(urgencyIdxStr);
-            writer.newLine();
+            EmergencyVisit ev = (EmergencyVisit) appt;
+            writer.write(Integer.toString(ev.getRoomNum())); writer.newLine();
+            writer.write(Integer.toString(ev.getUrgencyIdx())); writer.newLine();
         }
     }
 
@@ -670,15 +644,11 @@ public class PatientManager {
      */
     private Date parseDate(String token) {
         String[] parts = token.split("-");
-        if (parts.length != 3) {
-            return new Date(0, 0, 0);
-        }
-        int year = Integer.parseInt(parts[0]);
+        if (parts.length != 3) { return new Date(0, 0, 0); }
+        int year  = Integer.parseInt(parts[0]);
         int month = Integer.parseInt(parts[1]);
-        int day = Integer.parseInt(parts[2]);
-        if (year == 0 && month == 0 && day == 0) {
-            return null;
-        }
+        int day   = Integer.parseInt(parts[2]);
+        if (year == 0 && month == 0 && day == 0) { return null; }
         return new Date(year, month, day);
     }
 
@@ -688,15 +658,8 @@ public class PatientManager {
      * @return the formatted date string
      */
     private String formatDate(Date date) {
-        if (date == null) {
-            return "0-0-0";
-        }
-        String year = String.valueOf(date.getYear());
-        String month = String.valueOf(date.getMonth());
-        String day = String.valueOf(date.getDay());
-        String separator = "-";
-        String formattedDate = year + separator + month + separator + day;
-        return formattedDate;
+        if (date == null) { return "0-0-0"; }
+        return date.getYear() + "-" + date.getMonth() + "-" + date.getDay();
     }
 
     /**
@@ -706,11 +669,9 @@ public class PatientManager {
      */
     public int searchPatientIndexByID(int patientID) {
         for (int i = 0; i < numPatients; i++) {
-            if (patients[i].getPatientID() == patientID) {
-                return i; // Patient found, return index
-            }
+            if (patients[i].getPatientID() == patientID) { return i; }
         }
-        return -1; // Patient not found
+        return -1;
     }
 
     /**
@@ -721,11 +682,22 @@ public class PatientManager {
      */
     public int searchPatientIDByName(String firstName, String lastName) {
         for (int i = 0; i < numPatients; i++) {
-            if (patients[i].equalsName(firstName, lastName)) {
-                return patients[i].getPatientID();
-            }
+            if (patients[i].equalsName(firstName, lastName)) { return patients[i].getPatientID(); }
         }
         return -1;
+    }
+
+    /**
+     * Searches for a patient by their first and last name
+     * @param firstName the first name of the patient
+     * @param lastName the last name of the patient
+     * @return the patient if found, null otherwise
+     */
+    public Patient searchPatientByName(String firstName, String lastName) {
+        for (int i = 0; i < numPatients; i++) {
+            if (patients[i].equalsName(firstName, lastName)) { return patients[i]; }
+        }
+        return null;
     }
 
     /**
@@ -753,20 +725,16 @@ public class PatientManager {
      * @param top the upper bound of the search range
      * @return the patient if found, null otherwise
      */
-    public Patient searchPatientByID (int patientID, int bottom, int top) {
+    public Patient searchPatientByID(int patientID, int bottom, int top) {
         sortByPatientID();
-
-        if (bottom > top) {
-            return null;
-        }
-
+        if (bottom > top) { return null; }
         int mid = (bottom + top) / 2;
         if (patients[mid].getPatientID() == patientID) {
-            return patients[mid]; // Patient found
+            return patients[mid];
         } else if (patients[mid].getPatientID() < patientID) {
-            return searchPatientByID(patientID, mid + 1, top); // Search in the upper half
+            return searchPatientByID(patientID, mid + 1, top);
         } else {
-            return searchPatientByID(patientID, bottom, mid - 1); // Search in the lower half
+            return searchPatientByID(patientID, bottom, mid - 1);
         }
     }
 
@@ -775,11 +743,7 @@ public class PatientManager {
      */
     public void sortByPatientID() {
         boolean sorted;
-        
-        if (numPatients <= 1) {
-            return;
-        }
-
+        if (numPatients <= 1) { return; }
         for (int upperBound = numPatients - 1; upperBound > 0; upperBound--) {
             sorted = true;
             for (int j = 0; j < upperBound; j++) {
@@ -790,31 +754,22 @@ public class PatientManager {
                     sorted = false;
                 }
             }
-            if (sorted) {
-                break;
-            }
+            if (sorted) { break; }
         }
     }
 
     /**
      * Sorts the patients array by date registered using an insertion sort.
-     * API alias: sortByDateEntered().
      */
     public void sortByDateEntered() {
-        if (numPatients <= 1) {
-            return;
-        }
-
+        if (numPatients <= 1) { return; }
         for (int i = 1; i < numPatients; i++) {
             Patient itemToCompare = patients[i];
             int blankIndex = i;
-
-            while (blankIndex > 0
-                    && patients[blankIndex - 1].getDateRegistered().compareTo(itemToCompare.getDateRegistered()) > 0) {
+            while (blankIndex > 0 && patients[blankIndex - 1].getDateRegistered().compareTo(itemToCompare.getDateRegistered()) > 0) {
                 patients[blankIndex] = patients[blankIndex - 1];
                 blankIndex--;
             }
-
             patients[blankIndex] = itemToCompare;
         }
     }
@@ -822,11 +777,8 @@ public class PatientManager {
     /**
      * Sorts the patients array by ward, then patient ID (selection sort).
      */
-    public void sortByWardThenPatientID () {
-        if (numPatients <= 1) {
-            return;
-        }
-
+    public void sortByWardThenPatientID() {
+        if (numPatients <= 1) { return; }
         for (int upperBound = numPatients - 1; upperBound > 0; upperBound--) {
             int maxIndex = 0;
             for (int j = 1; j <= upperBound; j++) {
@@ -848,34 +800,12 @@ public class PatientManager {
      * @param patientID the ID of the patient to delete
      * @return boolean if the patient is successfully deleted
      */
-    public boolean deletePatient (int patientID) {
+    public boolean deletePatient(int patientID) {
         int index = searchPatientIndexByID(patientID);
-        if (index == -1) {
-            return false; // Patient not found
-        }
-
-        // Shift all patients after the found patient one position to the left
-        for (int i = index; i < numPatients - 1; i++) {
-            patients[i] = patients[i + 1];
-        }
+        if (index == -1) { return false; }
+        for (int i = index; i < numPatients - 1; i++) { patients[i] = patients[i + 1]; }
         patients[numPatients - 1] = null;
         numPatients--;
-        return true;
-    }
-
-    /**
-     * Updates a patient by their ID
-     * @param patientID the ID of the patient to update
-     * @param updated the updated Patient information stored in a Patient object
-     * @return boolean if the patient is successfully updated
-     */
-    public boolean updatePatient (int patientID, Patient updated) {
-        int index = searchPatientIndexByID(patientID);
-        if (index == -1) {
-            return false;
-        }
-
-        patients[index] = updated;
         return true;
     }
 
@@ -885,44 +815,35 @@ public class PatientManager {
      * @param diagnosis the diagnosis to add
      * @return boolean if the diagnosis is successfully added
      */
-    public boolean addDiagnosis (int patientID, String diagnosis) {
+    public boolean addDiagnosis(int patientID, String diagnosis) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false; // Patient not found
-        }
-
+        if (patient == null) { return false; }
         patient.addDiagnoses(diagnosis);
         return true;
     }
 
     /**
-     * Deletes a diagnosis to a patient
+     * Deletes a diagnosis from a patient
      * @param patientID the ID of the patient
      * @param diagnosis the diagnosis to delete
      * @return boolean if the diagnosis is successfully deleted
      */
-    public boolean deleteDiagnosis (int patientID, String diagnosis) {
+    public boolean deleteDiagnosis(int patientID, String diagnosis) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false; // Patient not found
-        }
-
+        if (patient == null) { return false; }
         return patient.deleteDiagnosis(diagnosis);
     }
 
     /**
-     * Updates a diagnosis to a patient
+     * Updates a diagnosis for a patient
      * @param patientID the ID of the patient
      * @param orgDiagnosis the original diagnosis to change
      * @param newDiagnosis the updated diagnosis
-     * @return boolean if the diagnosis is successfully deleted
+     * @return boolean if the diagnosis is successfully updated
      */
-    public boolean updateDiagnosis (int patientID, String orgDiagnosis, String newDiagnosis) {
+    public boolean updateDiagnosis(int patientID, String orgDiagnosis, String newDiagnosis) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
+        if (patient == null) { return false; }
         return patient.updateDiagnosis(orgDiagnosis, newDiagnosis);
     }
 
@@ -932,44 +853,35 @@ public class PatientManager {
      * @param newAppt the appointment to be added
      * @return boolean if the appointment is successfully added
      */
-    public boolean addAppointment (int patientID, Appointment newAppt) {
+    public boolean addAppointment(int patientID, Appointment newAppt) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
+        if (patient == null) { return false; }
         patient.addAppointment(newAppt);
         return true;
     }
 
     /**
-     * Deletes an appointment to a patient
+     * Deletes an appointment from a patient
      * @param patientID the ID of the patient
      * @param toDelete the appointment to delete
      * @return boolean if the appointment is successfully deleted
      */
-    public boolean deleteAppointment (int patientID, Appointment toDelete) {
+    public boolean deleteAppointment(int patientID, Appointment toDelete) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
+        if (patient == null) { return false; }
         return patient.deleteAppointment(toDelete);
     }
 
     /**
-     * Updates an appointment to a patient
+     * Updates an appointment for a patient
      * @param patientID the ID of the patient
      * @param orgAppt the original appointment
      * @param newAppt the new appointment
-     * @return boolean if the appointment is successfully deleted
+     * @return boolean if the appointment is successfully updated
      */
-    public boolean updateAppointment (int patientID, Appointment orgAppt, Appointment newAppt) {
+    public boolean updateAppointment(int patientID, Appointment orgAppt, Appointment newAppt) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
+        if (patient == null) { return false; }
         return patient.updateAppointment(orgAppt, newAppt);
     }
 
@@ -980,45 +892,37 @@ public class PatientManager {
      * @param dosage the dosage of the medication
      * @return boolean if the medication is successfully added
      */
-    public boolean addMedication (int patientID, String medName, String dosage) {
+    public boolean addMedication(int patientID, String medName, String dosage) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
+        if (patient == null) { 
+            return false; 
         }
-
-        patient.addMedication(medName, dosage);
-        return true;
+        return patient.addMedication(medName, dosage);
     }
 
     /**
-     * Deletes a medication to a patient
+     * Deletes a medication from a patient
      * @param patientID the ID of the patient
      * @param medName the name of the medication
      * @return boolean if the medication is successfully deleted
      */
-    public boolean deleteMedication (int patientID, String medName) {
+    public boolean deleteMedication(int patientID, String medName) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
+        if (patient == null) { return false; }
         return patient.deleteMedication(medName);
     }
 
     /**
-     * Updates a medication to a patient
+     * Updates a medication for a patient
      * @param patientID the ID of the patient
      * @param medName the name of the original medication
      * @param newMed the name of the updated medication
      * @param newDosage the dosage of the updated medication
      * @return boolean if the medication is successfully updated
      */
-    public boolean updateMedication (int patientID, String medName, String newMed, String newDosage) {
+    public boolean updateMedication(int patientID, String medName, String newMed, String newDosage) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
+        if (patient == null) { return false; }
         return patient.updateMedication(medName, newMed, newDosage);
     }
 
@@ -1028,44 +932,35 @@ public class PatientManager {
      * @param newAllergy the allergy to be added
      * @return boolean if the allergy is successfully added
      */
-    public boolean addAllergy (int patientID, String newAllergy) {
+    public boolean addAllergy(int patientID, String newAllergy) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
+        if (patient == null) { return false; }
         patient.addAllergy(newAllergy);
         return true;
     }
 
     /**
-     * Deletes an allergy to a patient
+     * Deletes an allergy from a patient
      * @param patientID the ID of the patient
      * @param allergy the allergy to be deleted
      * @return boolean if the allergy is successfully deleted
      */
-    public boolean deleteAllergy (int patientID, String allergy) {
+    public boolean deleteAllergy(int patientID, String allergy) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
+        if (patient == null) { return false; }
         return patient.deleteAllergy(allergy);
     }
 
     /**
-     * Updates an allergy to a patient
+     * Updates an allergy for a patient
      * @param patientID the ID of the patient
      * @param orgAllergy the original allergy
      * @param newAllergy the updated allergy
      * @return boolean if the allergy is successfully updated
      */
-    public boolean updateAllergy (int patientID, String orgAllergy, String newAllergy) {
+    public boolean updateAllergy(int patientID, String orgAllergy, String newAllergy) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
+        if (patient == null) { return false; }
         return patient.updateAllergy(orgAllergy, newAllergy);
     }
 
@@ -1073,76 +968,61 @@ public class PatientManager {
      * Adds medical history to a patient
      * @param patientID the ID of the patient
      * @param medHistory the medical history to add
-     * @return boolean if the medical history to successfully added
+     * @return boolean if the medical history is successfully added
      */
-    public boolean addMedicalHistory (int patientID, String medHistory) {
+    public boolean addMedicalHistory(int patientID, String medHistory) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
+        if (patient == null) { return false; }
         patient.addMedicalHistory(medHistory);
         return true;
     }
 
     /**
-     * Deletes medical history to a patient
+     * Deletes medical history from a patient
      * @param patientID the ID of the patient
      * @param medHistory the medical history to delete
-     * @return boolean if the medical history to successfully deleted
+     * @return boolean if the medical history is successfully deleted
      */
-    public boolean deleteMedicalHistory (int patientID, String medHistory) {
+    public boolean deleteMedicalHistory(int patientID, String medHistory) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
+        if (patient == null) { return false; }
         return patient.deleteMedicalHistory(medHistory);
     }
 
     /**
      * Adds family history to a patient
      * @param patientID the ID of the patient
-     * @param medHistory the family history to add
-     * @return boolean if the family history to successfully added
+     * @param famHistory the family history to add
+     * @return boolean if the family history is successfully added
      */
-    public boolean addFamilyHistory (int patientID, String famHistory) {
+    public boolean addFamilyHistory(int patientID, String famHistory) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
+        if (patient == null) { return false; }
         patient.addFamilyHistory(famHistory);
         return true;
     }
 
     /**
-     * Deletes family history to a patient
+     * Deletes family history from a patient
      * @param patientID the ID of the patient
-     * @param medHistory the family history to delete
-     * @return boolean if the family history to successfully deleted
+     * @param famHistory the family history to delete
+     * @return boolean if the family history is successfully deleted
      */
-    public boolean deleteFamilyHistory (int patientID, String famHistory) {
+    public boolean deleteFamilyHistory(int patientID, String famHistory) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
+        if (patient == null) { return false; }
         return patient.deleteFamilyHistory(famHistory);
     }
 
     /**
-     * Updates assgiend staff for a patient
+     * Updates assigned staff for a patient
      * @param patientID the ID of the patient
      * @param assigned the Staff to be assigned
      * @return boolean if the staff was successfully assigned
      */
     public boolean updateAssignedStaffForPatient(int patientID, Staff assigned) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
+        if (patient == null) { return false; }
         patient.setAssignedStaff(assigned);
         return true;
     }
@@ -1152,30 +1032,24 @@ public class PatientManager {
      * @param patientID the ID of the patient
      * @return boolean if the patient was successfully checked in
      */
-    public boolean checkInPatient (int patientID) {
+    public boolean checkInPatient(int patientID) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
+        if (patient == null) { 
+            return false; 
         }
-
-        patient.checkIn();
-        return true;
+        return patient.checkIn();
     }
 
     /**
      * Checks out patient
      * @param patientID the ID of the patient
      * @param followUp the type of follow up appointment
-     * @return boolean if the patient was successfully checked in
+     * @return boolean if the patient was successfully checked out
      */
-    public boolean checkOutPatient (int patientID, String followUp) {
+    public boolean checkOutPatient(int patientID, String followUp) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return false;
-        }
-
-        patient.checkOut(followUp);
-        return true;
+        if (patient == null) { return false; }
+        return patient.checkOut(followUp);
     }
 
     /**
@@ -1183,12 +1057,9 @@ public class PatientManager {
      * @param patientID the ID of the patient
      * @return double the total cost of the bill
      */
-    public double calculateTotalCostForPatient (int patientID) {
+    public double calculateTotalCostForPatient(int patientID) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return -1;
-        }
-
+        if (patient == null) { return -1; }
         return patient.calculateTotalCost();
     }
 
@@ -1199,9 +1070,7 @@ public class PatientManager {
      */
     public double calculateBill(int patientID) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) {
-            return -1;
-        }
+        if (patient == null) { return -1; }
         return patient.calculateBill();
     }
 
@@ -1211,10 +1080,10 @@ public class PatientManager {
      * @param status the status of the patient
      * @return boolean if the status is successfully changed
      */
-    public boolean setEmergencyPatientStatus (int patientID, String status) {
+    public boolean setEmergencyPatientStatus(int patientID, String status) {
         Patient patient = searchPatientByID(patientID);
         if (patient != null && patient instanceof EmergencyPatient) {
-            ((EmergencyPatient)patient).setStatus(status);
+            ((EmergencyPatient) patient).setStatus(status);
             return true;
         }
         return false;
@@ -1224,14 +1093,12 @@ public class PatientManager {
      * Returns a string containing information about all the patients
      * @return String the information of the patients
      */
-    public String listAllPatients () {
+    public String listAllPatients() {
         String patientString = "";
-
         for (int i = 0; i < numPatients; i++) {
             patientString += patients[i].toString();
             patientString += "\n";
         }
-
         return patientString;
     }
 
@@ -1240,32 +1107,19 @@ public class PatientManager {
      * @param patientID the ID of the patient
      * @return String the information of the appointments
      */
-    public String listAppointmentsForPatient (int patientID) {
+    public String listAppointmentsForPatient(int patientID) {
         Patient patient = searchPatientByID(patientID);
-        String apptString = "";
-
-        if (patient == null) {
-            return null;
-        }
-        
-        apptString += "Past appointments: \n";
+        if (patient == null) { return null; }
+        String apptString = "Past appointments: \n\n";
         Appointment[] pastAppts = patient.getPastAppointments();
         for (int i = 0; i < pastAppts.length; i++) {
-            if (pastAppts[i] != null) {
-                apptString += pastAppts[i].toString();
-                apptString += "\n";
-            }
+            if (pastAppts[i] != null) { apptString += pastAppts[i].toString() + "\n"; }
         }
-
-        apptString += "\nUpcoming appointments: \n";
+        apptString += "\nUpcoming appointments: \n\n";
         Appointment[] upcomingAppts = patient.getUpcomingAppointments();
         for (int i = 0; i < upcomingAppts.length; i++) {
-            if (upcomingAppts[i] != null) {
-                apptString += upcomingAppts[i].toString();
-                apptString += "\n";
-            }
+            if (upcomingAppts[i] != null) { apptString += upcomingAppts[i].toString() + "\n"; }
         }
-
         return apptString;
     }
 
@@ -1275,13 +1129,9 @@ public class PatientManager {
      * @param appt the appointment to be added to history
      * @return boolean if the appointment is successfully added to history
      */
-    public boolean addtoHistory (int patientID, Appointment appt) {
+    public boolean addtoHistory(int patientID, Appointment appt) {
         Patient patient = searchPatientByID(patientID);
-
-        if (patient == null) {
-            return false;
-        }
-        
+        if (patient == null) { return false; }
         patient.addToHistory(appt);
         return true;
     }
@@ -1292,11 +1142,10 @@ public class PatientManager {
      * @param med the medication administered
      * @return boolean if the medication is successfully logged
      */
-    public boolean logMedicationAdministeredForPatient (int patientID, Medication med) {
+    public boolean logMedicationAdministeredForPatient(int patientID, Medication med) {
         Patient patient = searchPatientByID(patientID);
-
         if (patient != null && patient instanceof InPatient) {
-            ((InPatient)patient).logMedicationsAdministered(med);
+            ((InPatient) patient).logMedicationsAdministered(med);
             return true;
         }
         return false;
@@ -1309,11 +1158,10 @@ public class PatientManager {
      * @param bloodPressure the blood pressure of the patient
      * @return boolean if the vitals are successfully logged
      */
-    public boolean recordVitalsForPatient (int patientID, double heartRate, double bloodPressure) {
+    public boolean recordVitalsForPatient(int patientID, double heartRate, double bloodPressure) {
         Patient patient = searchPatientByID(patientID);
-
         if (patient != null && patient instanceof InPatient) {
-            ((InPatient)patient).recordVitals(heartRate, bloodPressure);
+            ((InPatient) patient).recordVitals(heartRate, bloodPressure);
             return true;
         }
         return false;

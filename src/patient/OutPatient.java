@@ -19,7 +19,7 @@ public class OutPatient extends Patient {
     private int appointmentTimingMonths; // The number of months until the patient's next appointment
 
     /**
-     * Constructor for the OutPatient class
+     * Constructor for the OutPatient class with all fields
      * @param patientID to be assigned to the patient
      * @param firstName to be assigned to the patient
      * @param lastName to be assigned to the patient
@@ -34,28 +34,7 @@ public class OutPatient extends Patient {
      * @param assignedStaff to be assigned to the patient
      * @param appointmentTimingMonths the number of months until the patient's next appointment
      */
-    public OutPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
-        super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
-        appointmentTimingMonths = 6;
-    }
-
-    /**
-     * Overloaded constructor for the OutPatient class with all fields
-     * @param patientID to be assigned to the patient
-     * @param firstName to be assigned to the patient
-     * @param lastName to be assigned to the patient
-     * @param dateOfBirth to be assigned to the patient
-     * @param ward to be assigned to the patient
-     * @param address to be assigned to the patient
-     * @param phoneNum to be assigned to the patient
-     * @param numOHIP to be assigned to the patient
-     * @param dateRegistered to be assigned to the patient
-     * @param gender to be assigned to the patient
-     * @param emergencyContactPhoneNumber to be assigned to the patient
-     * @param assignedStaff to be assigned to the patient
-     * @param appointmentTimingMonths the number of months until the patient's next appointment
-     */
-    public OutPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, int appointmentTimingMonths) {
+    public OutPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, String numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, int appointmentTimingMonths) {
         super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
         this.appointmentTimingMonths = appointmentTimingMonths;
     }
@@ -110,12 +89,19 @@ public class OutPatient extends Patient {
      */
     @Override
     public boolean checkOut(String followUp) {
+        Appointment todayAppt = getApptByDateUpcoming(PatientManager.CUR_DATE);
+        if (todayAppt != null) {
+            addToHistory(todayAppt);
+        }
+        
         calculateBill();
         if (followUp.equals("checkup")) {
             scheduleNextRoutineCheckup();
             return true;
         } else if (followUp.equals("surgery")) {
             scheduleNextSurgery();
+            return true;
+        } else if (followUp.equals("none")) {
             return true;
         } else {
             return false;
@@ -127,54 +113,45 @@ public class OutPatient extends Patient {
      */
     @Override
     public void scheduleNextRoutineCheckup() {
-        Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
-        if (completed == null) {
-            return;
+        Appointment todayAppt = getApptByDatePast(PatientManager.CUR_DATE);
+        Doctor doctor = null;
+        if (todayAppt != null) {
+            doctor = getFollowUpDoctor(todayAppt);
         }
-        Doctor mainDoctorPlaceholder = getFollowUpDoctor(completed);
-        Appointment newAppt = new RoutineCheckup(
-            completed.getApptID() + 1,
-            completed.getPatient(),
-            completed.getStaffList(),
+        RoutineCheckup newAppt = new RoutineCheckup(
+            (int)(Math.random() * 1000) + 9000,
+            this,
+            doctor != null ? new Staff[]{doctor} : null,
             PatientManager.CUR_DATE.addDays(appointmentTimingMonths * 30),
-            completed.getTime(),
-            completed.getDuration(),
-            completed.getCost(),
+            9.0,
+            0.5,
+            0.0,
             Appointment.STATUS_SCHEDULED,
             1,
-            mainDoctorPlaceholder);
-        boolean validated = false;
-        int dayCounter = appointmentTimingMonths * 30 + 1;
-
-        while (!validated) {
-            if (newAppt.validateBooking()) {
-                validated = true;
-            } else {
-                newAppt.setDate(PatientManager.CUR_DATE.addDays(dayCounter));
-                dayCounter++;
-            }
-        }
-
+            doctor
+        );
         addUpcomingAppointment(newAppt);
     }
 
     /**
-     * Shedules a surgery appointment
+     * Schedules a surgery appointment
      */
     @Override
-    public void scheduleNextSurgery () {
-        Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
-        if (completed == null) {
-            return;
-        }
-        Appointment newAppt = new Surgery(
-            completed.getApptID() + 1,
-            completed.getPatient(),
-            completed.getStaffList(),
+    public void scheduleNextSurgery() {
+        staff.Surgeon placeholderSurgeon = new staff.Surgeon(
+            "TBD", "TBD", 0, "General",
+            new String[0], new Appointment[0],
+            1, 0, "General", 0.0
+        );
+        Staff[] surgeryStaff = new Staff[]{placeholderSurgeon};
+        Surgery newAppt = new Surgery(
+            (int)(Math.random() * 1000) + 9000,
+            this,
+            surgeryStaff,
             PatientManager.CUR_DATE.addDays(appointmentTimingMonths * 30),
-            completed.getTime(),
-            completed.getDuration(),
-            completed.getCost(),
+            9.0,
+            2.0,
+            0.0,
             Appointment.STATUS_SCHEDULED,
             1,
             "none",
@@ -182,18 +159,6 @@ public class OutPatient extends Patient {
             "General",
             null
         );
-        boolean validated = false;
-        int dayCounter = appointmentTimingMonths * 30 + 1;
-
-        while (!validated) {
-            if (newAppt.validateBooking()) {
-                validated = true;
-            } else {
-                newAppt.setDate(PatientManager.CUR_DATE.addDays(dayCounter));
-                dayCounter++;
-            }
-        }
-
         addUpcomingAppointment(newAppt);
     }
 }

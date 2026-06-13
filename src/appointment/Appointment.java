@@ -318,7 +318,9 @@ public abstract class Appointment {
         String staffStr = "";
         if (staffList != null) {
             for (int i = 0; i < staffList.length; i++) {
-                staffStr += staffList[i].getStaffID() + " ";
+                if (staffList[i] != null) {
+                    staffStr += staffList[i].getStaffID() + " ";
+                }
             }
         } else {
             staffStr = "None";

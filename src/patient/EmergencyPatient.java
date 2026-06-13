@@ -26,32 +26,7 @@ public class EmergencyPatient extends Patient {
     private String status; // the current status of the patient (e.g., waiting, being treated, discharged, etc.)
 
     /**
-     * Constructor for creating an EmergencyPatient object.
-     * @param patientID The unique identifier for the patient.
-     * @param firstName The first name of the patient.
-     * @param lastName The last name of the patient.
-     * @param dateOfBirth The date of birth of the patient.
-     * @param ward The ward to which the patient is assigned.
-     * @param address The address of the patient.
-     * @param phoneNum The phone number of the patient.
-     * @param numOHIP The OHIP number of the patient.
-     * @param dateRegistered The date when the patient was registered.
-     * @param gender The gender of the patient.
-     * @param emergencyContactPhoneNumber The phone number of the emergency contact.
-     * @param assignedStaff The staff member assigned to the patient.
-     */
-    public EmergencyPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff) {
-        super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
-        arrivalTime = -1;
-        dayIn = null;
-        dayOut = null;
-        presentingComplaint = "Unknown";
-        arrivalType = "Unknown";
-        status = "Not checked-in";
-    }
-
-    /**
-     * Overloaded constructor for creating an EmergencyPatient object with all fields.
+     * Constructor for creating an EmergencyPatient object with all fields.
      * @param patientID The unique identifier for the patient.
      * @param firstName The first name of the patient.
      * @param lastName The last name of the patient.
@@ -71,7 +46,7 @@ public class EmergencyPatient extends Patient {
      * @param arrivalType The mode of arrival.
      * @param status The current status of the patient.
      */
-    public EmergencyPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, int numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, int arrivalTime, Date dayIn, Date dayOut, String presentingComplaint, String arrivalType, String status) {
+    public EmergencyPatient (int patientID, String firstName, String lastName, Date dateOfBirth, String ward, String address, long phoneNum, String numOHIP, Date dateRegistered, char gender, long emergencyContactPhoneNumber, Staff assignedStaff, int arrivalTime, Date dayIn, Date dayOut, String presentingComplaint, String arrivalType, String status) {
         super(patientID, firstName, lastName, dateOfBirth, ward, address, phoneNum, numOHIP, dateRegistered, gender, emergencyContactPhoneNumber, assignedStaff);
         this.arrivalTime = arrivalTime;
         this.dayIn = dayIn;
@@ -226,6 +201,12 @@ public class EmergencyPatient extends Patient {
     public boolean checkOut(String followUp) {
         dayOut = PatientManager.CUR_DATE;
         status = "Discharged";
+
+        Appointment todayAppt = getApptByDateUpcoming(PatientManager.CUR_DATE);
+        if (todayAppt != null) {
+            addToHistory(todayAppt);
+        }
+
         calculateBill();
 
         if (followUp.equals("checkup")) {
@@ -233,6 +214,8 @@ public class EmergencyPatient extends Patient {
             return true;
         } else if (followUp.equals("surgery")) {
             scheduleNextSurgery();
+            return true;
+        } else if (followUp.equals("none")) {
             return true;
         } else {
             return false;
@@ -244,54 +227,45 @@ public class EmergencyPatient extends Patient {
      */
     @Override
     public void scheduleNextRoutineCheckup() {
-        Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
-        if (completed == null) {
-            return;
+        Appointment todayAppt = getApptByDatePast(PatientManager.CUR_DATE);
+        Doctor doctor = null;
+        if (todayAppt != null) {
+            doctor = getFollowUpDoctor(todayAppt);
         }
-        Doctor mainDoctorPlaceholder = getFollowUpDoctor(completed);
-        Appointment newAppt = new RoutineCheckup(
-            completed.getApptID() + 1,
-            completed.getPatient(),
-            completed.getStaffList(),
-            PatientManager.CUR_DATE.addDays(1),
-            completed.getTime(),
-            completed.getDuration(),
-            completed.getCost(),
+        RoutineCheckup newAppt = new RoutineCheckup(
+            (int)(Math.random() * 1000) + 9000,
+            this,
+            doctor != null ? new Staff[]{doctor} : null,
+            PatientManager.CUR_DATE.addDays(7),
+            9.0,
+            0.5,
+            0.0,
             Appointment.STATUS_SCHEDULED,
             1,
-            mainDoctorPlaceholder);
-        boolean validated = false;
-        int dayCounter = 2;
-
-        while (!validated) {
-            if (newAppt.validateBooking()) {
-                validated = true;
-            } else {
-                newAppt.setDate(PatientManager.CUR_DATE.addDays(dayCounter));
-                dayCounter++;
-            }
-        }
-
+            doctor
+        );
         addUpcomingAppointment(newAppt);
     }
 
     /**
-     * Shedules a surgery appointment
+     * Schedules a surgery appointment
      */
     @Override
-    public void scheduleNextSurgery () {
-        Appointment completed = getApptByDatePast(PatientManager.CUR_DATE);
-        if (completed == null) {
-            return;
-        }
-        Appointment newAppt = new Surgery(
-            completed.getApptID() + 1,
-            completed.getPatient(),
-            completed.getStaffList(),
-            PatientManager.CUR_DATE.addDays(1),
-            completed.getTime(),
-            completed.getDuration(),
-            completed.getCost(),
+    public void scheduleNextSurgery() {
+        staff.Surgeon placeholderSurgeon = new staff.Surgeon(
+            "TBD", "TBD", 0, "General",
+            new String[0], new Appointment[0],
+            1, 0, "General", 0.0
+        );
+        Staff[] surgeryStaff = new Staff[]{placeholderSurgeon};
+        Surgery newAppt = new Surgery(
+            (int)(Math.random() * 1000) + 9000,
+            this,
+            surgeryStaff,
+            PatientManager.CUR_DATE.addDays(7),
+            9.0,
+            2.0,
+            0.0,
             Appointment.STATUS_SCHEDULED,
             1,
             "none",
@@ -299,22 +273,13 @@ public class EmergencyPatient extends Patient {
             "General",
             null
         );
-        boolean validated = false;
-        int dayCounter = 2;
-
-        while (!validated) {
-            if (newAppt.validateBooking()) {
-                validated = true;
-            } else {
-                newAppt.setDate(PatientManager.CUR_DATE.addDays(dayCounter));
-                dayCounter++;
-            }
-        }
-
         addUpcomingAppointment(newAppt);
     }
-
-    @Override
+    
+    /**
+     * Returns the admitted date display
+     * @return String the admitted date display
+     */
     public String getAdmittedDateDisplay() {
         if (dayIn != null) {
             return dayIn.toISODateString();
