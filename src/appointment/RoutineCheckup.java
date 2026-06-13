@@ -1,7 +1,7 @@
 /**
  * File: RoutineCheckup.java
  * Name: Ida Luo
- * Date: June 7, 2026
+ * Date: June 12, 2026
  * Class: ICS4U1
  * Description: This class represents a routine checkup appointment in the hospital management system. 
  * It extends the abstract Appointment class and includes specific fields and methods related to routine checkups. 
@@ -50,11 +50,19 @@ public class RoutineCheckup extends Appointment {
     }
 
     @Override
+    /**
+     * Returns the type of a routine checkup as a String
+     * @return String describing the type of appointment
+     */
     public String getTypeLabel() {
         return "Routine Checkup";
     }
 
     @Override
+    /**
+     * Returns the location of a routine checkup as a String
+     * @return String describing the room number of an appoinment
+     */
     public String getLocationLabel() {
         return "Rm " + clinicRoomNum;
     }
@@ -157,7 +165,10 @@ public class RoutineCheckup extends Appointment {
         return estimated / 60.0;
     }
 
-    /** @return the primary doctor assigned to this checkup */
+    /** 
+     * Gets the main doctor assigned to a checkup
+     * @return the primary doctor assigned to this checkup 
+     */
     public Doctor getMainDoctor() {
         return mainDoctor;
     }

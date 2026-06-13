@@ -803,7 +803,7 @@ public class HospitalRunner {
                     System.out.println("[5] View Upcoming Appointments");
                     System.out.println("[6] Daily Cost Summary");
                     System.out.println("[7] Sort Appointments by Date");
-                    System.out.println("[8] Sort Appointments by Patient and Date")
+                    System.out.println("[8] Sort Appointments by Patient and Date");
                     System.out.println("[9] Back");
 
                     int apptChoice = -1;
@@ -1177,7 +1177,7 @@ public class HospitalRunner {
                             if (a == null) {
                                 continue;
                             }
-                            String patientName = a.getPatient().getName();
+                            String patientName = a.getPatient().getFirstName() + " " + a.getPatient().getLastName();
                             String typeName = a.getClass().getSimpleName();
                             System.out.printf("%-12s %-20s %-15d %-18s %-12s%n",
                                     a.getDate(), patientName, a.getApptID(), typeName, a.getStatus());
@@ -1195,7 +1195,7 @@ public class HospitalRunner {
                                 continue;
                             }
 
-                            String patientName = a.getPatient().getName();
+                            String patientName = a.getPatient().getFirstName() + " " + a.getPatient().getLastName();
                             String typeName = a.getClass().getSimpleName();
 
                             System.out.printf("%-20s %-12s %-15d %-18s %-12s%n",

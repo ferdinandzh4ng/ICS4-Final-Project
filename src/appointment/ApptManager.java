@@ -1,7 +1,7 @@
 /** 
  * File: ApptManager.java
  * Name: Ida Luo
- * Date: June 7, 2026
+ * Date: June 12, 2026
  * Class: ICS4U1
  * Description: This class manages Appointment and its child classes. 
  * It stores an array of appointments.
@@ -538,7 +538,7 @@ public class ApptManager {
     }
 
     /**
-     * Selection orts all active appointments numerically by their unique appointment ID.
+     * Selection sorts all active appointments numerically by their unique appointment ID.
      */
     public void sortByApptID() {
         for (int i = 0; i < numAppointments - 1; i++) {
