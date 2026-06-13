@@ -1,7 +1,7 @@
 /** 
  * File: EmergencyVisit.java
  * Name: Ida Luo
- * Date: June 6, 2026
+ * Date: June 12, 2026
  * Class: ICS4U1
  * Description: This class represents an emergency visit appointment in the hospital management system. 
  * It extends the abstract Appointment class and includes specific fields and methods related to emergency visits. 
@@ -53,11 +53,19 @@ public class EmergencyVisit extends Appointment {
     }
 
     @Override
+    /**
+     * Returns the type of a emergency visit as a String
+     * @return String describing the type of appointment
+     */
     public String getTypeLabel() {
         return "Emergency Visit";
     }
 
     @Override
+    /**
+     * Returns the location of a an emergency visit as a String
+     * @return String describing the room number of an appoinment
+     */
     public String getLocationLabel() {
         return "ER " + emergencyRoomNum;
     }

@@ -1,7 +1,7 @@
 /**
  * File: Appointment.java
  * Name: Ida Luo
- * Date: June 7, 2026
+ * Date: June 12, 2026
  * Class: ICS4U1
  * Description: This class represents an appointment in the hospital management system. It is an abstract class that provides a base structure for different types of appointments, including fields and methods that are common to all appointment types.
 */

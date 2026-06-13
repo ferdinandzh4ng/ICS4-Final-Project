@@ -1325,8 +1325,7 @@ public class HospitalRunner {
                             if (a == null) {
                                 continue;
                             }
-                            String patientName = a.getPatient().getFirstName() + " "
-                                    + a.getPatient().getLastName();
+                            String patientName = a.getPatient().getFirstName() + " " + a.getPatient().getLastName();
                             String typeName = a.getClass().getSimpleName();
                             System.out.printf("%-12s %-20s %-15d %-18s %-12s%n",
                                     a.getDate(), patientName, a.getApptID(),
@@ -1344,8 +1343,8 @@ public class HospitalRunner {
                             if (a == null) {
                                 continue;
                             }
-                            String patientName = a.getPatient().getFirstName() + " "
-                                    + a.getPatient().getLastName();
+
+                            String patientName = a.getPatient().getFirstName() + " " + a.getPatient().getLastName();
                             String typeName = a.getClass().getSimpleName();
                             System.out.printf("%-20s %-12s %-15d %-18s %-12s%n",
                                     patientName, a.getDate(), a.getApptID(),
