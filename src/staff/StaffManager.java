@@ -10,10 +10,9 @@
 
 package staff;
 
-import appointment.Appointment;
-import shared.Date;
-
+import appointment.*;
 import java.io.*;
+import shared.Date;
 
 public class StaffManager {
 

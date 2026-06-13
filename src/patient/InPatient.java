@@ -1,12 +1,8 @@
 package patient;
 
-import appointment.Appointment;
-import appointment.RoutineCheckup;
-import appointment.Surgery;
+import appointment.*;
 import shared.Date;
-import staff.Doctor;
-import staff.Staff;
-import staff.Surgeon;
+import staff.*;
 
 /**
  * File: InPatient.java
@@ -190,6 +186,11 @@ public class InPatient extends Patient {
         return calculateTotalCost();
     }
 
+    /**
+     * Returns the admitted date in ISO format, or "N/A" if not yet admitted.
+     *
+     * @return admitted date display string
+     */
     @Override
     public String getAdmittedDateDisplay() {
         if (dayIn != null) {
@@ -199,6 +200,11 @@ public class InPatient extends Patient {
         }
     }
 
+    /**
+     * Calculates the total inpatient bill (room fee plus appointment fees).
+     *
+     * @return total bill amount
+     */
     @Override
     public double calculateBill() {
         return getRoomFee() + getAppointmentFees();

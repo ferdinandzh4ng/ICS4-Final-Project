@@ -1,11 +1,8 @@
 package patient;
 
-import appointment.Appointment;
-import appointment.RoutineCheckup;
-import appointment.Surgery;
+import appointment.*;
 import shared.Date;
-import staff.Doctor;
-import staff.Staff;
+import staff.*;
 
 /**
  * File: EmergencyPatient.java
@@ -288,6 +285,12 @@ public class EmergencyPatient extends Patient {
         }
     }
 
+    /**
+     * Calculates the total bill for this emergency patient, including
+     * appointment fees and daily room charges when admitted.
+     *
+     * @return total bill amount
+     */
     @Override
     public double calculateBill() {
         double total = calculateTotalCost();

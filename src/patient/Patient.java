@@ -1,9 +1,8 @@
 package patient;
 
-import appointment.Appointment;
+import appointment.*;
 import shared.Date;
-import staff.Doctor;
-import staff.Staff;
+import staff.*;
 
 /**
  * File: Patient.java
@@ -789,8 +788,12 @@ public abstract class Patient {
      * @return boolean if the OHIP number is valid
      */
     public static boolean isValidOHIP(String numOHIP) {
-        if (numOHIP == null) { return false; }
-        if (numOHIP.equals("0")) { return true; }
+        if (numOHIP == null) {
+            return false;
+        }
+        if (numOHIP.equals("0")) {
+            return true;
+        }
         return numOHIP.matches("\\d{10}");
     }
 

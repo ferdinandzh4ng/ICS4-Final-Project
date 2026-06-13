@@ -1,7 +1,7 @@
 20
 Surgeon
 S003
-Dr. David Singh
+David Singh
 22
 Cardiac Surgery
 NONE
@@ -12,7 +12,7 @@ Cardiac
 :
 Surgeon
 S001
-Dr. Robert Kim
+Robert Kim
 20
 General Surgery
 NONE
@@ -23,7 +23,7 @@ General
 :
 Surgeon
 S005
-Dr. Henry Clarke
+Henry Clarke
 19
 Oncologic Surgery
 2026-07-05
@@ -34,7 +34,7 @@ Oncology
 :
 Doctor
 D004
-Dr. Alex Wong
+Alex Wong
 18
 Cardiology
 NONE
@@ -44,7 +44,7 @@ ON456789
 :
 Doctor
 D006
-Dr. James O'Neill
+James O'Neill
 16
 Neurology
 NONE
@@ -54,7 +54,7 @@ ON678901
 :
 Surgeon
 S002
-Dr. Maria Lopez
+Maria Lopez
 16
 Orthopedic Surgery
 2026-06-25
@@ -65,7 +65,7 @@ Orthopedic
 :
 Doctor
 D001
-Dr. Jane Yuen
+Jane Yuen
 15
 General Practice
 NONE
@@ -75,7 +75,7 @@ ON123456
 :
 Surgeon
 S004
-Dr. Anna Patel
+Anna Patel
 14
 Neurosurgery
 NONE
@@ -86,7 +86,7 @@ Neuro
 :
 Doctor
 D005
-Dr. Priya Sharma
+Priya Sharma
 14
 Oncology
 2026-07-01
@@ -96,7 +96,7 @@ ON567890
 :
 Surgeon
 S006
-Dr. Yuki Tanaka
+Yuki Tanaka
 13
 Vascular Surgery
 NONE
@@ -107,7 +107,7 @@ Vascular
 :
 Doctor
 D002
-Dr. Tom Brown
+Tom Brown
 12
 ER
 NONE
@@ -128,7 +128,7 @@ Rotating
 :
 Doctor
 D003
-Dr. Emily Chen
+Emily Chen
 10
 Pediatrics
 2026-06-15
@@ -138,7 +138,7 @@ ON345678
 :
 Doctor
 D007
-Dr. Sarah Kim
+Sarah Kim
 9
 Family Medicine
 2026-06-20

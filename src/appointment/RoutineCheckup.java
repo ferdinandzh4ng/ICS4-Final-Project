@@ -10,10 +10,9 @@
 
 package appointment;
 
-import patient.Patient;
+import patient.*;
 import shared.Date;
-import staff.Doctor;
-import staff.Staff;
+import staff.*;
 
 public class RoutineCheckup extends Appointment {
     //fields
@@ -109,7 +108,7 @@ public class RoutineCheckup extends Appointment {
     public String toString() {
         String doctorName;
         if (mainDoctor != null) {
-            doctorName = mainDoctor.getName();
+            doctorName = "Dr. " + mainDoctor.getName();
         } else {
             doctorName = "None";
         }

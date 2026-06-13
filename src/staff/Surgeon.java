@@ -10,8 +10,8 @@
 
 package staff;
 
-import appointment.Appointment;
-import patient.Patient;
+import appointment.*;
+import patient.*;
 
 public class Surgeon extends Staff {
 
@@ -70,7 +70,12 @@ public class Surgeon extends Staff {
         this.outcomeCount = 0;
     }
 
-    // Binary search — match patients against sorted referral list before assigning
+    /**
+     * Assigns patients who appear on this surgeon's referral list.
+     * Binary search — match patients against sorted referral list before assigning.
+     *
+     * @param patients array of patients to assign
+     */
     @Override
     public void assignPatients(Patient[] patients) {
         if (patients == null) {
@@ -90,7 +95,12 @@ public class Surgeon extends Staff {
         }
     }
 
-    // Conflict check, then recursive OR booking — reserve OR slot only when schedule is clear
+    /**
+     * Adds a surgical appointment after conflict and OR booking checks.
+     * Conflict check, then recursive OR booking — reserve OR slot only when schedule is clear.
+     *
+     * @param appt the surgery appointment to add
+     */
     @Override
     public void addAppointment(Appointment appt) {
         if (appt == null) {
@@ -126,14 +136,24 @@ public class Surgeon extends Staff {
         schedule[slotIndex] = appt;
     }
 
-    // Arithmetic — per-procedure fees plus base salary for the pay period
+    /**
+     * Calculates this surgeon's pay including per-procedure fees.
+     * Arithmetic — per-procedure fees plus base salary for the pay period.
+     *
+     * @return pay amount for the current period
+     */
     @Override
     public double calculatePay() {
         double baseSalary = FLAT_ANNUAL_SALARY / PAY_PERIODS_PER_YEAR;
         return (surgeriesCompleted * surgeryFeePerProcedure) + baseSalary;
     }
 
-    // Loop + string build — surgical calendar with OR, procedure, and patient
+    /**
+     * Returns a formatted string of this surgeon's surgical calendar.
+     * Loop + string build — surgical calendar with OR, procedure, and patient.
+     *
+     * @return formatted schedule string
+     */
     @Override
     public String getSchedule() {
         StringBuilder sb = new StringBuilder();
@@ -174,6 +194,11 @@ public class Surgeon extends Staff {
         return sb.toString();
     }
 
+    /**
+     * Returns a file-parseable string representation of this surgeon.
+     *
+     * @return formatted surgeon record for staff.txt
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -368,6 +393,15 @@ public class Surgeon extends Staff {
         return copy;
     }
 
+    /**
+     * Recursively searches the sorted referral list for a patient ID.
+     * Binary search — referral list must be sorted by patient ID.
+     *
+     * @param patientID the patient ID to find
+     * @param low       lower bound of the search range
+     * @param high      upper bound of the search range
+     * @return index of the patient ID, or -1 if not found
+     */
     private int binarySearchReferral(int patientID, int low, int high) {
         if (referralCount == 0 || low > high) {
             return -1;
@@ -382,6 +416,12 @@ public class Surgeon extends Staff {
         return binarySearchReferral(patientID, mid + 1, high);
     }
 
+    /**
+     * Adds a patient to this surgeon's assigned list if not already present.
+     *
+     * @param p the patient to add
+     * @return true if the patient was added or already assigned
+     */
     private boolean addPatientToAssigned(Patient p) {
         for (int i = 0; i < patientsAssigned.length; i++) {
             if (patientsAssigned[i] == p) {
@@ -398,10 +438,22 @@ public class Surgeon extends Staff {
         return false;
     }
 
+    /**
+     * Returns a display label for a scheduled surgical appointment.
+     *
+     * @param appt the appointment to label
+     * @return procedure label string
+     */
     private String getProcedureLabel(Appointment appt) {
         return "Surgery (Appt #" + appt.getApptID() + ")";
     }
 
+    /**
+     * Parses a "HH:MM" time string into a decimal time value.
+     *
+     * @param time time string in HH:MM format
+     * @return decimal time value, or 0.0 if invalid
+     */
     private double parseTime(String time) {
         if (time == null || !time.contains(":")) {
             return 0.0;

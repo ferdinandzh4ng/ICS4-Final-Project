@@ -1,3 +1,11 @@
+/**
+ * File: Date.java
+ * Class: ICS4U1
+ * Date: June 2, 2026
+ * Description: Shared date utility used across staff, patient, and appointment
+ *              modules for parsing, comparing, formatting, and date arithmetic.
+ */
+
 package shared;
 
 public class Date {
@@ -5,13 +13,25 @@ public class Date {
     private int month;
     private int day;
 
-    //constructor
+    /**
+     * Constructs a date from year, month, and day components.
+     *
+     * @param year  four-digit year
+     * @param month month of the year (1–12)
+     * @param day   day of the month
+     */
     public Date(int year, int month, int day) {
         this.year = year;
         this.month = month;
         this.day = day;
     }
 
+    /**
+     * Constructs a date by parsing a string in YYYY-MM-DD, YYYYMMDD,
+     * or "Month day, year" display format.
+     *
+     * @param dateStr the date string to parse
+     */
     public Date(String dateStr) {
         if (dateStr == null || dateStr.isEmpty()) {
             this.year = 0;
@@ -107,7 +127,12 @@ public class Date {
         return year;
     }
 
-    //@override
+    /**
+     * Returns a display string in "Month day, year" format.
+     *
+     * @return formatted date string
+     */
+    @Override
     public String toString() {
         String monthStr = "";
         switch(this.month) {
@@ -178,6 +203,12 @@ public class Date {
         return Math.abs((thisDays - otherDays) / 365);
     }
 
+    /**
+     * Compares this date to another object for equality.
+     *
+     * @param other the object to compare
+     * @return true if both objects represent the same date
+     */
     @Override
     public boolean equals (Object other) {
         return other instanceof Date && this.year == ((Date)other).getYear() && this.month == ((Date)other).getMonth() && this.day == ((Date)other).getDay();
@@ -196,6 +227,12 @@ public class Date {
         return day <= daysInMonth[month - 1];
     }
 
+    /**
+     * Returns a new date offset by the given number of days.
+     *
+     * @param daysToAdd number of days to add (negative to subtract)
+     * @return a new Date representing the result
+     */
     public Date addDays (int daysToAdd) {
         int y = this.year;
         int m = this.month;
@@ -233,6 +270,13 @@ public class Date {
         return new Date(y, m, d);
     }
 
+    /**
+     * Returns the number of days in the given month of the given year.
+     *
+     * @param year  four-digit year
+     * @param month month of the year (1–12)
+     * @return number of days in that month
+     */
     private int getDaysInMonth(int year, int month) {
         switch (month) {
             case 1: case 3: case 5: case 7: case 8: case 10: case 12:

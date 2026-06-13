@@ -10,8 +10,8 @@
 
 package staff;
 
-import appointment.Appointment;
-import patient.Patient;
+import appointment.*;
+import patient.*;
 import shared.Date;
 
 public class Doctor extends Staff {
@@ -47,7 +47,12 @@ public class Doctor extends Staff {
         this.patientsAssigned = new Patient[maxPatients];
     }
 
-    // Linear search — count assigned patients, then append up to maxPatients
+    /**
+     * Assigns patients to this doctor up to max capacity.
+     * Linear search — count assigned patients, then append up to maxPatients.
+     *
+     * @param patients array of patients to assign
+     */
     @Override
     public void assignPatients(Patient[] patients) {
         if (patients == null) {
@@ -74,7 +79,12 @@ public class Doctor extends Staff {
         }
     }
 
-    // Linear search — conflict check, then insert into schedule
+    /**
+     * Adds an appointment to this doctor's schedule after a conflict check.
+     * Linear search — conflict check, then insert into schedule.
+     *
+     * @param appt the appointment to add
+     */
     @Override
     public void addAppointment(Appointment appt) {
         if (appt == null) {
@@ -96,13 +106,23 @@ public class Doctor extends Staff {
         System.out.println("Error: schedule at capacity.");
     }
 
-    // Arithmetic — flat annual salary divided by pay periods per year
+    /**
+     * Calculates this doctor's pay for the current period.
+     * Arithmetic — flat annual salary divided by pay periods per year.
+     *
+     * @return pay amount for the current period
+     */
     @Override
     public double calculatePay() {
         return FLAT_ANNUAL_SALARY / PAY_PERIODS_PER_YEAR;
     }
 
-    // Loop + string build — day-by-day patient list with appointment times
+    /**
+     * Returns a formatted string of this doctor's schedule by date.
+     * Loop + string build — day-by-day patient list with appointment times.
+     *
+     * @return formatted schedule string
+     */
     @Override
     public String getSchedule() {
         StringBuilder sb = new StringBuilder();
@@ -143,6 +163,11 @@ public class Doctor extends Staff {
         return sb.toString();
     }
 
+    /**
+     * Returns a file-parseable string representation of this doctor.
+     *
+     * @return formatted doctor record for staff.txt
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -271,6 +296,12 @@ public class Doctor extends Staff {
         patientsAssigned = resized;
     }
 
+    /**
+     * Checks whether the given patient is already assigned to this doctor.
+     *
+     * @param p the patient to check
+     * @return true if the patient is in the assigned list
+     */
     private boolean isPatientAssigned(Patient p) {
         for (int i = 0; i < patientsAssigned.length; i++) {
             if (patientsAssigned[i] == p) {
@@ -280,6 +311,11 @@ public class Doctor extends Staff {
         return false;
     }
 
+    /**
+     * Removes the given patient from this doctor's assigned list using left shift.
+     *
+     * @param p the patient to remove
+     */
     private void removePatientFromAssigned(Patient p) {
         for (int i = 0; i < patientsAssigned.length; i++) {
             if (patientsAssigned[i] == p) {

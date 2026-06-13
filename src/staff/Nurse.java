@@ -11,10 +11,8 @@
 
 package staff;
 
-import appointment.Appointment;
-import patient.InPatient;
-import patient.Medication;
-import patient.Patient;
+import appointment.*;
+import patient.*;
 
 public class Nurse extends Staff {
 
@@ -54,7 +52,12 @@ public class Nurse extends Staff {
         this.patientsAssigned = new Patient[MAX_ASSIGNED_PATIENTS];
     }
 
-    // Linear search (ward filter) — assign patients whose ward matches this nurse's ward
+    /**
+     * Assigns patients whose ward matches this nurse's ward.
+     * Linear search (ward filter) — assign patients whose ward matches this nurse's ward.
+     *
+     * @param patients array of patients to assign
+     */
     @Override
     public void assignPatients(Patient[] patients) {
         if (patients == null) {
@@ -71,7 +74,12 @@ public class Nurse extends Staff {
         }
     }
 
-    // Validation + insert — reject shifts over 12 hours and update weekly hours
+    /**
+     * Adds a shift to this nurse's schedule and updates weekly hours worked.
+     * Validation + insert — reject shifts over 12 hours and update weekly hours.
+     *
+     * @param appt the appointment/shift to add
+     */
     @Override
     public void addAppointment(Appointment appt) {
         if (appt == null) {
@@ -99,7 +107,12 @@ public class Nurse extends Staff {
         System.out.println("Error: schedule at capacity.");
     }
 
-    // Conditional arithmetic — standard hours plus 1.5× overtime beyond 40 hours
+    /**
+     * Calculates this nurse's pay including overtime beyond 40 hours.
+     * Conditional arithmetic — standard hours plus 1.5× overtime beyond 40 hours.
+     *
+     * @return pay amount for the current week
+     */
     @Override
     public double calculatePay() {
         if (hoursWorkedThisWeek <= 40) {
@@ -109,7 +122,12 @@ public class Nurse extends Staff {
         return (hourlyRate * 40) + (hourlyRate * 1.5 * overtimeHours);
     }
 
-    // Loop + string build — shift blocks with ward and assigned patients
+    /**
+     * Returns a formatted string of this nurse's schedule and assigned patients.
+     * Loop + string build — shift blocks with ward and assigned patients.
+     *
+     * @return formatted schedule string
+     */
     @Override
     public String getSchedule() {
         StringBuilder sb = new StringBuilder();
@@ -162,6 +180,11 @@ public class Nurse extends Staff {
         return sb.toString();
     }
 
+    /**
+     * Returns a file-parseable string representation of this nurse.
+     *
+     * @return formatted nurse record for staff.txt
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -306,6 +329,11 @@ public class Nurse extends Staff {
         return copy;
     }
 
+    /**
+     * Adds a patient to this nurse's assigned list if not already present.
+     *
+     * @param p the patient to add
+     */
     private void addPatientToAssigned(Patient p) {
         for (int i = 0; i < patientsAssigned.length; i++) {
             if (patientsAssigned[i] == p) {
@@ -321,6 +349,13 @@ public class Nurse extends Staff {
         System.out.println("Error: nurse patient list at capacity.");
     }
 
+    /**
+     * Checks whether the given appointment time conflicts with this nurse's shift type.
+     *
+     * @param time  appointment time
+     * @param shift shift type ("Day", "Night", or "Rotating")
+     * @return true if the time conflicts with the shift
+     */
     private boolean conflictsWithShift(double time, String shift) {
         if (shift.equals("Rotating")) {
             return false;

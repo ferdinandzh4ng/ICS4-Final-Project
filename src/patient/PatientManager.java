@@ -1,15 +1,7 @@
 package patient;
 
-import appointment.ApptManager;
-import appointment.Appointment;
-import appointment.EmergencyVisit;
-import appointment.RoutineCheckup;
-import appointment.Surgery;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import appointment.*;
+import java.io.*;
 import shared.Date;
 import staff.Staff;
 
@@ -28,6 +20,8 @@ public class PatientManager {
     public final static Date CUR_DATE;
     public final static int CUR_TIME;
 
+    //One time set up to get the users local time with the java.time class
+    //Ensures date is shared across methods and files
     static {
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
         CUR_DATE = new Date(now.getYear(), now.getMonthValue(), now.getDayOfMonth());
@@ -215,11 +209,17 @@ public class PatientManager {
 
                 if (type.equals("InPatient")) {
                     String dayInStr = reader.readLine();
-                    if (dayInStr == null) { return false; }
+                    if (dayInStr == null) {
+                        return false;
+                    }
                     String dayOutStr = reader.readLine();
-                    if (dayOutStr == null) { return false; }
+                    if (dayOutStr == null) {
+                        return false;
+                    }
                     String hospitalBedStr = reader.readLine();
-                    if (hospitalBedStr == null) { return false; }
+                    if (hospitalBedStr == null) {
+                        return false;
+                    }
                     Date dayIn = parseDate(dayInStr.trim());
                     Date dayOut = parseDate(dayOutStr.trim());
                     boolean hospitalBed = Boolean.parseBoolean(hospitalBedStr.trim());
@@ -227,23 +227,37 @@ public class PatientManager {
                     patient = parsePatientLines(patientLines, type, typeData);
                 } else if (type.equals("OutPatient")) {
                     String appointmentTimingStr = reader.readLine();
-                    if (appointmentTimingStr == null) { return false; }
+                    if (appointmentTimingStr == null) {
+                        return false;
+                    }
                     int appointmentTiming = Integer.parseInt(appointmentTimingStr.trim());
                     Object[] typeData = {appointmentTiming};
                     patient = parsePatientLines(patientLines, type, typeData);
                 } else if (type.equals("EmergencyPatient")) {
                     String arrivalTimeStr = reader.readLine();
-                    if (arrivalTimeStr == null) { return false; }
+                    if (arrivalTimeStr == null) {
+                        return false;
+                    }
                     String dayInStr = reader.readLine();
-                    if (dayInStr == null) { return false; }
+                    if (dayInStr == null) {
+                        return false;
+                    }
                     String dayOutStr = reader.readLine();
-                    if (dayOutStr == null) { return false; }
+                    if (dayOutStr == null) {
+                        return false;
+                    }
                     String presentingComplaintStr = reader.readLine();
-                    if (presentingComplaintStr == null) { return false; }
+                    if (presentingComplaintStr == null) {
+                        return false;
+                    }
                     String arrivalTypeStr = reader.readLine();
-                    if (arrivalTypeStr == null) { return false; }
+                    if (arrivalTypeStr == null) {
+                        return false;
+                    }
                     String statusStr = reader.readLine();
-                    if (statusStr == null) { return false; }
+                    if (statusStr == null) {
+                        return false;
+                    }
                     int arrivalTime = Integer.parseInt(arrivalTimeStr.trim());
                     Date dayIn = parseDate(dayInStr.trim());
                     Date dayOut = parseDate(dayOutStr.trim());
@@ -260,7 +274,9 @@ public class PatientManager {
 
                 if (patient != null && numPatients < maxPatients) {
                     for (String d : loadedDiagnoses) {
-                        if (d != null) { patient.addDiagnoses(d); }
+                        if (d != null) {
+                            patient.addDiagnoses(d);
+                        }
                     }
                     for (String m : loadedMedLines) {
                         if (m != null) {
@@ -271,13 +287,19 @@ public class PatientManager {
                         }
                     }
                     for (String a : loadedAllergies) {
-                        if (a != null) { patient.addAllergy(a); }
+                        if (a != null) {
+                            patient.addAllergy(a);
+                        }
                     }
                     for (String h : loadedMedHistory) {
-                        if (h != null) { patient.addMedicalHistory(h); }
+                        if (h != null) {
+                            patient.addMedicalHistory(h);
+                        }
                     }
                     for (String f : loadedFamHistory) {
-                        if (f != null) { patient.addFamilyHistory(f); }
+                        if (f != null) {
+                            patient.addFamilyHistory(f);
+                        }
                     }
 
                     // InPatient-only: vitals log and medications administered
@@ -321,7 +343,9 @@ public class PatientManager {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
             for (int i = 0; i < numPatients; i++) {
                 Patient patient = patients[i];
-                if (patient == null) { continue; }
+                if (patient == null) {
+                    continue;
+                }
                 writer.write(patient.getClass().getSimpleName()); writer.newLine();
                 writer.write(Integer.toString(patient.getPatientID())); writer.newLine();
                 writer.write(patient.getFirstName()); writer.newLine();
@@ -330,7 +354,8 @@ public class PatientManager {
                 writer.write(patient.getWard()); writer.newLine();
                 writer.write(patient.getAddress()); writer.newLine();
                 writer.write(Long.toString(patient.getPhoneNum())); writer.newLine();
-                writer.write(patient.getNumOHIP());; writer.newLine();
+                writer.write(patient.getNumOHIP());
+                writer.newLine();
                 writer.write(formatDate(patient.getDateRegistered())); writer.newLine();
                 writer.write(Character.toString(patient.getGender())); writer.newLine();
                 writer.write(Long.toString(patient.getEmergencyContactPhoneNumber())); writer.newLine();
@@ -357,7 +382,10 @@ public class PatientManager {
                 String[] diagnoses = patient.getDiagnosis();
                 if (diagnoses != null) {
                     for (String d : diagnoses) {
-                        if (d != null) { writer.write(d); writer.newLine(); }
+                        if (d != null) {
+                            writer.write(d);
+                            writer.newLine();
+                        }
                     }
                 }
                 writer.write("---"); writer.newLine();
@@ -366,7 +394,10 @@ public class PatientManager {
                 Medication[] medications = patient.getMedications();
                 if (medications != null) {
                     for (Medication m : medications) {
-                        if (m != null) { writer.write(m.getMedName() + ":" + m.getDosage()); writer.newLine(); }
+                        if (m != null) {
+                            writer.write(m.getMedName() + ":" + m.getDosage());
+                            writer.newLine();
+                        }
                     }
                 }
                 writer.write("---"); writer.newLine();
@@ -375,7 +406,10 @@ public class PatientManager {
                 String[] allergies = patient.getAllergies();
                 if (allergies != null) {
                     for (String a : allergies) {
-                        if (a != null) { writer.write(a); writer.newLine(); }
+                        if (a != null) {
+                            writer.write(a);
+                            writer.newLine();
+                        }
                     }
                 }
                 writer.write("---"); writer.newLine();
@@ -384,7 +418,10 @@ public class PatientManager {
                 String[] medHistory = patient.getMedicalHistory();
                 if (medHistory != null) {
                     for (String h : medHistory) {
-                        if (h != null) { writer.write(h); writer.newLine(); }
+                        if (h != null) {
+                            writer.write(h);
+                            writer.newLine();
+                        }
                     }
                 }
                 writer.write("---"); writer.newLine();
@@ -393,7 +430,10 @@ public class PatientManager {
                 String[] famHistory = patient.getFamilyHistory();
                 if (famHistory != null) {
                     for (String f : famHistory) {
-                        if (f != null) { writer.write(f); writer.newLine(); }
+                        if (f != null) {
+                            writer.write(f);
+                            writer.newLine();
+                        }
                     }
                 }
                 writer.write("---"); writer.newLine();
@@ -404,14 +444,20 @@ public class PatientManager {
                     String[] vitals = ip.getVitalsLog();
                     if (vitals != null) {
                         for (String v : vitals) {
-                            if (v != null) { writer.write(v); writer.newLine(); }
+                            if (v != null) {
+                                writer.write(v);
+                                writer.newLine();
+                            }
                         }
                     }
                     writer.write("---"); writer.newLine();
                     String[] medsAdmin = ip.getMedicationsAdministered();
                     if (medsAdmin != null) {
                         for (String ma : medsAdmin) {
-                            if (ma != null) { writer.write(ma); writer.newLine(); }
+                            if (ma != null) {
+                                writer.write(ma);
+                                writer.newLine();
+                            }
                         }
                     }
                     writer.write("---"); writer.newLine();
@@ -428,9 +474,13 @@ public class PatientManager {
      * @param apptManager loaded appointment manager
      */
     public void syncAppointmentsFromManager(ApptManager apptManager) {
-        if (apptManager == null) { return; }
+        if (apptManager == null) {
+            return;
+        }
         for (int i = 0; i < numPatients; i++) {
-            if (patients[i] != null) { patients[i].clearAppointments(); }
+            if (patients[i] != null) {
+                patients[i].clearAppointments();
+            }
         }
         Appointment[] appts = apptManager.getAppointments();
         int count = apptManager.getNumAppointments();
@@ -451,10 +501,14 @@ public class PatientManager {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) { continue; }
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue;
+                }
                 int patientID = Integer.parseInt(line);
                 String apptType = reader.readLine();
-                if (apptType == null) { continue; }
+                if (apptType == null) {
+                    continue;
+                }
                 apptType = apptType.trim();
                 int patientIndex = searchPatientIndexByID(patientID);
                 if (patientIndex == -1) {
@@ -463,7 +517,9 @@ public class PatientManager {
                 }
                 Patient patient = patients[patientIndex];
                 Appointment appt = parseAppointmentLines(apptType, patient, reader);
-                if (appt != null) { patient.addAppointment(appt); }
+                if (appt != null) {
+                    patient.addAppointment(appt);
+                }
             }
             return true;
         } catch (IOException e) {
@@ -483,8 +539,12 @@ public class PatientManager {
         String line;
         while ((line = reader.readLine()) != null) {
             line = line.trim();
-            if (line.equals("---")) { break; }
-            if (count < maxSize) { result[count++] = line; }
+            if (line.equals("---")) {
+                break;
+            }
+            if (count < maxSize) {
+                result[count++] = line;
+            }
         }
         return result;
     }
@@ -495,13 +555,20 @@ public class PatientManager {
      * @param reader   the BufferedReader to drain
      */
     private void skipAppointmentRecord(String apptType, BufferedReader reader) throws IOException {
-        for (int i = 0; i < 6; i++) { reader.readLine(); }
+        for (int i = 0; i < 6; i++) {
+            reader.readLine();
+        }
         if (apptType.equals("RoutineCheckup")) {
             reader.readLine();
         } else if (apptType.equals("Surgery")) {
-            reader.readLine(); reader.readLine(); reader.readLine(); reader.readLine(); reader.readLine();
+            reader.readLine();
+            reader.readLine();
+            reader.readLine();
+            reader.readLine();
+            reader.readLine();
         } else if (apptType.equals("EmergencyVisit")) {
-            reader.readLine(); reader.readLine();
+            reader.readLine();
+            reader.readLine();
         }
     }
 
@@ -513,7 +580,9 @@ public class PatientManager {
      * @return a Patient instance if parsing succeeds, null otherwise
      */
     private Patient parsePatientLines(String[] patientLines, String type, Object[] typeSpecificData) {
-        if (patientLines.length < 12) { return null; }
+        if (patientLines.length < 12) {
+            return null;
+        }
         int patientID = Integer.parseInt(patientLines[1]);
         String firstName = patientLines[2];
         String lastName = patientLines[3];
@@ -556,87 +625,92 @@ public class PatientManager {
      * @return an Appointment instance if parsing succeeds, null otherwise
      */
     private Appointment parseAppointmentLines(String apptType, Patient patient, BufferedReader reader) throws IOException {
-        if (patient == null) { return null; }
+        if (patient == null) {
+            return null;
+        }
         String apptIDStr = reader.readLine();
-        if (apptIDStr == null) { return null; }
+        if (apptIDStr == null) {
+            return null;
+        }
         int apptID = Integer.parseInt(apptIDStr.trim());
         String dateStr = reader.readLine();
-        if (dateStr == null) { return null; }
+        if (dateStr == null) {
+            return null;
+        }
         Date date = parseDate(dateStr.trim());
         String timeStr = reader.readLine();
-        if (timeStr == null) { return null; }
+        if (timeStr == null) {
+            return null;
+        }
         double time = Double.parseDouble(timeStr.trim());
         String durationStr = reader.readLine();
-        if (durationStr == null) { return null; }
+        if (durationStr == null) {
+            return null;
+        }
         double duration = Double.parseDouble(durationStr.trim());
         String costStr = reader.readLine();
-        if (costStr == null) { return null; }
+        if (costStr == null) {
+            return null;
+        }
         double cost = Double.parseDouble(costStr.trim());
         String status = reader.readLine();
-        if (status == null) { return null; }
+        if (status == null) {
+            return null;
+        }
         status = status.trim();
 
         switch (apptType) {
             case "RoutineCheckup":
                 String clinicRoomStr = reader.readLine();
-                if (clinicRoomStr == null) { return null; }
+                if (clinicRoomStr == null) {
+                    return null;
+                }
                 int clinicRoomNum = Integer.parseInt(clinicRoomStr.trim());
                 return new RoutineCheckup(apptID, patient, null, date, time, duration, cost, status, clinicRoomNum, null);
             case "Surgery":
                 String operatingRoomStr = reader.readLine();
-                if (operatingRoomStr == null) { return null; }
+                if (operatingRoomStr == null) {
+                    return null;
+                }
                 int operatingRoomNum = Integer.parseInt(operatingRoomStr.trim());
                 String anaesthesiaType = reader.readLine();
-                if (anaesthesiaType == null) { return null; }
+                if (anaesthesiaType == null) {
+                    return null;
+                }
                 anaesthesiaType = anaesthesiaType.trim();
                 String anaesthesiaDoseStr = reader.readLine();
-                if (anaesthesiaDoseStr == null) { return null; }
+                if (anaesthesiaDoseStr == null) {
+                    return null;
+                }
                 double anaesthesiaDose = Double.parseDouble(anaesthesiaDoseStr.trim());
                 String surgeryType = reader.readLine();
-                if (surgeryType == null) { return null; }
+                if (surgeryType == null) {
+                    return null;
+                }
                 surgeryType = surgeryType.trim();
                 String preOpInstructions = reader.readLine();
-                if (preOpInstructions == null) { return null; }
+                if (preOpInstructions == null) {
+                    return null;
+                }
                 preOpInstructions = preOpInstructions.trim();
                 return new Surgery(apptID, patient, null, date, time, duration, cost, status, operatingRoomNum, anaesthesiaType, anaesthesiaDose, surgeryType, preOpInstructions);
             case "EmergencyVisit":
                 String emergencyRoomStr = reader.readLine();
-                if (emergencyRoomStr == null) { return null; }
+                if (emergencyRoomStr == null) {
+                    return null;
+                }
                 int emergencyRoomNum = Integer.parseInt(emergencyRoomStr.trim());
                 String urgencyIdxStr = reader.readLine();
-                if (urgencyIdxStr == null) { return null; }
+                if (urgencyIdxStr == null) {
+                    return null;
+                }
                 int urgencyIdx = Integer.parseInt(urgencyIdxStr.trim());
                 return new EmergencyVisit(apptID, patient, null, date, time, duration, cost, status, emergencyRoomNum, urgencyIdx);
             default:
                 return null;
         }
     }
-
-    private void serializeAppointmentLines(int patientID, Appointment appt, BufferedWriter writer) throws IOException {
-        writer.write(Integer.toString(patientID)); writer.newLine();
-        writer.write(appt.getClass().getSimpleName()); writer.newLine();
-        writer.write(Integer.toString(appt.getApptID())); writer.newLine();
-        writer.write(formatDate(appt.getDate())); writer.newLine();
-        writer.write(Double.toString(appt.getTime())); writer.newLine();
-        writer.write(Double.toString(appt.getDuration())); writer.newLine();
-        writer.write(Double.toString(appt.getCost())); writer.newLine();
-        writer.write(appt.getStatus()); writer.newLine();
-        if (appt instanceof RoutineCheckup) {
-            writer.write(Integer.toString(((RoutineCheckup) appt).getRoomNum())); writer.newLine();
-        } else if (appt instanceof Surgery) {
-            Surgery surgery = (Surgery) appt;
-            writer.write(Integer.toString(surgery.getRoomNum())); writer.newLine();
-            writer.write(surgery.getAnaesthesiaType()); writer.newLine();
-            writer.write(Double.toString(surgery.getAnaesthesiaDose())); writer.newLine();
-            writer.write(surgery.getType()); writer.newLine();
-            writer.write(""); writer.newLine();
-        } else if (appt instanceof EmergencyVisit) {
-            EmergencyVisit ev = (EmergencyVisit) appt;
-            writer.write(Integer.toString(ev.getRoomNum())); writer.newLine();
-            writer.write(Integer.toString(ev.getUrgencyIdx())); writer.newLine();
-        }
-    }
-
+    
     /**
      * Parses a date string from the file into a Date object.
      * @param token the date token in YYYY-MM-DD format
@@ -644,11 +718,15 @@ public class PatientManager {
      */
     private Date parseDate(String token) {
         String[] parts = token.split("-");
-        if (parts.length != 3) { return new Date(0, 0, 0); }
+        if (parts.length != 3) {
+            return new Date(0, 0, 0);
+        }
         int year  = Integer.parseInt(parts[0]);
         int month = Integer.parseInt(parts[1]);
         int day   = Integer.parseInt(parts[2]);
-        if (year == 0 && month == 0 && day == 0) { return null; }
+        if (year == 0 && month == 0 && day == 0) {
+            return null;
+        }
         return new Date(year, month, day);
     }
 
@@ -658,7 +736,9 @@ public class PatientManager {
      * @return the formatted date string
      */
     private String formatDate(Date date) {
-        if (date == null) { return "0-0-0"; }
+        if (date == null) {
+            return "0-0-0";
+        }
         return date.getYear() + "-" + date.getMonth() + "-" + date.getDay();
     }
 
@@ -669,7 +749,9 @@ public class PatientManager {
      */
     public int searchPatientIndexByID(int patientID) {
         for (int i = 0; i < numPatients; i++) {
-            if (patients[i].getPatientID() == patientID) { return i; }
+            if (patients[i].getPatientID() == patientID) {
+                return i;
+            }
         }
         return -1;
     }
@@ -682,7 +764,9 @@ public class PatientManager {
      */
     public int searchPatientIDByName(String firstName, String lastName) {
         for (int i = 0; i < numPatients; i++) {
-            if (patients[i].equalsName(firstName, lastName)) { return patients[i].getPatientID(); }
+            if (patients[i].equalsName(firstName, lastName)) {
+                return patients[i].getPatientID();
+            }
         }
         return -1;
     }
@@ -695,7 +779,9 @@ public class PatientManager {
      */
     public Patient searchPatientByName(String firstName, String lastName) {
         for (int i = 0; i < numPatients; i++) {
-            if (patients[i].equalsName(firstName, lastName)) { return patients[i]; }
+            if (patients[i].equalsName(firstName, lastName)) {
+                return patients[i];
+            }
         }
         return null;
     }
@@ -727,7 +813,9 @@ public class PatientManager {
      */
     public Patient searchPatientByID(int patientID, int bottom, int top) {
         sortByPatientID();
-        if (bottom > top) { return null; }
+        if (bottom > top) {
+            return null;
+        }
         int mid = (bottom + top) / 2;
         if (patients[mid].getPatientID() == patientID) {
             return patients[mid];
@@ -743,7 +831,9 @@ public class PatientManager {
      */
     public void sortByPatientID() {
         boolean sorted;
-        if (numPatients <= 1) { return; }
+        if (numPatients <= 1) {
+            return;
+        }
         for (int upperBound = numPatients - 1; upperBound > 0; upperBound--) {
             sorted = true;
             for (int j = 0; j < upperBound; j++) {
@@ -754,7 +844,9 @@ public class PatientManager {
                     sorted = false;
                 }
             }
-            if (sorted) { break; }
+            if (sorted) {
+                break;
+            }
         }
     }
 
@@ -762,7 +854,9 @@ public class PatientManager {
      * Sorts the patients array by date registered using an insertion sort.
      */
     public void sortByDateEntered() {
-        if (numPatients <= 1) { return; }
+        if (numPatients <= 1) {
+            return;
+        }
         for (int i = 1; i < numPatients; i++) {
             Patient itemToCompare = patients[i];
             int blankIndex = i;
@@ -778,7 +872,9 @@ public class PatientManager {
      * Sorts the patients array by ward, then patient ID (selection sort).
      */
     public void sortByWardThenPatientID() {
-        if (numPatients <= 1) { return; }
+        if (numPatients <= 1) {
+            return;
+        }
         for (int upperBound = numPatients - 1; upperBound > 0; upperBound--) {
             int maxIndex = 0;
             for (int j = 1; j <= upperBound; j++) {
@@ -802,8 +898,12 @@ public class PatientManager {
      */
     public boolean deletePatient(int patientID) {
         int index = searchPatientIndexByID(patientID);
-        if (index == -1) { return false; }
-        for (int i = index; i < numPatients - 1; i++) { patients[i] = patients[i + 1]; }
+        if (index == -1) {
+            return false;
+        }
+        for (int i = index; i < numPatients - 1; i++) {
+            patients[i] = patients[i + 1];
+        }
         patients[numPatients - 1] = null;
         numPatients--;
         return true;
@@ -817,7 +917,9 @@ public class PatientManager {
      */
     public boolean addDiagnosis(int patientID, String diagnosis) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         patient.addDiagnoses(diagnosis);
         return true;
     }
@@ -830,7 +932,9 @@ public class PatientManager {
      */
     public boolean deleteDiagnosis(int patientID, String diagnosis) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         return patient.deleteDiagnosis(diagnosis);
     }
 
@@ -843,7 +947,9 @@ public class PatientManager {
      */
     public boolean updateDiagnosis(int patientID, String orgDiagnosis, String newDiagnosis) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         return patient.updateDiagnosis(orgDiagnosis, newDiagnosis);
     }
 
@@ -855,7 +961,9 @@ public class PatientManager {
      */
     public boolean addAppointment(int patientID, Appointment newAppt) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         patient.addAppointment(newAppt);
         return true;
     }
@@ -868,7 +976,9 @@ public class PatientManager {
      */
     public boolean deleteAppointment(int patientID, Appointment toDelete) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         return patient.deleteAppointment(toDelete);
     }
 
@@ -881,7 +991,9 @@ public class PatientManager {
      */
     public boolean updateAppointment(int patientID, Appointment orgAppt, Appointment newAppt) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         return patient.updateAppointment(orgAppt, newAppt);
     }
 
@@ -908,7 +1020,9 @@ public class PatientManager {
      */
     public boolean deleteMedication(int patientID, String medName) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         return patient.deleteMedication(medName);
     }
 
@@ -922,7 +1036,9 @@ public class PatientManager {
      */
     public boolean updateMedication(int patientID, String medName, String newMed, String newDosage) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         return patient.updateMedication(medName, newMed, newDosage);
     }
 
@@ -934,7 +1050,9 @@ public class PatientManager {
      */
     public boolean addAllergy(int patientID, String newAllergy) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         patient.addAllergy(newAllergy);
         return true;
     }
@@ -947,7 +1065,9 @@ public class PatientManager {
      */
     public boolean deleteAllergy(int patientID, String allergy) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         return patient.deleteAllergy(allergy);
     }
 
@@ -960,7 +1080,9 @@ public class PatientManager {
      */
     public boolean updateAllergy(int patientID, String orgAllergy, String newAllergy) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         return patient.updateAllergy(orgAllergy, newAllergy);
     }
 
@@ -972,7 +1094,9 @@ public class PatientManager {
      */
     public boolean addMedicalHistory(int patientID, String medHistory) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         patient.addMedicalHistory(medHistory);
         return true;
     }
@@ -985,7 +1109,9 @@ public class PatientManager {
      */
     public boolean deleteMedicalHistory(int patientID, String medHistory) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         return patient.deleteMedicalHistory(medHistory);
     }
 
@@ -997,7 +1123,9 @@ public class PatientManager {
      */
     public boolean addFamilyHistory(int patientID, String famHistory) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         patient.addFamilyHistory(famHistory);
         return true;
     }
@@ -1010,7 +1138,9 @@ public class PatientManager {
      */
     public boolean deleteFamilyHistory(int patientID, String famHistory) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         return patient.deleteFamilyHistory(famHistory);
     }
 
@@ -1022,7 +1152,9 @@ public class PatientManager {
      */
     public boolean updateAssignedStaffForPatient(int patientID, Staff assigned) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         patient.setAssignedStaff(assigned);
         return true;
     }
@@ -1048,7 +1180,9 @@ public class PatientManager {
      */
     public boolean checkOutPatient(int patientID, String followUp) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         return patient.checkOut(followUp);
     }
 
@@ -1059,7 +1193,9 @@ public class PatientManager {
      */
     public double calculateTotalCostForPatient(int patientID) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return -1; }
+        if (patient == null) {
+            return -1;
+        }
         return patient.calculateTotalCost();
     }
 
@@ -1070,7 +1206,9 @@ public class PatientManager {
      */
     public double calculateBill(int patientID) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return -1; }
+        if (patient == null) {
+            return -1;
+        }
         return patient.calculateBill();
     }
 
@@ -1109,16 +1247,22 @@ public class PatientManager {
      */
     public String listAppointmentsForPatient(int patientID) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return null; }
+        if (patient == null) {
+            return null;
+        }
         String apptString = "Past appointments: \n\n";
         Appointment[] pastAppts = patient.getPastAppointments();
         for (int i = 0; i < pastAppts.length; i++) {
-            if (pastAppts[i] != null) { apptString += pastAppts[i].toString() + "\n"; }
+            if (pastAppts[i] != null) {
+                apptString += pastAppts[i].toString() + "\n";
+            }
         }
         apptString += "\nUpcoming appointments: \n\n";
         Appointment[] upcomingAppts = patient.getUpcomingAppointments();
         for (int i = 0; i < upcomingAppts.length; i++) {
-            if (upcomingAppts[i] != null) { apptString += upcomingAppts[i].toString() + "\n"; }
+            if (upcomingAppts[i] != null) {
+                apptString += upcomingAppts[i].toString() + "\n";
+            }
         }
         return apptString;
     }
@@ -1131,7 +1275,9 @@ public class PatientManager {
      */
     public boolean addtoHistory(int patientID, Appointment appt) {
         Patient patient = searchPatientByID(patientID);
-        if (patient == null) { return false; }
+        if (patient == null) {
+            return false;
+        }
         patient.addToHistory(appt);
         return true;
     }

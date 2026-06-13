@@ -8,10 +8,10 @@
 
 package appointment;
 
-import java.util.Arrays;
-import patient.Patient;
-import staff.Staff;
+import java.util.*;
+import patient.*;
 import shared.Date;
+import staff.*;
 
 public abstract class Appointment {
     // Fields
@@ -266,12 +266,13 @@ public abstract class Appointment {
         return false;
     }
 
-    @Override
     /**
-     * Checks if this appointment is equal to another object
+     * Checks if this appointment is equal to another object.
+     *
      * @param obj the object to compare with
-     * @return true if the objects are equal, false otherwise
+     * @return true if the objects represent the same appointment ID
      */
+    @Override
     public boolean equals(Object obj) {
         // Check and create instance of Appointment
         if (!(obj instanceof Appointment)) {
@@ -283,6 +284,11 @@ public abstract class Appointment {
         return this.apptID == other.apptID;
     }
 
+    /**
+     * Returns a hash code based on the appointment ID.
+     *
+     * @return hash code for this appointment
+     */
     @Override
     public int hashCode() {
         return Integer.hashCode(apptID);
@@ -386,7 +392,9 @@ public abstract class Appointment {
      * @return true if staff member is part of that staff list, otherwise false
      */
     public boolean hasStaffMember(Staff toCheck) {
-        if (staffList == null || toCheck == null) return false;
+        if (staffList == null || toCheck == null) {
+            return false;
+        }
         for (int i = 0; i < staffList.length; i++) {
             if (staffList[i] != null && staffList[i].equals(toCheck)) {
                 return true;

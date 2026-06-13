@@ -11,14 +11,9 @@
 package appointment;
 
 import java.io.*;
-import patient.Patient;
-import patient.PatientManager;
+import patient.*;
 import shared.Date;
-import staff.Doctor;
-import staff.Nurse;
-import staff.Staff;
-import staff.StaffManager;
-import staff.Surgeon;
+import staff.*;
 
 public class ApptManager {
     private Appointment[] appointments; //array to store all appointments
@@ -58,26 +53,57 @@ public class ApptManager {
     }
 
     // Accessors and Mutators
+
+    /**
+     * Returns the appointments array managed by this manager.
+     *
+     * @return the appointments array
+     */
     public Appointment[] getAppointments() {
         return appointments;
     }
 
+    /**
+     * Sets the appointments array managed by this manager.
+     *
+     * @param appointments the appointments array to set
+     */
     public void setAppointments(Appointment[] appointments) {
         this.appointments = appointments;
     }
 
+    /**
+     * Returns the number of appointments currently stored.
+     *
+     * @return the number of appointments
+     */
     public int getNumAppointments() {
         return numAppointments;
     }
 
+    /**
+     * Sets the number of appointments currently stored.
+     *
+     * @param numAppointments the number of appointments to set
+     */
     public void setNumAppointments(int numAppointments) {
         this.numAppointments = numAppointments;
     }
 
+    /**
+     * Returns the maximum capacity of the appointments array.
+     *
+     * @return the maximum number of appointments
+     */
     public int getMaxAppointments() {
         return maxAppointments;
     }
 
+    /**
+     * Sets the maximum capacity of the appointments array.
+     *
+     * @param maxAppointments the maximum number of appointments to set
+     */
     public void setMaxAppointments(int maxAppointments) {
         this.maxAppointments = maxAppointments;
     }
@@ -148,13 +174,17 @@ public class ApptManager {
      */
     public boolean rescheduleAppointment(int apptID, Date newDate, double newTime) {
         Appointment target = searchByID(apptID);
-        if (target == null) return false;
+        if (target == null) {
+            return false;
+        }
 
         Date oldDate = target.getDate();
         double oldTime = target.getTime();
 
         // Target reschedules itself internally
-        if (!target.reschedule(newDate, newTime)) return false;
+        if (!target.reschedule(newDate, newTime)) {
+            return false;
+        }
 
         // Verify the new time does not overlap with anything else
         if (isSlotConflict(target)) {

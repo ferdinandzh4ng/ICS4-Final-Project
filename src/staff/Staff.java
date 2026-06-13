@@ -11,9 +11,8 @@
 
 package staff;
 
-import appointment.Appointment;
-import appointment.ApptManager;
-import patient.Patient;
+import appointment.*;
+import patient.*;
 import shared.Date;
 
 public abstract class Staff {
@@ -111,6 +110,12 @@ public abstract class Staff {
         System.out.println("Error: no available off-day slots.");
     }
 
+    /**
+     * Compares this staff member to another object by staff ID.
+     *
+     * @param other the object to compare
+     * @return true if both objects represent the same staff ID
+     */
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof Staff)) {
@@ -119,6 +124,11 @@ public abstract class Staff {
         return equals((Staff) other);
     }
 
+    /**
+     * Returns a hash code based on the staff ID.
+     *
+     * @return hash code for this staff member
+     */
     @Override
     public int hashCode() {
         return staffID.hashCode();

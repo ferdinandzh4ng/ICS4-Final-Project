@@ -1,10 +1,3 @@
-import appointment.*;
-import patient.*;
-import shared.*;
-import staff.*;
-
-import java.util.Scanner;
-
 /**
  * File: HospitalRunner.java
  * Name: Caroline Chan
@@ -13,7 +6,21 @@ import java.util.Scanner;
  * Description: This class runs the hospital management system,
  *              providing menus to manage patients, appointments, and staff.
  */
+
+import appointment.*;
+import patient.*;
+import shared.*;
+import staff.*;
+
+import java.util.Scanner;
+
 public class HospitalRunner {
+
+    /**
+     * Entry point — loads data files and runs the interactive main menu.
+     *
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 

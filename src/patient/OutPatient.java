@@ -1,11 +1,8 @@
 package patient;
 
-import appointment.Appointment;
-import appointment.RoutineCheckup;
-import appointment.Surgery;
+import appointment.*;
 import shared.Date;
-import staff.Doctor;
-import staff.Staff;
+import staff.*;
 
 /**
  * File: OutPatient.java
@@ -64,6 +61,11 @@ public class OutPatient extends Patient {
         return super.toString() + "\nAppointment Timing (months): " + appointmentTimingMonths;
     }
 
+    /**
+     * Calculates the total bill for this out-patient (appointment fees only).
+     *
+     * @return total bill amount
+     */
     @Override
     public double calculateBill() {
         return calculateTotalCost();

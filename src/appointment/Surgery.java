@@ -10,11 +10,9 @@
 
 package appointment;
 
+import patient.*;
 import shared.Date;
-import patient.Patient;
-import staff.Nurse;
-import staff.Staff;
-import staff.Surgeon;
+import staff.*;
 
 public class Surgery extends Appointment {
     private int operatingRoomNum; //number of the operating room assigned for the surgery
