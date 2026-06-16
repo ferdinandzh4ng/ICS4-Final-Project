@@ -127,6 +127,11 @@ public class ApptManager {
         // Save the appointment
         appointments[numAppointments] = appt;
         numAppointments++;
+
+        Patient patient = appt.getPatient();
+        if (patient != null) {
+            patient.addAppointment(appt);
+        }
         return true;
     }
 
@@ -141,6 +146,12 @@ public class ApptManager {
         if (target == null) {
             return false;
         }
+
+        Patient patient = target.getPatient();
+        if (patient != null) {
+            patient.deleteAppointment(target);
+        }
+
         target.cancel(); // Sets status and clears staff
 
         // Find the exact index to remove it from the array
@@ -178,6 +189,7 @@ public class ApptManager {
             return false;
         }
 
+        Patient patient = target.getPatient();
         Date oldDate = target.getDate();
         double oldTime = target.getTime();
 
@@ -190,6 +202,11 @@ public class ApptManager {
         if (isSlotConflict(target)) {
             target.reschedule(oldDate, oldTime); // Revert the change
             return false;
+        }
+
+        if (patient != null) {
+            patient.deleteAppointment(target);
+            patient.addAppointment(target);
         }
         return true;
     }
